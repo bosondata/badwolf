@@ -7,6 +7,8 @@ import pytest
 def app(request):
     from badwolf.wsgi import app
 
+    app.config['TESTING'] = True
+    app.config['SERVER_NAME'] = 'localhost'
     ctx = app.app_context()
     ctx.push()
 
@@ -15,3 +17,8 @@ def app(request):
 
     request.addfinalizer(teardown)
     return app
+
+
+@pytest.fixture(scope='module')
+def test_client(app):
+    return app.test_client()
