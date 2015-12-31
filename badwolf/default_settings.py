@@ -11,3 +11,6 @@ SECRET_KEY = ''
 
 # Sentry
 SENTRY_DSN = ''
+
+# Celery
+CELERY_BROKER_URL = 'amqp://guest@localhost//'

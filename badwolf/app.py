@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 
 from flask import Flask
+from celery import Celery
 
 
 def create_app(config=None):
@@ -22,3 +23,23 @@ def create_app(config=None):
         else:
             app.config.from_pyfile(config)
     return app
+
+
+def create_celery(app):
+    celery = Celery(
+        app.import_name,
+        broker=app.config['CELERY_BROKER_URL']
+    )
+    celery.conf.update(app.config)
+
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return super(ContextTask, self).__call__(*args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
