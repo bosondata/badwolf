@@ -3,7 +3,8 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from flask import Blueprint, request
-from celery import shared_task
+
+from badwolf.tasks import run_test
 
 
 logger = logging.getLogger(__name__)
@@ -51,5 +52,7 @@ def handle_repo_push(payload):
     if scm.lower() != 'git':
         return
 
+    commit_hash = changes[0]['commits'][0]['hash']
     repo_name = repo['full_name']
     git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
+    run_test(repo_name, git_clone_url, commit_hash)
