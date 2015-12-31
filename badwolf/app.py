@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import os
+import logging.config
 
 from flask import Flask
 from celery import Celery
@@ -22,6 +23,9 @@ def create_app(config=None):
             app.config.update(config)
         else:
             app.config.from_pyfile(config)
+
+    # Setup logging
+    logging.config.dictConfig(app.config['LOGGING'])
     return app
 
 
