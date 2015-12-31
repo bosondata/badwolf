@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-from badwolf.app import create_celery
-from badwolf.wsgi import app
+from celery import shared_task
 
 
-celery = create_celery(app)
-
-
-@celery.task
+@shared_task
 def run_test(repo, commit_hash):
     pass
