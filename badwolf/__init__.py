@@ -7,6 +7,7 @@ def create_app(config=None):
 
     app = _create_app(config)
 
+    register_extensions(app)
     register_blueprints(app)
     register_error_handlers(app)
     setup_celery(app)
@@ -31,3 +32,9 @@ def setup_celery(app):
         'badwolf',
     ])
     app.celery = celery
+
+
+def register_extensions(app):
+    from .extensions import sentry
+
+    sentry.init_app(app)
