@@ -21,6 +21,12 @@ $ python setup.py develop
 $ badwolf runserver
 ```
 
+## Run Celery worker
+
+```bash
+$ celery worker -A badwolf.worker -l info
+```
+
 ## Interactive shell
 
 ```bash
