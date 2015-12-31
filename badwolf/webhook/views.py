@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from flask import Blueprint, request
+from celery import shared_task
 
 
 logger = logging.getLogger(__name__)
@@ -51,3 +52,4 @@ def handle_repo_push(payload):
         return
 
     repo_name = repo['full_name']
+    git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
