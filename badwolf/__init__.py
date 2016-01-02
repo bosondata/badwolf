@@ -10,7 +10,6 @@ def create_app(config=None):
     register_extensions(app)
     register_blueprints(app)
     register_error_handlers(app)
-    setup_celery(app)
     return app
 
 
@@ -22,16 +21,6 @@ def register_blueprints(app):
 
 def register_error_handlers(app):
     pass
-
-
-def setup_celery(app):
-    from .app import create_celery
-
-    celery = create_celery(app)
-    celery.autodiscover_tasks([
-        'badwolf',
-    ])
-    app.celery = celery
 
 
 def register_extensions(app):
