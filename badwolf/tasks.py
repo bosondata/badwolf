@@ -48,6 +48,8 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
 
     logger.info('Cloning %s to %s...', git_clone_url, clone_path)
     git.Git().clone(git_clone_url, clone_path)
+    logger.info('Checkout commit %s', commit_hash)
+    git.Git(clone_path).checkout(commit_hash)
 
     conf_file = os.path.join(clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
     if not os.path.exists(conf_file):
@@ -74,7 +76,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
         logger.warning('No script to run')
         return
 
-    command = ' && '.join(script)
+    command = ';'.join(script)
     command = "/bin/sh -c '{}'".format(command)
     logger.info('Running test script: %s', command)
 
@@ -90,13 +92,14 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
             },
         })
     )
-    logger.info('Created container %s from image %s', container['Id'], docker_image_name)
+    container_id = container['Id']
+    logger.info('Created container %s from image %s', container_id, docker_image_name)
 
-    docker.start(container['Id'])
-    output = list(docker.logs(container['Id']))
+    docker.start(container_id)
+    output = list(docker.logs(container_id))
     logger.info('Docker output: %s', ''.join(output))
 
-    exit_code = docker.wait(container['Id'])
+    exit_code = docker.wait(container_id)
     if exit_code == 0:
         # Success
         logger.info('Test succeed for repo: %s', repo_full_name)
