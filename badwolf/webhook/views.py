@@ -55,4 +55,4 @@ def handle_repo_push(payload):
     commit_hash = changes[0]['commits'][0]['hash']
     repo_name = repo['full_name']
     git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
-    run_test(repo_name, git_clone_url, commit_hash)
+    run_test.delay(repo_name, git_clone_url, commit_hash)

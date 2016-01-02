@@ -2,8 +2,6 @@
 from __future__ import unicode_literals
 import sys
 
-from kombu import Exchange, Queue
-
 # is debugging
 DEBUG = False
 
@@ -14,14 +12,6 @@ SECRET_KEY = ''
 
 # Sentry
 SENTRY_DSN = ''
-
-# Celery
-CELERY_BROKER_URL = 'amqp://guest@localhost//'
-CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
-CELERY_QUEUES = (
-    Queue('badwolf', Exchange('badwolf'), routing_key=''),
-)
-CELERY_DEFAULT_QUEUE = 'badwolf'
 
 # Logging
 LOGGING = {
@@ -51,3 +41,5 @@ LOGGING = {
         },
     },
 }
+
+BADWOLF_PROJECT_CONF = '.badwolf.yml'

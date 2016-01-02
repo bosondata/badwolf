@@ -21,12 +21,6 @@ $ python setup.py develop
 $ badwolf runserver
 ```
 
-## Run Celery worker
-
-```bash
-$ celery worker -A badwolf.worker -l info
-```
-
 ## Interactive shell
 
 ```bash
@@ -44,3 +38,14 @@ Open interactive shell when test failed:
 ```bash
 $ py.test -v -s --pdb
 ```
+
+## Test configuration file
+
+Configuration file use YAML format, filename should be ``.badwolf.yml``
+
+Fields:
+
+1. ``dockerfile``: Dockfile name for build docker image, ``str``
+2. ``script``: Test scipt(s), ``str`` or ``list``
+3. ``after_success``: command(s) to run after success, ``str`` or ``list``
+3. ``after_failure``: command(s) to run after failure, ``str`` or ``list``
