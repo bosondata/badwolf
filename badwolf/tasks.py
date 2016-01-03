@@ -83,11 +83,11 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
     container = docker.create_container(
         docker_image_name,
         command=command,
-        working_dir='/mnt/app',
-        volumes=['/mnt/app'],
+        working_dir='/mnt/src',
+        volumes=['/mnt/src'],
         host_config=docker.create_host_config(binds={
-            '/mnt/app': {
-                'bind': clone_path,
+            clone_path: {
+                'bind': '/mnt/src',
                 'mode': 'rw',
             },
         })
@@ -96,9 +96,6 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
     logger.info('Created container %s from image %s', container_id, docker_image_name)
 
     docker.start(container_id)
-    output = list(docker.logs(container_id))
-    logger.info('Docker output: %s', ''.join(output))
-
     exit_code = docker.wait(container_id)
     if exit_code == 0:
         # Success
@@ -107,5 +104,9 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
         # Failed
         logger.info('Test failed for repo: %s, exit code: %s', repo_full_name, exit_code)
 
+    output = list(docker.logs(container_id))
+    logger.info('%s', ''.join(output))
+
     # Cleanup
+    docker.remove_container(container_id, force=True)
     shutil.rmtree(os.path.dirname(clone_path))
