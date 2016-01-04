@@ -39,38 +39,39 @@ def shell():
         'app': app,
     }
 
-    # Try ptpython
-    try:
-        from ptpython.ipython import embed
-        embed(user_ns=context, vi_mode=True)
-        return
-    except ImportError:
-        pass
-
-    # Try bpython
-    try:
-        from bpython import embed
-        embed(locals_=context)
-        return
-    except ImportError:
-        pass
-
-    # Try ipython
-    try:
+    with app.app_context():
+        # Try ptpython
         try:
-            # 0.10.x
-            from IPython.Shell import IPShellEmbed
-            ipshell = IPShellEmbed(banner='Welcome to badwolf shell\n')
-            ipshell(global_ns=dict(), local_ns=context)
+            from ptpython.ipython import embed
+            embed(user_ns=context, vi_mode=True)
+            return
         except ImportError:
-            # 0.12+
-            from IPython import embed
-            embed(banner1='Welcome to badwolf shell\n', user_ns=context)
-        return
-    except ImportError:
-        pass
+            pass
 
-    # Use basic python shell
-    import code
+        # Try bpython
+        try:
+            from bpython import embed
+            embed(locals_=context)
+            return
+        except ImportError:
+            pass
 
-    code.interact(local=context)
+        # Try ipython
+        try:
+            try:
+                # 0.10.x
+                from IPython.Shell import IPShellEmbed
+                ipshell = IPShellEmbed(banner='Welcome to badwolf shell\n')
+                ipshell(global_ns=dict(), local_ns=context)
+            except ImportError:
+                # 0.12+
+                from IPython import embed
+                embed(banner1='Welcome to badwolf shell\n', user_ns=context)
+            return
+        except ImportError:
+            pass
+
+        # Use basic python shell
+        import code
+
+        code.interact(local=context)
