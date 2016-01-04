@@ -168,9 +168,7 @@ ol li {
             <p>Commit: {{ commit_hash }}</p>
             <p>Task ID: {{ task_id }}</p>
             <h2>Logs</h2>
-            {% autoescape false %}
-                {{ logs|nl2br }}
-            {% endautoescape %}
+            {{ logs|nl2br }}
           </td>
         </tr>
       </table>
