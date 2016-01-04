@@ -10,9 +10,10 @@ from concurrent.futures import ProcessPoolExecutor
 
 import git
 from docker import Client
-from flask import current_app
+from flask import current_app, render_template
 
 from badwolf.parser import parse_configuration
+from badwolf.extensions import mail
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,16 @@ def async_task(f):
         return executor.submit(f, *args, **kwargs)
     f.delay = delay
     return f
+
+
+@async_task
+def send_mail(recipients, subject, template, context):
+    html = render_template('mail/' + template + '.html', **context)
+    mail.send_message(
+        subject=subject,
+        recipients=recipients,
+        html=html,
+    )
 
 
 @async_task
@@ -97,15 +108,45 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
 
     docker.start(container_id)
     exit_code = docker.wait(container_id)
+    output = list(docker.logs(container_id))
+    logger.info('%s', ''.join(output))
+
+    notification = project_conf['notification']
+    emails = notification.get('emails')
     if exit_code == 0:
         # Success
         logger.info('Test succeed for repo: %s', repo_full_name)
+        if emails:
+            send_mail(
+                emails,
+                'Test succeed for repo: {}, commit: {}'.format(repo_full_name, commit_hash),
+                'test_success',
+                {
+                    'task_id': task_id,
+                    'repo_full_name': repo_full_name,
+                    'repo_name': repo_name,
+                    'commit_hash': commit_hash,
+                    'logs': ''.join(output),
+                    'exit_code': exit_code,
+                }
+            )
     else:
         # Failed
         logger.info('Test failed for repo: %s, exit code: %s', repo_full_name, exit_code)
-
-    output = list(docker.logs(container_id))
-    logger.info('%s', ''.join(output))
+        if emails:
+            send_mail(
+                emails,
+                'Test failed for repo: {}, commit: {}'.format(repo_full_name, commit_hash),
+                'test_failure',
+                {
+                    'task_id': task_id,
+                    'repo_full_name': repo_full_name,
+                    'repo_name': repo_name,
+                    'commit_hash': commit_hash,
+                    'logs': ''.join(output),
+                    'exit_code': exit_code,
+                }
+            )
 
     # Cleanup
     docker.remove_container(container_id, force=True)
