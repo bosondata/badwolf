@@ -131,6 +131,16 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
 
     notification = project_conf['notification']
     emails = notification['email']
+    context = {
+        'task_id': task_id,
+        'repo_full_name': repo_full_name,
+        'repo_name': repo_name,
+        'commit_hash': commit_hash,
+        'logs': ''.join(output),
+        'exit_code': exit_code,
+        'branch': branch,
+        'scripts': script,
+    }
     if exit_code == 0:
         # Success
         logger.info('Test succeed for repo: %s', repo_full_name)
@@ -139,14 +149,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
                 emails,
                 'Test succeed for repo: {}, commit: {}'.format(repo_full_name, commit_hash),
                 'test_success',
-                {
-                    'task_id': task_id,
-                    'repo_full_name': repo_full_name,
-                    'repo_name': repo_name,
-                    'commit_hash': commit_hash,
-                    'logs': ''.join(output),
-                    'exit_code': exit_code,
-                }
+                context
             )
     else:
         # Failed
@@ -156,14 +159,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
                 emails,
                 'Test failed for repo: {}, commit: {}'.format(repo_full_name, commit_hash),
                 'test_failure',
-                {
-                    'task_id': task_id,
-                    'repo_full_name': repo_full_name,
-                    'repo_name': repo_name,
-                    'commit_hash': commit_hash,
-                    'logs': ''.join(output),
-                    'exit_code': exit_code,
-                }
+                context
             )
 
     # Cleanup
