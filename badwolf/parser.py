@@ -24,6 +24,13 @@ def parse_configuration(path):
     after_success = _get_list(conf.get('after_success', []))
     after_failure = _get_list(conf.get('after_failure', []))
     notification = conf.get('notification', {})
+    if not isinstance(notification, dict):
+        notification = {
+            'email': [],
+        }
+    else:
+        notification['email'] = _get_list(notification.get('email', []))
+
     config = {
         'script': script,
         'dockerfile': dockerfile,
