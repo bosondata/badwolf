@@ -39,6 +39,14 @@ def shell():
         'app': app,
     }
 
+    # Try ptpython
+    try:
+        from ptpython.ipython import embed
+        embed(user_ns=context, vi_mode=True)
+        return
+    except ImportError:
+        pass
+
     # Try bpython
     try:
         from bpython import embed
