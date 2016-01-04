@@ -48,7 +48,12 @@ def send_mail(recipients, subject, template, context):
 
 
 @async_task
-def run_test(repo_full_name, git_clone_url, commit_hash):
+def run_test(repo_full_name, git_clone_url, commit_hash, payload):
+    latest_change = payload['push']['changes'][0]
+    if not latest_change['new'] or latest_change['new']['type'] != 'branch':
+        return
+
+    branch = latest_change['new']['name']
     task_id = str(uuid.uuid4())
     repo_name = repo_full_name.split('/')[-1]
     clone_path = os.path.join(
@@ -69,6 +74,10 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
         return
 
     project_conf = parse_configuration(conf_file)
+    if project_conf['branch'] and branch not in project_conf:
+        logger.info('Ignore tests since branch %s test is not enabled.', branch)
+        return
+
     dockerfile = os.path.join(clone_path, project_conf['dockerfile'])
     if not os.path.exists(dockerfile):
         logger.warning('No Dockerfile found for repo: %s', repo_full_name)
