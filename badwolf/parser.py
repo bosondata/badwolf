@@ -23,10 +23,12 @@ def parse_configuration(path):
     dockerfile = conf.get('dockerfile', 'Dockerfile')
     after_success = _get_list(conf.get('after_success', []))
     after_failure = _get_list(conf.get('after_failure', []))
+    notification = conf.get('notification', {})
     config = {
         'script': script,
         'dockerfile': dockerfile,
         'after_success': after_success,
         'after_failure': after_failure,
+        'notification': notification,
     }
     return config
