@@ -12,6 +12,7 @@ def create_app(config=None):
     app = _create_app(config)
 
     register_extensions(app)
+    register_filters(app)
     register_blueprints(app)
     register_error_handlers(app)
     return app
