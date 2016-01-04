@@ -8,3 +8,4 @@ raven>=5.9.2
 blinker>=1.4
 pyyaml>=3.11
 futures>=3.0.3
+flask-mail>=0.9.1
