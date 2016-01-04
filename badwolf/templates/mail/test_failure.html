@@ -169,7 +169,7 @@ ol li {
             <p>Task ID: {{ task_id }}</p>
             <p>Exit code: {{ exit_code }}</p>
             <h2>Logs</h2>
-            <p>{{ logs }}</p>
+            {{ logs|nl2br }}
           </td>
         </tr>
       </table>
