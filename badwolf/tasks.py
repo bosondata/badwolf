@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
 import uuid
+import time
 import atexit
 import shutil
 import logging
@@ -49,6 +50,7 @@ def send_mail(recipients, subject, template, context):
 
 @async_task
 def run_test(repo_full_name, git_clone_url, commit_hash, payload):
+    start_time = time.time()
     latest_change = payload['push']['changes'][0]
     if not latest_change['new'] or latest_change['new']['type'] != 'branch':
         return
@@ -126,6 +128,8 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
 
     docker.start(container_id)
     exit_code = docker.wait(container_id)
+    end_time = time.time()
+
     output = list(docker.logs(container_id))
     logger.info('%s', ''.join(output))
 
@@ -140,6 +144,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         'exit_code': exit_code,
         'branch': branch,
         'scripts': script,
+        'elapsed_time': int(end_time - start_time),
     }
     if exit_code == 0:
         # Success
