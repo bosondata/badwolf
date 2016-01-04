@@ -50,9 +50,15 @@ def handle_repo_push(payload):
     repo = payload['repository']
     scm = repo['scm']
     if scm.lower() != 'git':
+        logger.info('Unsupported version system: %s', scm)
         return
 
     commit_hash = changes[0]['commits'][0]['hash']
+    commit_message = changes[0]['commits'][0]['message']
+    if 'ci skip' in commit_message.lower():
+        logger.info('ci skip found, ignore tests.')
+        return
+
     repo_name = repo['full_name']
     git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
     run_test.delay(repo_name, git_clone_url, commit_hash, payload)
