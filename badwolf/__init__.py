@@ -46,3 +46,12 @@ def register_filters(app):
         if eval_ctx.autoescape:
             result = Markup(result)
         return result
+
+    @app.template_filter()
+    @evalcontextfilter
+    def blankspace2nbsp(eval_ctx, value):
+        result = value.replace(' ', Markup('&nbsp;'))
+        result = result.replace('\t', Markup('&nbsp;&nbsp;&nbsp;&nbsp;'))
+        if eval_ctx.autoescape:
+            result = Markup(result)
+        return result
