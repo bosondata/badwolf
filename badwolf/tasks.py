@@ -38,6 +38,7 @@ def async_task(f):
 
 @async_task
 def send_mail(recipients, subject, template, context):
+    logger.info('Sending email to %s', recipients)
     html = render_template('mail/' + template + '.html', **context)
     mail.send_message(
         subject=subject,
@@ -112,7 +113,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash):
     logger.info('%s', ''.join(output))
 
     notification = project_conf['notification']
-    emails = notification.get('emails')
+    emails = notification['email']
     if exit_code == 0:
         # Success
         logger.info('Test succeed for repo: %s', repo_full_name)
