@@ -12,6 +12,11 @@ def create_app(config=None):
     # Load default configuration
     app.config.from_object('badwolf.default_settings')
 
+    # Load configuration from ~/.badwolf.conf.py
+    user_conf = os.path.expanduser('~/.badwolf.conf.py')
+    if os.path.isfile(user_conf):
+        app.config.from_pyfile(user_conf)
+
     # Load environment configuration
     if 'BADWOLF_CONF' in os.environ:
         app.config.from_envvar('BADWOLF_CONF')
