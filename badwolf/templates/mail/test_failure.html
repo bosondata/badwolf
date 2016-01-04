@@ -169,7 +169,9 @@ ol li {
             <p>Task ID: {{ task_id }}</p>
             <p>Exit code: {{ exit_code }}</p>
             <h2>Logs</h2>
-            {{ logs|nl2br|safe }}
+            {% autoescape false %}
+                {{ logs|nl2br }}
+            {% endautoescape %}
           </td>
         </tr>
       </table>
