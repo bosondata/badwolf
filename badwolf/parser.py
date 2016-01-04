@@ -24,6 +24,7 @@ def parse_configuration(path):
     after_success = _get_list(conf.get('after_success', []))
     after_failure = _get_list(conf.get('after_failure', []))
     notification = conf.get('notification', {})
+    branch = set(_get_list(conf.get('branch', [])))
     if not isinstance(notification, dict):
         notification = {
             'email': [],
@@ -37,5 +38,6 @@ def parse_configuration(path):
         'after_success': after_success,
         'after_failure': after_failure,
         'notification': notification,
+        'branch': branch,
     }
     return config
