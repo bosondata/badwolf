@@ -161,10 +161,17 @@ ol li {
           <td>
             <h1>Test failed for repo: {{ repo_full_name }}</h1>
             <h2>Information</h2>
-            <p>Repo: {{ repo_full_name }}</p>
+            <p>Repository: {{ repo_full_name }}</p>
+            <p>Branch: {{ branch }}</p>
             <p>Commit: {{ commit_hash }}</p>
             <p>Task ID: {{ task_id }}</p>
             <p>Exit code: {{ exit_code }}</p>
+            <h2>Test script(s)</h2>
+            <ul>
+            {% for script in scripts %}
+                <li>{{ script }}</li>
+            {% endfor %}
+            </ul>
             <h2>Logs</h2>
             {{ logs|nl2br|blankspace2nbsp }}
           </td>
