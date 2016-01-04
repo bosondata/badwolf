@@ -71,16 +71,29 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     conf_file = os.path.join(clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
     if not os.path.exists(conf_file):
         logger.warning('No project configuration file found for repo: %s', repo_full_name)
+        shutil.rmtree(os.path.dirname(clone_path))
         return
 
     project_conf = parse_configuration(conf_file)
-    if project_conf['branch'] and branch not in project_conf:
-        logger.info('Ignore tests since branch %s test is not enabled.', branch)
+    if project_conf['branch'] and branch not in project_conf['branch']:
+        logger.info(
+            'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
+            branch,
+            project_conf['branch']
+        )
+        shutil.rmtree(os.path.dirname(clone_path))
         return
 
     dockerfile = os.path.join(clone_path, project_conf['dockerfile'])
     if not os.path.exists(dockerfile):
         logger.warning('No Dockerfile found for repo: %s', repo_full_name)
+        shutil.rmtree(os.path.dirname(clone_path))
+        return
+
+    script = project_conf['script']
+    if not script:
+        logger.warning('No script to run')
+        shutil.rmtree(os.path.dirname(clone_path))
         return
 
     docker = Client()
@@ -91,11 +104,6 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         res = docker.build(clone_path, tag=docker_image_name, rm=True)
         for line in res:
             logger.info('`docker build` : %s', line)
-
-    script = project_conf['script']
-    if not script:
-        logger.warning('No script to run')
-        return
 
     command = ';'.join(script)
     command = "/bin/sh -c '{}'".format(command)
