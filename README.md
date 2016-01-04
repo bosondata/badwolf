@@ -15,6 +15,14 @@ $ pip install -r dev-requirements.txt
 $ python setup.py develop
 ```
 
+## Configuration
+
+There are several ways to configure badwolf, settings loading by order below:
+
+1. Try to load from ``~/.badwolf.conf.py``
+2. Try to use ``BADWOLF_CONF`` envirionment variable to set configuration file path and load it
+3. Dict or a file path passed to ``badwolf.create_app`` function
+
 ## Run server for development
 
 ```bash
