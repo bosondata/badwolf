@@ -2,5 +2,6 @@ script:
   - pip install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com -r dev-requirements.txt
   - python setup.py develop
   - py.test --cov=badwolf -v
+
 notification:
   email: lusheng.lv@bosondata.com.cn
