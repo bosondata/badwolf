@@ -15,7 +15,7 @@ from docker.errors import APIError, DockerException
 from flask import current_app, render_template
 
 from badwolf.parser import parse_configuration
-from badwolf.extensions import mail
+from badwolf.extensions import mail, sentry
 
 
 logger = logging.getLogger(__name__)
@@ -31,9 +31,17 @@ def _shutdown_executor():
         pass
 
 
+def _run_task(_task_func, *args, **kwargs):
+    try:
+        _task_func(*args, **kwargs)
+    except Exception:
+        logger.exception('Error running task func: %s', _task_func)
+        sentry.captureException()
+
+
 def async_task(f):
     def delay(*args, **kwargs):
-        return executor.submit(f, *args, **kwargs)
+        return executor.submit(_run_task, f, *args, **kwargs)
     f.delay = delay
     return f
 
@@ -74,7 +82,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     conf_file = os.path.join(clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
     if not os.path.exists(conf_file):
         logger.warning('No project configuration file found for repo: %s', repo_full_name)
-        shutil.rmtree(os.path.dirname(clone_path))
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
         return
 
     project_conf = parse_configuration(conf_file)
@@ -84,19 +92,19 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
             branch,
             project_conf['branch']
         )
-        shutil.rmtree(os.path.dirname(clone_path))
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
         return
 
     dockerfile = os.path.join(clone_path, project_conf['dockerfile'])
     if not os.path.exists(dockerfile):
         logger.warning('No Dockerfile: %s found for repo: %s', dockerfile, repo_full_name)
-        shutil.rmtree(os.path.dirname(clone_path))
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
         return
 
     script = project_conf['script']
     if not script:
         logger.warning('No script to run')
-        shutil.rmtree(os.path.dirname(clone_path))
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
         return
 
     docker = Client(base_url=current_app.config['DOCKER_HOST'])
@@ -171,4 +179,4 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
             )
 
     # Cleanup
-    shutil.rmtree(os.path.dirname(clone_path))
+    shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
