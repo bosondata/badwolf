@@ -98,8 +98,8 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         shutil.rmtree(os.path.dirname(clone_path))
         return
 
-    docker = Client()
-    docker_image_name = repo_name
+    docker = Client(base_url=current_app.config['DOCKER_HOST'])
+    docker_image_name = repo_full_name.replace('/', '-')
     docker_image = docker.images(docker_image_name)
     if not docker_image:
         logger.info('Running `docker build`...')
@@ -107,10 +107,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         for line in res:
             logger.info('`docker build` : %s', line)
 
-    command = ';'.join(script)
-    command = "/bin/sh -c '{}'".format(command)
-    logger.info('Running test script: %s', command)
-
+    command = "/bin/sh -c 'badwolf-run'"
     container = docker.create_container(
         docker_image_name,
         command=command,

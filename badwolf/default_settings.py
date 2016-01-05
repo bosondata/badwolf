@@ -13,6 +13,9 @@ SECRET_KEY = ''
 # Sentry
 SENTRY_DSN = ''
 
+# Docker
+DOCKER_HOST = 'unix://var/run/docker.sock'
+
 # Logging
 LOGGING = {
     'version': 1,
