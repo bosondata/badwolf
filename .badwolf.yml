@@ -4,4 +4,4 @@ script:
   - py.test --cov=badwolf -v
 
 notification:
-  email: lusheng.lv@bosondata.com.cn
+  email: tech@bosondata.com.cn
