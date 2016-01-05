@@ -107,7 +107,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         for line in res:
             logger.info('`docker build` : %s', line)
 
-    command = "badwolf-run"
+    command = '/bin/sh -c badwolf-run'
     container = docker.create_container(
         docker_image_name,
         command=command,
