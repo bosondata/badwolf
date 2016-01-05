@@ -11,6 +11,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 import git
 from docker import Client
+from docker.errors import APIError, DockerException
 from flask import current_app, render_template
 
 from badwolf.parser import parse_configuration
@@ -88,7 +89,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
 
     dockerfile = os.path.join(clone_path, project_conf['dockerfile'])
     if not os.path.exists(dockerfile):
-        logger.warning('No Dockerfile found for repo: %s', repo_full_name)
+        logger.warning('No Dockerfile: %s found for repo: %s', dockerfile, repo_full_name)
         shutil.rmtree(os.path.dirname(clone_path))
         return
 
@@ -123,12 +124,17 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     container_id = container['Id']
     logger.info('Created container %s from image %s', container_id, docker_image_name)
 
-    docker.start(container_id)
-    exit_code = docker.wait(container_id)
-    end_time = time.time()
+    try:
+        docker.start(container_id)
+        exit_code = docker.wait(container_id)
+        end_time = time.time()
 
-    output = list(docker.logs(container_id))
-    logger.info('%s', ''.join(output))
+        output = list(docker.logs(container_id))
+        logger.info('%s', ''.join(output))
+    except (APIError, DockerException):
+        logger.exception('Docker error')
+    finally:
+        docker.remove_container(container_id, force=True)
 
     notification = project_conf['notification']
     emails = notification['email']
@@ -165,5 +171,4 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
             )
 
     # Cleanup
-    docker.remove_container(container_id, force=True)
     shutil.rmtree(os.path.dirname(clone_path))
