@@ -2,6 +2,13 @@
 
 [What is badwolf](https://en.wikipedia.org/wiki/Bad_Wolf)
 
+Features:
+
+1. Run tests in Docker container
+2. Supports multiple test scripts
+3. Supports multiple after success/failure scripts
+4. Supports E-mail notification
+
 ## Installation
 
 ```bash
@@ -57,3 +64,6 @@ Fields:
 2. ``script``: Test scipt(s), ``str`` or ``list``
 3. ``after_success``: command(s) to run after success, ``str`` or ``list``
 3. ``after_failure``: command(s) to run after failure, ``str`` or ``list``
+
+``Dockerfile`` should set ``FROM`` as ``messense/badwolf-test-runner`` in order to use [badwolf-runner](https://bitbucket.org/deepanalyzer/badwolf-runner/overview) to run tests.
+But surely you can build your own docker image and use it as long as you put ``badwolf-runner`` binary in its executable path.
