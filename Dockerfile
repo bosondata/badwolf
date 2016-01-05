@@ -1,2 +1,2 @@
-FROM python:2.7
+FROM messense/badwolf-test-runner
 MAINTAINER Messense Lv "messense@icloud.com"
