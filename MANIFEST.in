@@ -2,3 +2,4 @@ include README.md
 include requirements.txt
 
 recursive-include badwolf/templates *
+recursive-exclude * .DS_Store
