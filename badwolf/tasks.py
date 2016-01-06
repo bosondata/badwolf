@@ -138,7 +138,6 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         end_time = time.time()
 
         output = list(docker.logs(container_id))
-        logger.info('%s', ''.join(output))
     except (APIError, DockerException):
         logger.exception('Docker error')
     finally:
