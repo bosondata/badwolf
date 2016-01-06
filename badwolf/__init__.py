@@ -14,9 +14,15 @@ def create_app(config=None):
 
 
 def register_blueprints(app):
-    import badwolf.webhook.views
+    def register(bp):
+        prefix = '/{}'.format(bp.name)
+        app.register_blueprint(bp, url_prefix=prefix)
 
-    app.register_blueprint(badwolf.webhook.views.blueprint)
+    import badwolf.webhook.views
+    import badwolf.oauth.views
+
+    register(badwolf.webhook.views.blueprint)
+    register(badwolf.oauth.views.blueprint)
 
 
 def register_error_handlers(app):

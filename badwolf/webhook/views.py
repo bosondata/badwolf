@@ -20,7 +20,7 @@ def register_event_handler(event_key):
     return register
 
 
-@blueprint.route('/webhook/push', methods=['POST'])
+@blueprint.route('/push', methods=['POST'])
 def webhook_push():
     event_key = request.headers.get('X-Event-Key')
     if not event_key:

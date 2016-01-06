@@ -70,7 +70,7 @@ Vagrant.configure(2) do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get update
-    sudo apt-get install -y python-dev python-software-properties python-setuptools python-pip git
+    sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git
     sudo pip install ipython ipdb virtualenv
     sudo pip install -U -r /vagrant/dev-requirements.txt
     cd /vagrant && sudo python setup.py develop && cd -

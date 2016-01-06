@@ -10,4 +10,7 @@ MAIL_PASSWORD = "bosondata2014"
 MAIL_DEFAULT_SENDER = ('badwolf', 'no-reply@bosondata.com.cn')
 MAIL_MAX_EMAILS = None
 
+BITBUCKET_OAUTH_KEY = 'h7VxuqWtn3hDUScfVv'
+BITBUCKET_OAUTH_SECRET = 'EqPPbynYwbujwsLyn2CK2q5G5GZqk3V9'
+
 # SENTRY_DSN = 'http://0eba978d7ab141d8a805ed83242f4c26:98810b9994664ceda91fa6f28619ca44@sentry.bosondata.net/16'
