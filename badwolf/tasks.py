@@ -112,7 +112,12 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     docker_image = docker.images(docker_image_name)
     if not docker_image:
         logger.info('Running `docker build`...')
-        res = docker.build(clone_path, tag=docker_image_name, rm=True)
+        res = docker.build(
+            clone_path,
+            tag=docker_image_name,
+            rm=True,
+            dockerfile=project_conf['dockerfile'],
+        )
         for line in res:
             logger.info('`docker build` : %s', line)
 
