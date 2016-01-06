@@ -73,5 +73,6 @@ Vagrant.configure(2) do |config|
     sudo apt-get install -y python-dev python-software-properties python-setuptools python-pip git
     sudo pip install ipython ipdb virtualenv
     sudo pip install -U -r /vagrant/dev-requirements.txt
+    cd /vagrant && sudo python setup.py develop && cd -
   SHELL
 end
