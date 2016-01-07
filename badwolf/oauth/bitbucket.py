@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import git
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -20,6 +21,9 @@ class APIDispatcher(object):
     def dispatch(self, method, url, **kwargs):
         raise NotImplementedError()
 
+    def clone_repository(self, full_name, path):
+        raise NotImplementedError()
+
     @property
     def session(self):
         return self._session
@@ -38,6 +42,14 @@ class BasicAuthDispatcher(APIDispatcher):
             url,
             **kwargs
         )
+
+    def clone_repository(self, full_name, path):
+        clone_url = 'https://{username}:{password}@bitbucket.org/{name}.git'.format(
+            username=self._username,
+            password=self._password,
+            name=full_name
+        )
+        return git.Git().clone(clone_url, path)
 
 
 class OAuth2Dispatcher(APIDispatcher):
@@ -115,8 +127,6 @@ class OAuth2Dispatcher(APIDispatcher):
         return self._session.request(method, url, **kwargs)
 
     def clone_repository(self, full_name, path):
-        import git
-
         clone_url = 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
             access_token=self._access_token,
             name=full_name
@@ -163,6 +173,5 @@ class Bitbucket(object):
     def delete(self, url, **kwargs):
         return self.request('DELETE', url, **kwargs)
 
-    @property
-    def dispatcher(self):
-        return self._dispatcher
+    def clone(self, repo_full_name, clone_path):
+        return self._dispatcher.clone_repository(repo_full_name, clone_path)
