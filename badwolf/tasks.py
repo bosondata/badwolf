@@ -75,6 +75,33 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         repo_name
     )
 
+    logger.info('Cloning %s to %s...', git_clone_url, clone_path)
+    git.Git().clone(git_clone_url, clone_path)
+    logger.info('Checkout commit %s', commit_hash)
+    git.Git(clone_path).checkout(commit_hash)
+
+    conf_file = os.path.join(clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
+    if not os.path.exists(conf_file):
+        logger.warning('No project configuration file found for repo: %s', repo_full_name)
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        return
+
+    project_conf = parse_configuration(conf_file)
+    if project_conf['branch'] and branch not in project_conf['branch']:
+        logger.info(
+            'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
+            branch,
+            project_conf['branch']
+        )
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        return
+
+    script = project_conf['script']
+    if not script:
+        logger.warning('No script to run')
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        return
+
     bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
         current_app.config['BITBUCKET_USERNAME'],
         current_app.config['BITBUCKET_PASSWORD']
@@ -86,49 +113,11 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         'BADWOLF-{}'.format(task_id[:10]),
         'http://badwolf.bosondata.net',
     )
+
     try:
         build_status.create()
     except bitbucket.BitbucketAPIError:
         logger.exception('Error calling Bitbucket API')
-
-    logger.info('Cloning %s to %s...', git_clone_url, clone_path)
-    git.Git().clone(git_clone_url, clone_path)
-    logger.info('Checkout commit %s', commit_hash)
-    git.Git(clone_path).checkout(commit_hash)
-
-    conf_file = os.path.join(clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
-    if not os.path.exists(conf_file):
-        logger.warning('No project configuration file found for repo: %s', repo_full_name)
-        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
-        try:
-            build_status.update('FAILED')
-        except bitbucket.BitbucketAPIError:
-            logger.exception('Error calling Bitbucket API')
-        return
-
-    project_conf = parse_configuration(conf_file)
-    if project_conf['branch'] and branch not in project_conf['branch']:
-        logger.info(
-            'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
-            branch,
-            project_conf['branch']
-        )
-        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
-        try:
-            build_status.update('FAILED')
-        except bitbucket.BitbucketAPIError:
-            logger.exception('Error calling Bitbucket API')
-        return
-
-    script = project_conf['script']
-    if not script:
-        logger.warning('No script to run')
-        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
-        try:
-            build_status.update('FAILED')
-        except bitbucket.BitbucketAPIError:
-            logger.exception('Error calling Bitbucket API')
-        return
 
     docker = Client(base_url=current_app.config['DOCKER_HOST'])
     docker_image_name = repo_full_name.replace('/', '-')
