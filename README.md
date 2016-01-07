@@ -54,6 +54,20 @@ Open interactive shell when test failed:
 $ py.test -v -s --pdb
 ```
 
+## Packaging and release
+
+Build a distribution:
+
+```bash
+$ python setup.py release
+```
+
+Upload package to PyPI cloud:
+
+```bash
+twine upload -r bosondata dist/*
+```
+
 ## Test configuration file
 
 Configuration file use YAML format, filename should be ``.badwolf.yml``
