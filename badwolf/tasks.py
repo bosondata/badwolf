@@ -155,6 +155,7 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         'repo_full_name': repo_full_name,
         'repo_name': repo_name,
         'commit_hash': commit_hash,
+        'commit_message': latest_change['commits'][0]['message'],
         'logs': ''.join(output),
         'exit_code': exit_code,
         'branch': branch,

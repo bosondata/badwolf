@@ -110,6 +110,7 @@ h3 {
   font-size: 22px;
 }
 p, 
+pre,
 ul, 
 ol {
   font-size: 14px;
@@ -161,9 +162,10 @@ ol li {
           <td>
             <h1>Test succeed for repo: {{ repo_full_name }}</h1>
             <h2>Information</h2>
-            <p>Repository: {{ repo_full_name }}</p>
-            <p>Branch: {{ branch }}</p>
-            <p>Commit: {{ commit_hash }}</p>
+            <p>Repository: <a href="https://bitbucket.org/{{ repo_full_name }}">{{ repo_full_name }}</a></p>
+            <p>Branch: <a href="https://bitbucket.org/{{ repo_full_name }}/src?at={{ branch }}">{{ branch }}</a></p>
+            <p>Commit: <a href="https://bitbucket.org/{{ repo_full_name }}/commits/{{ commit_hash }}">{{ commit_hash }}</a></p>
+            {% if commit_message %}<p>Commit message: <a href="https://bitbucket.org/{{ repo_full_name }}/commits/{{ commit_hash }}">{{ commit_message }}</a></p>{% endif %}
             <p>Task ID: {{ task_id }}</p>
             <p>Elapsed time: {{ elapsed_time }} seconds</p>
             <h2>Test script(s)</h2>

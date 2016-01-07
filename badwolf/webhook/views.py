@@ -61,7 +61,13 @@ def run_test_at_commit():
                     'new': {
                         'type': 'branch',
                         'name': 'master',
-                    }
+                    },
+                    'commits': [
+                        {
+                            'hash': commit_hash,
+                            'message': '',
+                        }
+                    ]
                 }
             ],
         }
