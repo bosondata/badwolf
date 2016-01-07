@@ -13,15 +13,40 @@ class BitbucketAPIError(requests.RequestException):
         self.description = description
 
 
-class Bitbucket(object):
+class APIDispatcher(object):
+    def __init__(self):
+        self._session = requests.Session()
 
-    def __init__(self, oauth_key, oauth_secret=None):
+    def dispatch(self, method, url, **kwargs):
+        raise NotImplementedError()
+
+    @property
+    def session(self):
+        return self._session
+
+
+class BasicAuthDispatcher(APIDispatcher):
+    def __init__(self, username, password):
+        super(BasicAuthDispatcher, self).__init__()
+        self._username = username
+        self._password = password
+
+    def dispatch(self, method, url, **kwargs):
+        kwargs['auth'] = HTTPBasicAuth(self._username, self._password)
+        return self._session.request(
+            method,
+            url,
+            **kwargs
+        )
+
+
+class OAuth2Dispatcher(APIDispatcher):
+    def __init__(self, oauth_key, oauth_secret):
+        super(OAuth2Dispatcher, self).__init__()
         self._oauth_key = oauth_key
         self._oauth_secret = oauth_secret
         self._access_token = None
         self._refresh_token = None
-        self._expires_in = 3600
-        self._session = requests.Session()
 
     def get_authorization_url(self, grant_type='code'):
         return 'https://bitbucket.org/site/oauth2/authorize?client_id={key}&response_type={type_}'.format(
@@ -52,7 +77,6 @@ class Bitbucket(object):
         data = res.json()
         self._access_token = data['access_token']
         self._refresh_token = data['refresh_token']
-        self._expires_in = data['expires_in']
         self._token_type = data['token_type']
         return data
 
@@ -80,19 +104,35 @@ class Bitbucket(object):
         data = res.json()
         self._access_token = data['access_token']
         self._refresh_token = data['refresh_token']
-        self._expires_in = data['expires_in']
         self._token_type = data['token_type']
         return data
+
+    def dispatch(self, method, url, **kwargs):
+        headers = {
+            'Authorization': 'Bearer {}'.format(self._access_token),
+        }
+        kwargs['headers'] = headers
+        return self._session.request(method, url, **kwargs)
+
+    def clone_repository(self, full_name, path):
+        import git
+
+        clone_url = 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
+            access_token=self._access_token,
+            name=full_name
+        )
+        return git.Git().clone(clone_url, path)
+
+
+class Bitbucket(object):
+    def __init__(self, dispatcher):
+        self._dispatcher = dispatcher
 
     def request(self, method, url, **kwargs):
         if not url.startswith('https://'):
             url = 'https://api.bitbucket.org/{}'.format(url)
 
-        headers = {
-            'Authorization': 'Bearer {}'.format(self._access_token),
-        }
-        kwargs['headers'] = headers
-        res = self._session.request(method, url, **kwargs)
+        res = self._dispatcher.dispatch(method, url, **kwargs)
         try:
             res.raise_for_status()
         except requests.RequestException as reqe:
@@ -123,11 +163,6 @@ class Bitbucket(object):
     def delete(self, url, **kwargs):
         return self.request('DELETE', url, **kwargs)
 
-    def clone_repository(self, full_name, path):
-        import git
-
-        clone_url = 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
-            access_token=self._access_token,
-            name=full_name
-        )
-        return git.Git().clone(clone_url, path)
+    @property
+    def dispatcher(self):
+        return self._dispatcher
