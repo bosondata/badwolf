@@ -13,6 +13,20 @@ class BitbucketAPIError(requests.RequestException):
         self.error = error
         self.description = description
 
+    def __repr__(self):
+        return "BitbucketAPIError({}, '{}', '{}')".format(
+            self.code,
+            self.error,
+            self.description
+        )
+
+    def __str__(self):
+        return 'code: {}, error: {}, description: {}'.format(
+            self.code,
+            self.error,
+            self.description
+        )
+
 
 class APIDispatcher(object):
     def __init__(self):
@@ -175,3 +189,49 @@ class Bitbucket(object):
 
     def clone(self, repo_full_name, clone_path):
         return self._dispatcher.clone_repository(repo_full_name, clone_path)
+
+
+class BuildStatus(object):
+    def __init__(self, client, repo, revision, key, url):
+        self.client = client
+        owner, slug = repo.split('/')
+        self.owner = owner
+        self.slug = slug
+        self.revision = revision
+        self.key = key
+        self.url = url
+
+    def create(self, state='INPROGRESS', name=None, description=None):
+        endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build'.format(
+            owner=self.owner,
+            slug=self.slug,
+            revision=self.revision
+        )
+        return self.client.post(
+            endpoint,
+            data={
+                'key': self.key,
+                'state': state,
+                'url': self.url,
+                'name': name,
+                'description': description,
+            }
+        )
+
+    def update(self, state, name=None, description=None):
+        endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build/{key}'.format(
+            owner=self.owner,
+            slug=self.slug,
+            revision=self.revision,
+            key=self.key,
+        )
+        res = self.client.put(
+            endpoint,
+            data={
+                'state': state,
+                'url': self.url,
+                'name': name,
+                'description': description,
+            }
+        )
+        return res

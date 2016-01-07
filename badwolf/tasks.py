@@ -14,6 +14,7 @@ from docker import Client
 from docker.errors import APIError, DockerException
 from flask import current_app, render_template
 
+import badwolf.bitbucket as bitbucket
 from badwolf.parser import parse_configuration
 from badwolf.extensions import mail, sentry
 
@@ -74,6 +75,22 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         repo_name
     )
 
+    bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
+        current_app.config['BITBUCKET_USERNAME'],
+        current_app.config['BITBUCKET_PASSWORD']
+    ))
+    build_status = bitbucket.BuildStatus(
+        bitbucket_client,
+        repo_full_name,
+        commit_hash,
+        'BADWOLF-{}'.format(task_id[:10]),
+        'http://badwolf.bosondata.net',
+    )
+    try:
+        build_status.create()
+    except bitbucket.BitbucketAPIError:
+        logger.exception('Error calling Bitbucket API')
+
     logger.info('Cloning %s to %s...', git_clone_url, clone_path)
     git.Git().clone(git_clone_url, clone_path)
     logger.info('Checkout commit %s', commit_hash)
@@ -83,6 +100,10 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     if not os.path.exists(conf_file):
         logger.warning('No project configuration file found for repo: %s', repo_full_name)
         shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        try:
+            build_status.update('FAILED')
+        except bitbucket.BitbucketAPIError:
+            logger.exception('Error calling Bitbucket API')
         return
 
     project_conf = parse_configuration(conf_file)
@@ -93,12 +114,20 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
             project_conf['branch']
         )
         shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        try:
+            build_status.update('FAILED')
+        except bitbucket.BitbucketAPIError:
+            logger.exception('Error calling Bitbucket API')
         return
 
     script = project_conf['script']
     if not script:
         logger.warning('No script to run')
         shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        try:
+            build_status.update('FAILED')
+        except bitbucket.BitbucketAPIError:
+            logger.exception('Error calling Bitbucket API')
         return
 
     docker = Client(base_url=current_app.config['DOCKER_HOST'])
@@ -109,6 +138,10 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         if not os.path.exists(dockerfile):
             logger.warning('No Dockerfile: %s found for repo: %s', dockerfile, repo_full_name)
             shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+            try:
+                build_status.update('FAILED')
+            except bitbucket.BitbucketAPIError:
+                logger.exception('Error calling Bitbucket API')
             return
 
         logger.info('Running `docker build`...')
@@ -145,6 +178,12 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         output = list(docker.logs(container_id))
     except (APIError, DockerException):
         logger.exception('Docker error')
+        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+        try:
+            build_status.update('FAILED')
+        except bitbucket.BitbucketAPIError:
+            logger.exception('Error calling Bitbucket API')
+        return
     finally:
         docker.remove_container(container_id, force=True)
 
@@ -182,6 +221,11 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
                 'test_failure',
                 context
             )
+
+    try:
+        build_status.update('SUCCESSFUL' if exit_code == 0 else 'FAILED')
+    except bitbucket.BitbucketAPIError:
+        logger.exception('Error calling Bitbucket API')
 
     # Cleanup
     shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)

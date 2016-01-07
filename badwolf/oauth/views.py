@@ -4,7 +4,7 @@ import logging
 
 from flask import Blueprint, request, current_app, redirect, jsonify
 
-from badwolf.oauth.bitbucket import Bitbucket, BitbucketAPIError, OAuth2Dispatcher
+from badwolf.bitbucket import Bitbucket, BitbucketAPIError, OAuth2Dispatcher
 
 
 logger = logging.getLogger(__name__)
