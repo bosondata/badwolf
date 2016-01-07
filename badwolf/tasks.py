@@ -95,12 +95,6 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
         shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
         return
 
-    dockerfile = os.path.join(clone_path, project_conf['dockerfile'])
-    if not os.path.exists(dockerfile):
-        logger.warning('No Dockerfile: %s found for repo: %s', dockerfile, repo_full_name)
-        shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
-        return
-
     script = project_conf['script']
     if not script:
         logger.warning('No script to run')
@@ -111,6 +105,12 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     docker_image_name = repo_full_name.replace('/', '-')
     docker_image = docker.images(docker_image_name)
     if not docker_image:
+        dockerfile = os.path.join(clone_path, project_conf['dockerfile'])
+        if not os.path.exists(dockerfile):
+            logger.warning('No Dockerfile: %s found for repo: %s', dockerfile, repo_full_name)
+            shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
+            return
+
         logger.info('Running `docker build`...')
         res = docker.build(
             clone_path,
