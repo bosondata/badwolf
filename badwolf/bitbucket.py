@@ -219,19 +219,4 @@ class BuildStatus(object):
         )
 
     def update(self, state, name=None, description=None):
-        endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build/{key}'.format(
-            owner=self.owner,
-            slug=self.slug,
-            revision=self.revision,
-            key=self.key,
-        )
-        res = self.client.put(
-            endpoint,
-            data={
-                'state': state,
-                'url': self.url,
-                'name': name,
-                'description': description,
-            }
-        )
-        return res
+        return self.create(state, name, description)

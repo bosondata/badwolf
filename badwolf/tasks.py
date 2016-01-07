@@ -187,6 +187,11 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
     finally:
         docker.remove_container(container_id, force=True)
 
+    try:
+        build_status.update('SUCCESSFUL' if exit_code == 0 else 'FAILED')
+    except bitbucket.BitbucketAPIError:
+        logger.exception('Error calling Bitbucket API')
+
     notification = project_conf['notification']
     emails = notification['email']
     context = {
@@ -221,11 +226,6 @@ def run_test(repo_full_name, git_clone_url, commit_hash, payload):
                 'test_failure',
                 context
             )
-
-    try:
-        build_status.update('SUCCESSFUL' if exit_code == 0 else 'FAILED')
-    except bitbucket.BitbucketAPIError:
-        logger.exception('Error calling Bitbucket API')
 
     # Cleanup
     shutil.rmtree(os.path.dirname(clone_path), ignore_errors=True)
