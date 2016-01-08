@@ -201,7 +201,7 @@ class BuildStatus(object):
         self.key = key
         self.url = url
 
-    def create(self, state='INPROGRESS', name=None, description=None):
+    def update(self, state, name=None, description=None):
         endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build'.format(
             owner=self.owner,
             slug=self.slug,
@@ -217,6 +217,3 @@ class BuildStatus(object):
                 'description': description,
             }
         )
-
-    def update(self, state, name=None, description=None):
-        return self.create(state, name, description)

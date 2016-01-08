@@ -72,8 +72,10 @@ class TestRunner(object):
             shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
             return
 
+        self.update_build_status('INPROGRESS')
         docker_image_name = self.get_docker_image()
         if not docker_image_name:
+            self.update_build_status('FAILED')
             return
 
         exit_code, output = self.run_tests_in_container(docker_image_name)
@@ -166,10 +168,6 @@ class TestRunner(object):
                     self.repo_full_name
                 )
                 shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
-                try:
-                    self.build_status.update('FAILED')
-                except bitbucket.BitbucketAPIError:
-                    logger.exception('Error calling Bitbucket API')
                 return
 
             logger.info('Running `docker build`...')
