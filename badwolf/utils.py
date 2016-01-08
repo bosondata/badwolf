@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import six
 
 
-def to_text(value, encoding='utf-8'):
+def to_text(value, encoding='utf-8', errors='ignore'):
     """Convert value to unicode, default encoding is utf-8
 
     :param value: Value to be converted
@@ -14,5 +14,5 @@ def to_text(value, encoding='utf-8'):
     if isinstance(value, six.text_type):
         return value
     if isinstance(value, six.binary_type):
-        return value.decode(encoding)
+        return value.decode(encoding, errors)
     return six.text_type(value)
