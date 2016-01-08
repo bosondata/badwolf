@@ -14,7 +14,7 @@ from docker.errors import APIError, DockerException
 
 import badwolf.bitbucket as bitbucket
 from badwolf.utils import to_text
-from badwolf.parser import parse_configuration
+from badwolf.spec import Specification
 
 
 logger = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class TestRunner(object):
             'logs': ''.join(map(to_text, output)),
             'exit_code': exit_code,
             'branch': self.branch,
-            'scripts': self.project_conf['script'],
+            'scripts': self.spec.scripts,
             'elapsed_time': int(end_time - start_time),
         }
         self.send_notifications(context)
@@ -123,17 +123,16 @@ class TestRunner(object):
             )
             return False
 
-        self.project_conf = project_conf = parse_configuration(conf_file)
-        if project_conf['branch'] and self.branch not in project_conf['branch']:
+        self.spec = spec = Specification.parse_file(conf_file)
+        if spec.branch and self.branch not in spec.branch:
             logger.info(
                 'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
                 self.branch,
-                project_conf['branch']
+                spec.branch
             )
             return False
 
-        script = project_conf['script']
-        if not script:
+        if not spec.scripts:
             logger.warning('No script to run')
             return False
         return True
@@ -142,7 +141,7 @@ class TestRunner(object):
         docker_image_name = self.repo_full_name.replace('/', '-')
         docker_image = self.docker.images(docker_image_name)
         if not docker_image:
-            dockerfile = os.path.join(self.clone_path, self.project_conf['dockerfile'])
+            dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
             if not os.path.exists(dockerfile):
                 logger.warning(
                     'No Dockerfile: %s found for repo: %s',
@@ -161,7 +160,7 @@ class TestRunner(object):
                 self.clone_path,
                 tag=docker_image_name,
                 rm=True,
-                dockerfile=self.project_conf['dockerfile'],
+                dockerfile=self.spec.dockerfile,
             )
             for line in res:
                 logger.info('`docker build` : %s', line)
@@ -207,8 +206,8 @@ class TestRunner(object):
 
     def send_notifications(self, context):
         exit_code = context['exit_code']
-        notification = self.project_conf['notification']
-        emails = notification['email']
+        notification = self.spec.notification
+        emails = notification['emails']
         if not emails:
             return
 
