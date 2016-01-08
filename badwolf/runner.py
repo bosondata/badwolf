@@ -13,6 +13,7 @@ from docker import Client
 from docker.errors import APIError, DockerException
 
 import badwolf.bitbucket as bitbucket
+from badwolf.utils import to_text
 from badwolf.parser import parse_configuration
 
 
@@ -86,7 +87,7 @@ class TestRunner(object):
             'repo_name': self.repo_name,
             'commit_hash': self.commit_hash,
             'commit_message': latest_change['commits'][0]['message'],
-            'logs': ''.join(output),
+            'logs': ''.join(map(to_text, output)),
             'exit_code': exit_code,
             'branch': self.branch,
             'scripts': self.project_conf['script'],
