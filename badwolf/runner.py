@@ -20,15 +20,25 @@ from badwolf.spec import Specification
 logger = logging.getLogger(__name__)
 
 
+class TestContext(object):
+    """Test context"""
+    def __init__(self, repository, clone_url, actor, type, message, source, target=None):
+        self.repository = repository
+        self.clone_url = clone_url
+        self.actor = actor
+        self.type = type
+        self.message = message
+        self.source = source
+        self.target = target
+
+
 class TestRunner(object):
     """Badwolf test runner"""
 
-    def __init__(self, repo_full_name, git_clone_url, commit_hash, payload):
-        self.repo_full_name = repo_full_name
-        self.repo_name = repo_full_name.split('/')[-1]
-        self.git_clone_url = git_clone_url
-        self.commit_hash = commit_hash
-        self.payload = payload
+    def __init__(self, context):
+        self.context = context
+        self.repo_full_name = context.repository
+        self.repo_name = context.repository.split('/')[-1]
         self.task_id = str(uuid.uuid4())
 
         bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
@@ -37,8 +47,8 @@ class TestRunner(object):
         ))
         self.build_status = bitbucket.BuildStatus(
             bitbucket_client,
-            repo_full_name,
-            commit_hash,
+            context.repository,
+            context.source['commit']['hash'],
             'BADWOLF-{}'.format(self.task_id[:10]),
             'http://badwolf.bosondata.net',
         )
@@ -50,12 +60,14 @@ class TestRunner(object):
 
     def run(self):
         start_time = time.time()
-        latest_change = self.validate_payload()
-        if not latest_change:
+        self.branch = self.context.source['branch']['name']
+
+        try:
+            self.clone_repository()
+        except git.GitCommandError:
+            logger.exception('Git command error')
             return
 
-        self.branch = latest_change['new']['name']
-        self.clone_repository()
         if not self.validate_settings():
             shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
             return
@@ -82,11 +94,8 @@ class TestRunner(object):
         end_time = time.time()
 
         context = {
+            'context': self.context,
             'task_id': self.task_id,
-            'repo_full_name': self.repo_full_name,
-            'repo_name': self.repo_name,
-            'commit_hash': self.commit_hash,
-            'commit_message': latest_change['commits'][0]['message'],
             'logs': ''.join(map(to_text, output)),
             'exit_code': exit_code,
             'branch': self.branch,
@@ -94,12 +103,6 @@ class TestRunner(object):
             'elapsed_time': int(end_time - start_time),
         }
         self.send_notifications(context)
-
-    def validate_payload(self):
-        latest_change = self.payload['push']['changes'][0]
-        if not latest_change['new'] or latest_change['new']['type'] != 'branch':
-            return
-        return latest_change
 
     def clone_repository(self):
         self.clone_path = os.path.join(
@@ -109,10 +112,24 @@ class TestRunner(object):
             self.repo_name
         )
 
-        logger.info('Cloning %s to %s...', self.git_clone_url, self.clone_path)
-        git.Git().clone(self.git_clone_url, self.clone_path)
-        logger.info('Checkout commit %s', self.commit_hash)
-        git.Git(self.clone_path).checkout(self.commit_hash)
+        logger.info('Cloning %s to %s...', self.context.clone_url, self.clone_path)
+        git.Git().clone(self.context.clone_url, self.clone_path)
+
+        if self.context.target:
+            logger.info('Checkout branch %s', self.context.target['branch']['name'])
+            git.Git(self.clone_path).checkout(self.context.target['branch']['name'])
+
+            logger.info(
+                'Mergeing branch %s into %s',
+                self.context.source['branch']['name'],
+                self.context.target['branch']['name']
+            )
+            git.Git(self.clone_path).merge(
+                'origin/{}'.format(self.context.source['branch']['name'])
+            )
+        else:
+            logger.info('Checkout commit %s', self.context.source['commit']['hash'])
+            git.Git(self.clone_path).checkout(self.context.source['commit']['hash'])
 
     def validate_settings(self):
         conf_file = os.path.join(self.clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
@@ -124,7 +141,7 @@ class TestRunner(object):
             return False
 
         self.spec = spec = Specification.parse_file(conf_file)
-        if spec.branch and self.branch not in spec.branch:
+        if self.context.type == 'commit' and spec.branch and self.branch not in spec.branch:
             logger.info(
                 'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
                 self.branch,
@@ -216,14 +233,14 @@ class TestRunner(object):
         if exit_code == 0:
             send_mail(
                 emails,
-                'Test succeed for repo: {}, commit: {}'.format(self.repo_full_name, self.commit_hash),
+                'Test succeed for repository {}'.format(self.repo_full_name),
                 'test_success',
                 context
             )
         else:
             send_mail(
                 emails,
-                'Test failed for repo: {}, commit: {}'.format(self.repo_full_name, self.commit_hash),
+                'Test failed for repository {}'.format(self.repo_full_name),
                 'test_failure',
                 context
             )
