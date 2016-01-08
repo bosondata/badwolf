@@ -160,12 +160,17 @@ ol li {
       <table>
         <tr>
           <td>
-            <h1>Test succeed for repo: {{ repo_full_name }}</h1>
+            <h1>Test succeed for repo: {{ context.repository }}</h1>
             <h2>Information</h2>
-            <p>Repository: <a href="https://bitbucket.org/{{ repo_full_name }}">{{ repo_full_name }}</a></p>
-            <p>Branch: <a href="https://bitbucket.org/{{ repo_full_name }}/src?at={{ branch }}">{{ branch }}</a></p>
-            <p>Commit: <a href="https://bitbucket.org/{{ repo_full_name }}/commits/{{ commit_hash }}">{{ commit_hash }}</a></p>
-            {% if commit_message %}<p>Commit message: <a href="https://bitbucket.org/{{ repo_full_name }}/commits/{{ commit_hash }}">{{ commit_message }}</a></p>{% endif %}
+            <p>Repository: <a href="https://bitbucket.org/{{ context.repository }}">{{ context.repository }}</a></p>
+            <p>Branch: <a href="https://bitbucket.org/{{ context.repository }}/src?at={{ branch }}">{{ branch }}</a></p>
+            {% if context.type == 'commit' %}
+                <p>Commit: <a href="https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}">{{ context.source.commit.hash }}</a></p>
+                <p>Commit message: <a href="https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}">{{ context.message }}</a></p>
+            {% endif %}
+            {% if context.type == 'pullrequest' %}
+                <p>Pull Request: {{ context.message }}</a></p>
+            {% endif %}
             <p>Task ID: {{ task_id }}</p>
             <p>Elapsed time: {{ elapsed_time }} seconds</p>
             <h2>Test script(s)</h2>

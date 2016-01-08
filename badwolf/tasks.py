@@ -49,8 +49,8 @@ def send_mail(recipients, subject, template, context):
 
 
 @async_task
-def run_test(repo_full_name, git_clone_url, commit_hash, payload):
+def run_test(context):
     from badwolf.runner import TestRunner
 
-    runner = TestRunner(repo_full_name, git_clone_url, commit_hash, payload)
+    runner = TestRunner(context)
     runner.run()

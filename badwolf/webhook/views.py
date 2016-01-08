@@ -4,6 +4,7 @@ import logging
 
 from flask import Blueprint, request
 
+from badwolf.runner import TestContext
 from badwolf.tasks import run_test
 
 
@@ -54,26 +55,19 @@ def run_test_at_commit():
     if not commit_hash:
         return 'Needs commit hash', 400
 
-    payload = {
-        'push': {
-            'changes': [
-                {
-                    'new': {
-                        'type': 'branch',
-                        'name': 'master',
-                    },
-                    'commits': [
-                        {
-                            'hash': commit_hash,
-                            'message': '',
-                        }
-                    ]
-                }
-            ],
-        }
-    }
     git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
-    run_test.delay(repo_name, git_clone_url, commit_hash, payload)
+    context = TestContext(
+        repo_name,
+        git_clone_url,
+        {},
+        'commit',
+        'Forced rerun',
+        {
+            'branch': {'name': 'master'},
+            'commit': {'hash': commit_hash},
+        }
+    )
+    run_test.delay(context)
     return 'Success'
 
 
@@ -89,12 +83,62 @@ def handle_repo_push(payload):
         logger.info('Unsupported version system: %s', scm)
         return
 
-    commit_hash = changes[0]['commits'][0]['hash']
-    commit_message = changes[0]['commits'][0]['message']
+    latest_change = changes[0]
+    commit_hash = latest_change['commits'][0]['hash']
+    commit_message = latest_change['commits'][0]['message']
     if 'ci skip' in commit_message.lower():
         logger.info('ci skip found, ignore tests.')
         return
 
+    if not latest_change['new'] or latest_change['new']['type'] != 'branch':
+        return
+
     repo_name = repo['full_name']
     git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
-    run_test.delay(repo_name, git_clone_url, commit_hash, payload)
+
+    context = TestContext(
+        repo_name,
+        git_clone_url,
+        payload['actor'],
+        'commit',
+        commit_message,
+        {
+            'branch': {'name': latest_change['new']['name']},
+            'commit': {'hash': commit_hash},
+        }
+    )
+    run_test.delay(context)
+
+
+@register_event_handler('pullrequest:created')
+@register_event_handler('pullrequest:updated')
+def handle_pull_request(payload):
+    repo = payload['repository']
+    scm = repo['scm']
+    if scm.lower() != 'git':
+        logger.info('Unsupported version system: %s', scm)
+        return
+
+    pr = payload['pullrequest']
+    title = pr['title']
+    if 'ci skip' in title:
+        logger.info('ci skip found, ignore tests.')
+        return
+
+    if pr['state'] != 'OPEN':
+        logger.info('Pull request state is not OPEN, ignore tests.')
+        return
+
+    source = pr['source']
+    target = pr['destination']
+
+    context = TestContext(
+        repo['full_name'],
+        'git@bitbucket.org:{}.git'.format(repo['full_name']),
+        payload['actor'],
+        'pullrequest',
+        title,
+        source,
+        target
+    )
+    run_test.delay(context)
