@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 class TestRunner(object):
     """Badwolf test runner"""
+
     def __init__(self, repo_full_name, git_clone_url, commit_hash, payload):
         self.repo_full_name = repo_full_name
         self.repo_name = repo_full_name.split('/')[-1]
@@ -41,7 +42,10 @@ class TestRunner(object):
             'http://badwolf.bosondata.net',
         )
 
-        self.docker = Client(base_url=current_app.config['DOCKER_HOST'])
+        self.docker = Client(
+            base_url=current_app.config['DOCKER_HOST'],
+            timeout=current_app.config['DOCKER_API_TIMEOUT'],
+        )
 
     def run(self):
         start_time = time.time()
