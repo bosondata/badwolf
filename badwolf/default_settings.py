@@ -15,6 +15,7 @@ SENTRY_DSN = ''
 
 # Docker
 DOCKER_HOST = 'unix://var/run/docker.sock'
+DOCKER_API_TIMEOUT = 600
 
 # Logging
 LOGGING = {
