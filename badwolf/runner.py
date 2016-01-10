@@ -49,7 +49,7 @@ class TestRunner(object):
             bitbucket_client,
             context.repository,
             context.source['commit']['hash'],
-            'BADWOLF-{}'.format(self.task_id[:10]),
+            'BADWOLF',
             'http://badwolf.bosondata.net',
         )
 
