@@ -201,6 +201,15 @@ class BuildStatus(object):
         self.key = key
         self.url = url
 
+    def get(self):
+        endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build/{key}'.format(
+            owner=self.owner,
+            slug=self.slug,
+            revision=self.revision,
+            key=self.key
+        )
+        return self.client.get(endpoint)
+
     def update(self, state, name=None, description=None):
         endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build'.format(
             owner=self.owner,
@@ -215,5 +224,30 @@ class BuildStatus(object):
                 'url': self.url,
                 'name': name,
                 'description': description,
+            }
+        )
+
+
+class PullRequest(object):
+    def __init__(self, client, repo):
+        self.client = client
+        self.repo = repo
+
+    def get(self, id):
+        endpoint = '2.0/repositories/{repo}/pullrequests/{id}'.format(
+            repo=self.repo,
+            id=id
+        )
+        return self.client.get(endpoint)
+
+    def merge(self, id, message):
+        endpoint = '2.0/repositories/{repo}/pullrequests/{id}/merge'.format(
+            repo=self.repo,
+            id=id
+        )
+        return self.client.post(
+            endpoint,
+            data={
+                'message': message,
             }
         )
