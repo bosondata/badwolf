@@ -2,8 +2,9 @@
 from __future__ import absolute_import, unicode_literals
 import logging
 
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 
+import badwolf.bitbucket as bitbucket
 from badwolf.runner import TestContext
 from badwolf.tasks import run_test
 
@@ -121,7 +122,8 @@ def handle_pull_request(payload):
 
     pr = payload['pullrequest']
     title = pr['title']
-    if 'ci skip' in title:
+    description = pr['description']
+    if 'ci skip' in title or 'ci skip' in description:
         logger.info('ci skip found, ignore tests.')
         return
 
@@ -142,3 +144,55 @@ def handle_pull_request(payload):
         target
     )
     run_test.delay(context)
+
+
+@register_event_handler('pullrequest:approved')
+def handle_pull_request_approved(payload):
+    if not current_app.config['AUTO_MERGE_ENABLED']:
+        return
+
+    repo = payload['repository']
+    pr = payload['pullrequest']
+    pr_id = pr['id']
+    title = pr['title']
+    description = pr['description']
+    if 'merge skip' in title or 'merge skip' in description:
+        logger.info('merge skip found, ignore auto merge.')
+        return
+
+    bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
+        current_app.config['BITBUCKET_USERNAME'],
+        current_app.config['BITBUCKET_PASSWORD']
+    ))
+    pull_request = bitbucket.PullRequest(
+        bitbucket_client,
+        repo['full_name']
+    )
+    try:
+        pr_info = pull_request.get(pr_id)
+    except bitbucket.BitbucketAPIError:
+        logger.exception('Error calling Bitbucket API')
+        return
+
+    if pr_info['state'] != 'OPEN':
+        return
+
+    participants = pr_info['participants']
+    approved_users = [u for u in participants if u['approved']]
+    if len(approved_users) < current_app.config['AUTO_MERGE_APPROVAL_COUNT']:
+        return
+
+    build_status = bitbucket.BuildStatus(
+        bitbucket_client,
+        repo['full_name'],
+        pr_info['source']['commit']['hash'],
+        'BADWOLF',
+        'http://badwolf.bosondata.net'
+    )
+    message = 'Auto merge #{}: {}'.format(pr_id, title)
+    try:
+        status = build_status.get()
+        if status['state'] == 'SUCCESSFUL':
+            pull_request.merge(pr_id, message)
+    except bitbucket.BitbucketAPIError:
+        logger.exception('Error calling Bitbucket API')
