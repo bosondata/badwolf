@@ -3,5 +3,8 @@ script:
   - python setup.py develop
   - py.test --cov=badwolf -v
 
+branch:
+  - master
+
 notification:
   email: tech@bosondata.com.cn

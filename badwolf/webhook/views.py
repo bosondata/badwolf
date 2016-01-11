@@ -189,7 +189,7 @@ def handle_pull_request_approved(payload):
         'BADWOLF',
         'http://badwolf.bosondata.net'
     )
-    message = 'Auto merge #{}: {}'.format(pr_id, title)
+    message = 'Auto merge pull request #{}: {}'.format(pr_id, title)
     try:
         status = build_status.get()
         if status['state'] == 'SUCCESSFUL':
