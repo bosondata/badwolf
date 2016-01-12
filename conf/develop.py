@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-MAIL_SERVER = 'hwsmtp.exmail.qq.com'
+MAIL_SERVER = 'smtp.mailgun.org'
 MAIL_PORT = 465
-MAIL_USE_TLS = False
-MAIL_USE_SSL = True
-MAIL_USERNAME = "no-reply@bosondata.com.cn"
-MAIL_PASSWORD = "bosondata2014"
-MAIL_DEFAULT_SENDER = ('badwolf', 'no-reply@bosondata.com.cn')
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = "postmaster@sandbox5eb12a40a78b42baac3fd83a55e2655d.mailgun.org"
+MAIL_PASSWORD = "8762c0b910d199e9277a11d458fde560"
+MAIL_DEFAULT_SENDER = ('badwolf', 'postmaster@sandbox5eb12a40a78b42baac3fd83a55e2655d.mailgun.org')
 MAIL_MAX_EMAILS = None
 
 BITBUCKET_OAUTH_KEY = 'h7VxuqWtn3hDUScfVv'
