@@ -85,13 +85,14 @@ def handle_repo_push(payload):
         return
 
     latest_change = changes[0]
+    if not latest_change['new'] or latest_change['new']['type'] != 'branch':
+        logger.info('Unsupported push type: %s', latest_change['new']['type'])
+        return
+
     commit_hash = latest_change['commits'][0]['hash']
     commit_message = latest_change['commits'][0]['message']
     if 'ci skip' in commit_message.lower():
         logger.info('ci skip found, ignore tests.')
-        return
-
-    if not latest_change['new'] or latest_change['new']['type'] != 'branch':
         return
 
     repo_name = repo['full_name']

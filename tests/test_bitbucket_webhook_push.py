@@ -39,3 +39,30 @@ def test_repo_push_no_new_changes(test_client):
     )
     assert res.status_code == 200
     assert res.data == ''
+
+
+def test_repo_push_unsupported_push_type(test_client):
+    payload = json.dumps({
+        'repository': {
+            'full_name': 'deepanalyzer/badwolf',
+            'scm': 'git',
+        },
+        'push': {
+            'changes': [
+                {
+                    'new': {
+                        'type': 'tag',
+                    }
+                }
+            ]
+        }
+    })
+    res = test_client.post(
+        url_for('webhook.webhook_push'),
+        data=payload,
+        headers={
+            'X-Event-Key': 'repo:push',
+        }
+    )
+    assert res.status_code == 200
+    assert res.data == ''
