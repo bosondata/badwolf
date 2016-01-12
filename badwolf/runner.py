@@ -35,8 +35,9 @@ class TestContext(object):
 class TestRunner(object):
     """Badwolf test runner"""
 
-    def __init__(self, context):
+    def __init__(self, context, lock):
         self.context = context
+        self.lock = lock
         self.repo_full_name = context.repository
         self.repo_name = context.repository.split('/')[-1]
         self.task_id = str(uuid.uuid4())
@@ -158,27 +159,28 @@ class TestRunner(object):
 
     def get_docker_image(self):
         docker_image_name = self.repo_full_name.replace('/', '-')
-        docker_image = self.docker.images(docker_image_name)
-        if not docker_image:
-            dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
-            if not os.path.exists(dockerfile):
-                logger.warning(
-                    'No Dockerfile: %s found for repo: %s',
-                    dockerfile,
-                    self.repo_full_name
-                )
-                shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
-                return
+        with self.lock:
+            docker_image = self.docker.images(docker_image_name)
+            if not docker_image:
+                dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
+                if not os.path.exists(dockerfile):
+                    logger.warning(
+                        'No Dockerfile: %s found for repo: %s',
+                        dockerfile,
+                        self.repo_full_name
+                    )
+                    shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
+                    return
 
-            logger.info('Running `docker build`...')
-            res = self.docker.build(
-                self.clone_path,
-                tag=docker_image_name,
-                rm=True,
-                dockerfile=self.spec.dockerfile,
-            )
-            for line in res:
-                logger.info('`docker build` : %s', line)
+                logger.info('Running `docker build`...')
+                res = self.docker.build(
+                    self.clone_path,
+                    tag=docker_image_name,
+                    rm=True,
+                    dockerfile=self.spec.dockerfile,
+                )
+                for line in res:
+                    logger.info('`docker build` : %s', line)
 
         return docker_image_name
 
