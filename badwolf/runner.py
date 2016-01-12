@@ -209,7 +209,10 @@ class TestRunner(object):
 
             logger.exception('Docker error')
         finally:
-            self.docker.remove_container(container_id, force=True)
+            try:
+                self.docker.remove_container(container_id, force=True)
+            except (APIError, DockerException):
+                logger.exception('Error removing docker container')
 
         return exit_code, output
 
