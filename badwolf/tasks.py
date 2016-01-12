@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import atexit
 import logging
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
 from flask import render_template
@@ -12,6 +13,8 @@ from badwolf.extensions import mail, sentry
 logger = logging.getLogger(__name__)
 
 executor = ProcessPoolExecutor(max_workers=10)
+# per repository lock
+_LOCKS = {}
 
 
 @atexit.register
@@ -52,5 +55,6 @@ def send_mail(recipients, subject, template, context):
 def run_test(context):
     from badwolf.runner import TestRunner
 
-    runner = TestRunner(context)
+    lock = _LOCKS.setdefault(context.repository, multiprocessing.Lock())
+    runner = TestRunner(context, lock)
     runner.run()
