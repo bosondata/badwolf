@@ -79,6 +79,7 @@ Fields:
 3. ``after_success``: command(s) to run after success, ``str`` or ``list``
 4. ``after_failure``: command(s) to run after failure, ``str`` or ``list``
 5. ``service``: service(s) to start before run script(s), ``str`` or ``list``
+6. ``env``: envrionment variable(s), ``str`` or ``list``, only the first item will be used currently. Eg: ``env: X=1 Y=2 Z=3``
 
 ``Dockerfile`` should set ``FROM`` as ``messense/badwolf-test-runner`` in order to use [badwolf-runner](https://bitbucket.org/deepanalyzer/badwolf-runner/overview) to run tests.
 But surely you can build your own docker image and use it as long as you put ``badwolf-runner`` binary in its executable path.
