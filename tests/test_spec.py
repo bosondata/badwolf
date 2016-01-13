@@ -100,3 +100,43 @@ notification:
     assert spec.after_success == ['pwd', 'rm']
     assert spec.after_failure == ['echo', 'exit']
     assert spec.notification.emails == ['tech@bosondata.com.cn', 'messense@icloud.com']
+
+
+def test_parse_env_single_string():
+    s = "env: X=1 Y=2  Z=3\n"
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.environments) == 1
+    env0 = spec.environments[0]
+    assert env0['X'] == '1'
+    assert env0['Y'] == '2'
+    assert env0['Z'] == '3'
+
+
+def test_parse_env_single_list():
+    s = """env:
+  - X=1 Y=2  Z=3"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.environments) == 1
+    env0 = spec.environments[0]
+    assert env0['X'] == '1'
+    assert env0['Y'] == '2'
+    assert env0['Z'] == '3'
+
+
+def test_parse_env_multi_list():
+    s = """env:
+  - X=1 Y=2  Z=3
+  - X=3 Y=2  Z=1"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.environments) == 2
+    env0 = spec.environments[0]
+    assert env0['X'] == '1'
+    assert env0['Y'] == '2'
+    assert env0['Z'] == '3'
+    env1 = spec.environments[1]
+    assert env1['X'] == '3'
+    assert env1['Y'] == '2'
+    assert env1['Z'] == '1'
