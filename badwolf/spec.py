@@ -22,6 +22,7 @@ class Specification(object):
             emails=[],
         )
         self.branch = set()
+        self.environments = []
 
     @classmethod
     def parse_file(cls, path):
@@ -43,6 +44,15 @@ class Specification(object):
         after_failure = cls._get_list(conf.get('after_failure', []))
         notification = conf.get('notification', {})
         branch = set(cls._get_list(conf.get('branch', [])))
+        env = cls._get_list(conf.get('env', []))
+        env_map_list = []
+        for _env in env:
+            envs = _env.split()
+            env_map = {}
+            for env_str in envs:
+                key, val = env_str.split('=', 1)
+                env_map[key] = val
+            env_map_list.append(env_map)
 
         spec = cls()
         spec.services = services
@@ -51,6 +61,7 @@ class Specification(object):
         spec.after_success = after_success
         spec.after_failure = after_failure
         spec.branch = branch
+        spec.environments = env_map_list
         if isinstance(notification, dict) and notification.get('email'):
             spec.notification.emails = cls._get_list(notification['email'])
         return spec

@@ -186,9 +186,18 @@ class TestRunner(object):
 
     def run_tests_in_container(self, docker_image_name):
         command = '/bin/sh -c badwolf-run'
+        environment = {}
+        if self.spec.environments:
+            # TODO: Support run in multiple environments
+            environment = self.spec.environments[0]
+
+        # TODO: Add more test context related env vars
+        environment['BADWOLF_BRANCH'] = self.branch
+
         container = self.docker.create_container(
             docker_image_name,
             command=command,
+            environment=environment,
             working_dir='/mnt/src',
             volumes=['/mnt/src'],
             host_config=self.docker.create_host_config(binds={
