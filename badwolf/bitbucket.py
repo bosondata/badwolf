@@ -251,3 +251,15 @@ class PullRequest(object):
                 'message': message,
             }
         )
+
+    def comment(self, id, content):
+        endpoint = '1.0/repositories/{repo}/pullrequests/{id}/comments'.format(
+            repo=self.repo,
+            id=id
+        )
+        return self.client.post(
+            endpoint,
+            data={
+                'content': content,
+            }
+        )

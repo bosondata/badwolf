@@ -197,3 +197,63 @@ def handle_pull_request_approved(payload):
             pull_request.merge(pr_id, message)
     except bitbucket.BitbucketAPIError:
         logger.exception('Error calling Bitbucket API')
+
+
+@register_event_handler('repo:commit_comment_created')
+def handle_repo_commit_comment(payload):
+    comment = payload['comment']
+    comment_content = comment['content']['raw']
+    if 'ci retry' not in comment_content:
+        return
+
+    commit_hash = payload['commit']['hash']
+    repo = payload['repository']
+    repo_name = repo['full_name']
+    git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
+
+    context = TestContext(
+        repo_name,
+        git_clone_url,
+        payload['actor'],
+        'commit',
+        payload['commit']['message'],
+        {
+            'branch': {'name': 'master'},
+            'commit': {'hash': commit_hash},
+        }
+    )
+    run_test.delay(context)
+
+
+@register_event_handler('pullrequest:comment_created')
+def handle_pull_request_comment(payload):
+    comment = payload['comment']
+    comment_content = comment['content']['raw']
+    if 'ci retry' not in comment_content:
+        return
+
+    repo = payload['repository']
+    pr = payload['pullrequest']
+    title = pr['title']
+    description = pr['description']
+    if 'ci skip' in title or 'ci skip' in description:
+        logger.info('ci skip found, ignore tests.')
+        return
+
+    if pr['state'] != 'OPEN':
+        logger.info('Pull request state is not OPEN, ignore tests.')
+        return
+
+    source = pr['source']
+    target = pr['destination']
+
+    context = TestContext(
+        repo['full_name'],
+        'git@bitbucket.org:{}.git'.format(repo['full_name']),
+        payload['actor'],
+        'pullrequest',
+        title,
+        source,
+        target
+    )
+    run_test.delay(context)
