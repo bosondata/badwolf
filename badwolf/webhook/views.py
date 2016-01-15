@@ -43,35 +43,6 @@ def webhook_push():
     return ''
 
 
-@blueprint.route('/run', methods=['POST'])
-def run_test_at_commit():
-    repo_name = request.form.get('repo')
-    commit_hash = request.form.get('commit')
-    if not repo_name:
-        return 'Needs repository name', 400
-
-    if '/' not in repo_name:
-        repo_name = 'deepanalyzer/{}'.format(repo_name)
-
-    if not commit_hash:
-        return 'Needs commit hash', 400
-
-    git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
-    context = TestContext(
-        repo_name,
-        git_clone_url,
-        {},
-        'commit',
-        'Forced rerun',
-        {
-            'branch': {'name': 'master'},
-            'commit': {'hash': commit_hash},
-        }
-    )
-    run_test.delay(context)
-    return 'Success'
-
-
 @register_event_handler('repo:push')
 def handle_repo_push(payload):
     changes = payload['push']['changes']
