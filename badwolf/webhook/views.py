@@ -66,6 +66,10 @@ def handle_repo_push(payload):
         logger.info('ci skip found, ignore tests.')
         return
 
+    rebuild = False
+    if 'ci rebuild' in commit_message.lower():
+        rebuild = True
+
     repo_name = repo['full_name']
     git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
 
@@ -78,7 +82,8 @@ def handle_repo_push(payload):
         {
             'branch': {'name': latest_change['new']['name']},
             'commit': {'hash': commit_hash},
-        }
+        },
+        rebuild=rebuild,
     )
     run_test.delay(context)
 
@@ -94,7 +99,7 @@ def handle_pull_request(payload):
 
     pr = payload['pullrequest']
     title = pr['title']
-    description = pr['description']
+    description = pr['description'] or ''
     if 'ci skip' in title or 'ci skip' in description:
         logger.info('ci skip found, ignore tests.')
         return
@@ -102,6 +107,10 @@ def handle_pull_request(payload):
     if pr['state'] != 'OPEN':
         logger.info('Pull request state is not OPEN, ignore tests.')
         return
+
+    rebuild = False
+    if 'ci rebuild' in title.lower() or 'ci rebuild' in description.lower():
+        rebuild = True
 
     source = pr['source']
     target = pr['destination']
@@ -113,7 +122,8 @@ def handle_pull_request(payload):
         'pullrequest',
         title,
         source,
-        target
+        target,
+        rebuild=rebuild,
     )
     run_test.delay(context)
 
@@ -127,8 +137,8 @@ def handle_pull_request_approved(payload):
     pr = payload['pullrequest']
     pr_id = pr['id']
     title = pr['title']
-    description = pr['description']
-    if 'merge skip' in title or 'merge skip' in description:
+    description = pr['description'] or ''
+    if 'merge skip' in title.lower() or 'merge skip' in description.lower():
         logger.info('merge skip found, ignore auto merge.')
         return
 
