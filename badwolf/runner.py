@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 class TestContext(object):
     """Test context"""
-    def __init__(self, repository, clone_url, actor, type, message, source, target=None):
+    def __init__(self, repository, clone_url, actor, type,
+                 message, source, target=None, rebuild=False):
         self.repository = repository
         self.clone_url = clone_url
         self.actor = actor
@@ -30,6 +31,7 @@ class TestContext(object):
         self.message = message
         self.source = source
         self.target = target
+        self.rebuild = rebuild
 
 
 class TestRunner(object):
@@ -161,6 +163,11 @@ class TestRunner(object):
         docker_image_name = self.repo_full_name.replace('/', '-')
         with self.lock:
             docker_image = self.docker.images(docker_image_name)
+            if docker_image and self.context.rebuild:
+                # Delete docker image first
+                self.docker.remove_image(docker_image_name, force=True)
+                docker_image = None
+
             if not docker_image:
                 dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
                 if not os.path.exists(dockerfile):
