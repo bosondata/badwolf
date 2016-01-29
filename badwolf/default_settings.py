@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import os
 import sys
 
 # is debugging
@@ -14,7 +15,7 @@ SECRET_KEY = ''
 SENTRY_DSN = ''
 
 # Docker
-DOCKER_HOST = 'unix://var/run/docker.sock'
+DOCKER_HOST = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
 DOCKER_API_TIMEOUT = 600
 
 # Logging
