@@ -124,6 +124,7 @@ def handle_pull_request(payload):
         source,
         target,
         rebuild=rebuild,
+        pr_id=pr['id']
     )
     run_test.delay(context)
 

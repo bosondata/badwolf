@@ -5,3 +5,7 @@ sentry = Sentry()
 
 from flask_mail import Mail
 mail = Mail()
+
+from badwolf.bitbucket import FlaskBitbucket
+
+bitbucket = FlaskBitbucket()
