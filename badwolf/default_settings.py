@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import os
 import sys
 
+import raven
+
 # is debugging
 DEBUG = False
 
@@ -56,3 +58,9 @@ BITBUCKET_OAUTH_SECRET = ''
 
 BITBUCKET_USERNAME = ''
 BITBUCKET_PASSWORD = ''
+
+# Sentry Release
+try:
+    SENTRY_RELEASE = raven.fetch_package_version('badwolf')
+except Exception:
+    pass
