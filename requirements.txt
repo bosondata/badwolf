@@ -3,7 +3,7 @@ click>=6.2
 six>=1.10.0
 docker-py>=1.6.0
 GitPython>=1.0.1
-raven==5.1.0
+raven>=5.10.2
 blinker>=1.4
 pyyaml>=3.11
 futures>=3.0.3
