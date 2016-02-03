@@ -12,10 +12,11 @@ from flask import current_app
 from docker import Client
 from docker.errors import APIError, DockerException
 
-import badwolf.bitbucket as bitbucket
 from badwolf.utils import to_text
 from badwolf.spec import Specification
 from badwolf.lint.processor import LintProcessor
+from badwolf.extensions import bitbucket
+from badwolf.bitbucket import BuildStatus, BitbucketAPIError
 
 
 logger = logging.getLogger(__name__)
@@ -47,12 +48,8 @@ class TestRunner(object):
         self.repo_name = context.repository.split('/')[-1]
         self.task_id = str(uuid.uuid4())
 
-        bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
-            current_app.config['BITBUCKET_USERNAME'],
-            current_app.config['BITBUCKET_PASSWORD']
-        ))
-        self.build_status = bitbucket.BuildStatus(
-            bitbucket_client,
+        self.build_status = BuildStatus(
+            bitbucket,
             context.repository,
             context.source['commit']['hash'],
             'BADWOLF',
@@ -247,7 +244,7 @@ class TestRunner(object):
     def update_build_status(self, state):
         try:
             self.build_status.update(state)
-        except bitbucket.BitbucketAPIError:
+        except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
 
     def send_notifications(self, context):
