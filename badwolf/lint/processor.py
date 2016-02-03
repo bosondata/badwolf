@@ -56,7 +56,6 @@ class LintProcessor(object):
         self.problems.limit_to_changes()
 
         if len(self.problems):
-            logger.info('Code lint result: %d problems found', len(self.problems))
             self._report()
 
     def _execute_linters(self, files):
@@ -78,6 +77,7 @@ class LintProcessor(object):
         try:
             comments = self.pr.all_comments(self.context.pr_id)
         except BitbucketAPIError:
+            logger.exception('Error fetching all comments for pull request')
             comments = []
 
         hash_set = set()
@@ -91,6 +91,7 @@ class LintProcessor(object):
             line_to = inline['to']
             hash_set.add(hash('{}{}{}'.format(filename, line_to, raw)))
 
+        problem_count = 0
         for problem in self.problems:
             content = ':broken_heart: **{}**: {}'.format(problem.linter, problem.message)
             comment_hash = hash('{}{}{}'.format(
@@ -109,4 +110,9 @@ class LintProcessor(object):
                     filename=problem.filename
                 )
             except BitbucketAPIError:
-                pass
+                logger.exception('Error creating inline comment for pull request')
+            else:
+                problem_count += 1
+
+        if problem_count > 0:
+            logger.info('Code lint result: %d problems submited')
