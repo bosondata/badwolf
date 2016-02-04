@@ -166,7 +166,7 @@ def handle_pull_request_approved(payload):
         bitbucket,
         repo['full_name'],
         pr_info['source']['commit']['hash'],
-        'BADWOLF',
+        'badwolf/test',
         'http://badwolf.bosondata.net'
     )
     message = 'Auto merge pull request #{}: {}'.format(pr_id, title)

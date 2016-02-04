@@ -52,7 +52,7 @@ class TestRunner(object):
             bitbucket,
             context.repository,
             context.source['commit']['hash'],
-            'BADWOLF',
+            'badwolf/test',
             'http://badwolf.bosondata.net',
         )
 
