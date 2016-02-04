@@ -4,9 +4,10 @@ import logging
 
 from flask import Blueprint, request, current_app
 
-import badwolf.bitbucket as bitbucket
 from badwolf.runner import TestContext
 from badwolf.tasks import run_test
+from badwolf.extensions import bitbucket
+from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus
 
 
 logger = logging.getLogger(__name__)
@@ -124,6 +125,7 @@ def handle_pull_request(payload):
         source,
         target,
         rebuild=rebuild,
+        pr_id=pr['id']
     )
     run_test.delay(context)
 
@@ -142,17 +144,13 @@ def handle_pull_request_approved(payload):
         logger.info('merge skip found, ignore auto merge.')
         return
 
-    bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
-        current_app.config['BITBUCKET_USERNAME'],
-        current_app.config['BITBUCKET_PASSWORD']
-    ))
-    pull_request = bitbucket.PullRequest(
-        bitbucket_client,
+    pull_request = PullRequest(
+        bitbucket,
         repo['full_name']
     )
     try:
         pr_info = pull_request.get(pr_id)
-    except bitbucket.BitbucketAPIError:
+    except BitbucketAPIError:
         logger.exception('Error calling Bitbucket API')
         return
 
@@ -164,8 +162,8 @@ def handle_pull_request_approved(payload):
     if len(approved_users) < current_app.config['AUTO_MERGE_APPROVAL_COUNT']:
         return
 
-    build_status = bitbucket.BuildStatus(
-        bitbucket_client,
+    build_status = BuildStatus(
+        bitbucket,
         repo['full_name'],
         pr_info['source']['commit']['hash'],
         'BADWOLF',
@@ -176,7 +174,7 @@ def handle_pull_request_approved(payload):
         status = build_status.get()
         if status['state'] == 'SUCCESSFUL':
             pull_request.merge(pr_id, message)
-    except bitbucket.BitbucketAPIError:
+    except BitbucketAPIError:
         logger.exception('Error calling Bitbucket API')
 
 
@@ -184,7 +182,10 @@ def handle_pull_request_approved(payload):
 def handle_repo_commit_comment(payload):
     comment = payload['comment']
     comment_content = comment['content']['raw']
-    if 'ci retry' not in comment_content:
+
+    retry = 'ci retry' in comment_content
+    rebuild = 'ci rebuild' in comment_content
+    if not (retry or rebuild):
         return
 
     commit_hash = payload['commit']['hash']
@@ -201,7 +202,8 @@ def handle_repo_commit_comment(payload):
         {
             'branch': {'name': 'master'},
             'commit': {'hash': commit_hash},
-        }
+        },
+        rebuild=rebuild,
     )
     run_test.delay(context)
 
@@ -210,7 +212,9 @@ def handle_repo_commit_comment(payload):
 def handle_pull_request_comment(payload):
     comment = payload['comment']
     comment_content = comment['content']['raw']
-    if 'ci retry' not in comment_content:
+    retry = 'ci retry' in comment_content
+    rebuild = 'ci rebuild' in comment_content
+    if not (retry or rebuild):
         return
 
     repo = payload['repository']
@@ -235,6 +239,8 @@ def handle_pull_request_comment(payload):
         'pullrequest',
         title,
         source,
-        target
+        target,
+        rebuild=rebuild,
+        pr_id=pr['id']
     )
     run_test.delay(context)

@@ -12,9 +12,11 @@ from flask import current_app
 from docker import Client
 from docker.errors import APIError, DockerException
 
-import badwolf.bitbucket as bitbucket
 from badwolf.utils import to_text
 from badwolf.spec import Specification
+from badwolf.lint.processor import LintProcessor
+from badwolf.extensions import bitbucket
+from badwolf.bitbucket import BuildStatus, BitbucketAPIError
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +25,8 @@ logger = logging.getLogger(__name__)
 class TestContext(object):
     """Test context"""
     def __init__(self, repository, clone_url, actor, type,
-                 message, source, target=None, rebuild=False):
+                 message, source, target=None, rebuild=False,
+                 pr_id=None):
         self.repository = repository
         self.clone_url = clone_url
         self.actor = actor
@@ -32,6 +35,7 @@ class TestContext(object):
         self.source = source
         self.target = target
         self.rebuild = rebuild
+        self.pr_id = pr_id
 
 
 class TestRunner(object):
@@ -44,12 +48,8 @@ class TestRunner(object):
         self.repo_name = context.repository.split('/')[-1]
         self.task_id = str(uuid.uuid4())
 
-        bitbucket_client = bitbucket.Bitbucket(bitbucket.BasicAuthDispatcher(
-            current_app.config['BITBUCKET_USERNAME'],
-            current_app.config['BITBUCKET_PASSWORD']
-        ))
-        self.build_status = bitbucket.BuildStatus(
-            bitbucket_client,
+        self.build_status = BuildStatus(
+            bitbucket,
             context.repository,
             context.source['commit']['hash'],
             'BADWOLF',
@@ -75,39 +75,46 @@ class TestRunner(object):
             shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
             return
 
-        self.update_build_status('INPROGRESS')
-        docker_image_name = self.get_docker_image()
-        if not docker_image_name:
-            self.update_build_status('FAILED')
-            return
+        if self.spec.scripts:
+            self.update_build_status('INPROGRESS')
+            docker_image_name = self.get_docker_image()
+            if not docker_image_name:
+                self.update_build_status('FAILED')
+                return
 
-        exit_code, output = self.run_tests_in_container(docker_image_name)
-        if exit_code == 0:
-            # Success
-            logger.info('Test succeed for repo: %s', self.repo_full_name)
-            self.update_build_status('SUCCESSFUL')
-        else:
-            # Failed
-            logger.info(
-                'Test failed for repo: %s, exit code: %s',
-                self.repo_full_name,
-                exit_code
-            )
-            self.update_build_status('FAILED')
+            exit_code, output = self.run_tests_in_container(docker_image_name)
+            if exit_code == 0:
+                # Success
+                logger.info('Test succeed for repo: %s', self.repo_full_name)
+                self.update_build_status('SUCCESSFUL')
+            else:
+                # Failed
+                logger.info(
+                    'Test failed for repo: %s, exit code: %s',
+                    self.repo_full_name,
+                    exit_code
+                )
+                self.update_build_status('FAILED')
+
+            end_time = time.time()
+
+            context = {
+                'context': self.context,
+                'task_id': self.task_id,
+                'logs': ''.join(map(to_text, output)),
+                'exit_code': exit_code,
+                'branch': self.branch,
+                'scripts': self.spec.scripts,
+                'elapsed_time': int(end_time - start_time),
+            }
+            self.send_notifications(context)
+
+        # Code linting
+        if self.context.pr_id and self.spec.linters:
+            lint = LintProcessor(self.context, self.spec, self.clone_path)
+            lint.process()
 
         shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
-        end_time = time.time()
-
-        context = {
-            'context': self.context,
-            'task_id': self.task_id,
-            'logs': ''.join(map(to_text, output)),
-            'exit_code': exit_code,
-            'branch': self.branch,
-            'scripts': self.spec.scripts,
-            'elapsed_time': int(end_time - start_time),
-        }
-        self.send_notifications(context)
 
     def clone_repository(self):
         self.clone_path = os.path.join(
@@ -154,8 +161,8 @@ class TestRunner(object):
             )
             return False
 
-        if not spec.scripts:
-            logger.warning('No script to run')
+        if not spec.scripts and not spec.linters:
+            logger.warning('No script(s) or linter(s) to run')
             return False
         return True
 
@@ -237,7 +244,7 @@ class TestRunner(object):
     def update_build_status(self, state):
         try:
             self.build_status.update(state)
-        except bitbucket.BitbucketAPIError:
+        except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
 
     def send_notifications(self, context):
