@@ -268,7 +268,8 @@ class PullRequest(object):
             }
         )
 
-    def comment(self, id, content, line_from=None, line_to=None, parent_id=None, filename=None):
+    def comment(self, id, content, line_from=None, line_to=None, parent_id=None,
+                filename=None, anchor=None, dest_rev=None):
         endpoint = '1.0/repositories/{repo}/pullrequests/{id}/comments'.format(
             repo=self.repo,
             id=id
@@ -279,6 +280,8 @@ class PullRequest(object):
             line_to=line_to,
             parent_id=parent_id,
             filename=filename,
+            anchor=anchor,
+            dest_rev=dest_rev,
         )
         return self.client.post(endpoint, data=data)
 
@@ -311,7 +314,7 @@ class PullRequest(object):
         )
         res = self.client.get(endpoint, raw=True)
         res.encoding = 'utf-8'
-        patch = PatchSet(res.text.split('\n'), encoding='utf-8')
+        patch = PatchSet(res.text.split('\n'))
         return patch
 
 
