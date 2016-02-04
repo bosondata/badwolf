@@ -115,4 +115,4 @@ class LintProcessor(object):
                 problem_count += 1
 
         if problem_count > 0:
-            logger.info('Code lint result: %d problems submited')
+            logger.info('Code lint result: %d problems submited', problem_count)
