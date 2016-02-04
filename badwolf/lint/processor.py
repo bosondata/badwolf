@@ -2,6 +2,9 @@
 from __future__ import absolute_import, unicode_literals
 import logging
 
+import git
+from unidiff import PatchSet, UnidiffParseError
+
 from badwolf.extensions import bitbucket
 from badwolf.bitbucket import PullRequest, BitbucketAPIError
 from badwolf.lint import Problems
@@ -28,11 +31,25 @@ class LintProcessor(object):
         self.pr = PullRequest(bitbucket, context.repository)
 
     def load_changes(self):
+        git_cmd = git.Git(self.working_dir)
+        revision_before = self.context.target['commit']['hash']
+        revision_after = self.context.source['commit']['hash']
+        changes = None
         try:
-            changes = self.pr.diff(self.context.pr_id)
-        except BitbucketAPIError:
-            logger.exception('Error fetch pull request diff')
-            return
+            #  优先从本地 git 仓库获取 diff
+            diff = git_cmd.diff(revision_before, revision_after, color='never')
+            if diff:
+                changes = PatchSet(diff.split('\n'))
+        except (git.GitCommandError, UnidiffParseError):
+            logger.exception('Error getting git diff from local repository')
+
+        if not changes:
+            # 失败则调用 Bitbucket API 获取 diff
+            try:
+                changes = self.pr.diff(self.context.pr_id)
+            except (BitbucketAPIError, UnidiffParseError):
+                logger.exception('Error getting pull request diff from API')
+                return
 
         self.problems.set_changes(changes)
         return changes
@@ -42,8 +59,10 @@ class LintProcessor(object):
             logger.info('No linters configured, ignore lint.')
             return
 
+        logger.info('Running code linting')
         patch = self.load_changes()
         if not patch:
+            logger.info('Load changes failed, ignore lint.')
             return
 
         lint_files = patch.added_files + patch.modified_files
@@ -52,11 +71,21 @@ class LintProcessor(object):
             return
 
         files = [f.path for f in lint_files]
+        try:
+            # python-unidiff 0.5.2+
+            self.lint_file_revisions = {f.path: (f.revision_before, f.revision_after) for f in lint_files}
+        except AttributeError:
+            revision_before = self.context.target['commit']['hash']
+            revision_after = self.context.source['commit']['hash']
+            self.lint_file_revisions = {f.path: (revision_before, revision_after) for f in lint_files}
+
         self._execute_linters(files)
         self.problems.limit_to_changes()
 
         if len(self.problems):
             self._report()
+        else:
+            logger.info('No problems found when linting codes')
 
     def _execute_linters(self, files):
         for name in self.spec.linters:
@@ -102,17 +131,19 @@ class LintProcessor(object):
             if comment_hash in hash_set:
                 continue
 
+            revision = self.lint_file_revisions.get(problem.filename, (None, None))
             try:
                 self.pr.comment(
                     self.context.pr_id,
                     content,
                     line_to=problem.line,
-                    filename=problem.filename
+                    filename=problem.filename,
+                    anchor=revision[1],
+                    dest_rev=revision[0],
                 )
             except BitbucketAPIError:
                 logger.exception('Error creating inline comment for pull request')
             else:
                 problem_count += 1
 
-        if problem_count > 0:
-            logger.info('Code lint result: %d problems submited', problem_count)
+        logger.info('Code lint result: %d problems submited', problem_count)
