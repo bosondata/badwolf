@@ -30,7 +30,8 @@ def register_error_handlers(app):
 
 
 def register_extensions(app):
-    from .extensions import sentry, mail
+    from .extensions import sentry, mail, bitbucket
 
     sentry.init_app(app)
     mail.init_app(app)
+    bitbucket.init_app(app)

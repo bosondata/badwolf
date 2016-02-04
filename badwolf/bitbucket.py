@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import logging
+
 import git
 import requests
 from requests.auth import HTTPBasicAuth
+from optionaldict import optionaldict
+
+
+logger = logging.getLogger(__name__)
 
 
 class BitbucketAPIError(requests.RequestException):
@@ -156,16 +162,23 @@ class Bitbucket(object):
         if not url.startswith('https://'):
             url = 'https://api.bitbucket.org/{}'.format(url)
 
+        raw = kwargs.pop('raw', False)
         res = self._dispatcher.dispatch(method, url, **kwargs)
+        res.encoding = 'utf-8'
         try:
             res.raise_for_status()
         except requests.RequestException as reqe:
-            error_info = res.json()
             if res.status_code == 401:
                 # Access token expired
                 self.refresh_access_token()
                 return self.request(method, url, **kwargs)
             else:
+                try:
+                    error_info = res.json()
+                except (TypeError, ValueError):
+                    error_info = {}
+                    logger.exception('Extract bitbucket error info failed, response: %s', res.text)
+
                 raise BitbucketAPIError(
                     res.status_code,
                     error_info.get('error', ''),
@@ -173,6 +186,9 @@ class Bitbucket(object):
                     request=reqe.request,
                     response=reqe.response
                 )
+
+        if raw:
+            return res
         return res.json()
 
     def get(self, url, **kwargs):
@@ -252,14 +268,82 @@ class PullRequest(object):
             }
         )
 
-    def comment(self, id, content):
+    def comment(self, id, content, line_from=None, line_to=None, parent_id=None,
+                filename=None, anchor=None, dest_rev=None):
         endpoint = '1.0/repositories/{repo}/pullrequests/{id}/comments'.format(
             repo=self.repo,
             id=id
         )
-        return self.client.post(
-            endpoint,
-            data={
-                'content': content,
-            }
+        data = optionaldict(
+            content=content,
+            line_from=line_from,
+            line_to=line_to,
+            parent_id=parent_id,
+            filename=filename,
+            anchor=anchor,
+            dest_rev=dest_rev,
         )
+        return self.client.post(endpoint, data=data)
+
+    def comments(self, id, page=1, size=100):
+        endpoint = '2.0/repositories/{repo}/pullrequests/{id}/comments'.format(
+            repo=self.repo,
+            id=id
+        )
+        params = {
+            'page': page,
+            'pagelen': size,
+        }
+        return self.client.get(endpoint, params=params)
+
+    def all_comments(self, id):
+        rs = []
+        res = self.comments(id)
+        rs.extend(res['values'])
+        while res.get('next'):
+            res = self.comments(id, page=res['page'] + 1)
+            rs.extend(res['values'])
+        return rs
+
+    def diff(self, id):
+        from unidiff import PatchSet
+
+        endpoint = '2.0/repositories/{repo}/pullrequests/{id}/diff'.format(
+            repo=self.repo,
+            id=id
+        )
+        res = self.client.get(endpoint, raw=True)
+        res.encoding = 'utf-8'
+        patch = PatchSet(res.text.split('\n'))
+        return patch
+
+
+class FlaskBitbucket(object):
+    def __init__(self, app=None):
+        self.app = app
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+        self.client = Bitbucket(BasicAuthDispatcher(
+            app.config['BITBUCKET_USERNAME'],
+            app.config['BITBUCKET_PASSWORD']
+        ))
+
+    def request(self, method, url, **kwargs):
+        return self.client.request(method, url, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self.client.get(url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.client.post(url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.client.put(url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.client.delete(url, **kwargs)
+
+    def clone(self, repo_full_name, clone_path):
+        return self.client.clone(repo_full_name, clone_path)

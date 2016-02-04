@@ -35,6 +35,7 @@ def _run_task(_task_func, *args, **kwargs):
 
 def async_task(f):
     def delay(*args, **kwargs):
+        # return _run_task(f, *args, **kwargs)
         return executor.submit(_run_task, f, *args, **kwargs)
     f.delay = delay
     return f

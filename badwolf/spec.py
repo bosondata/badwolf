@@ -23,6 +23,7 @@ class Specification(object):
         )
         self.branch = set()
         self.environments = []
+        self.linters = []
 
     @classmethod
     def parse_file(cls, path):
@@ -54,6 +55,8 @@ class Specification(object):
                 env_map[key] = val
             env_map_list.append(env_map)
 
+        linters = cls._get_list(conf.get('linter', []))
+
         spec = cls()
         spec.services = services
         spec.scripts = scripts
@@ -62,6 +65,7 @@ class Specification(object):
         spec.after_failure = after_failure
         spec.branch = branch
         spec.environments = env_map_list
+        spec.linters = linters
         if isinstance(notification, dict) and notification.get('email'):
             spec.notification.emails = cls._get_list(notification['email'])
         return spec
