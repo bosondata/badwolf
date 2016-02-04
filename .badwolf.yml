@@ -3,6 +3,8 @@ script:
   - python setup.py develop
   - py.test --cov=badwolf -v --cov-config .coveragerc
 
+linter: flake8
+
 branch:
   - master
 
