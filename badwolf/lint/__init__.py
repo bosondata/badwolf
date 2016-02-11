@@ -68,3 +68,6 @@ class Problems(object):
     def __iter__(self):
         for item in self._items:
             yield item
+
+    def __getitem__(self, key):
+        return self._items[key]
