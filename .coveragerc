@@ -3,6 +3,7 @@ source = badwolf
 
 omit =
   tests/*
+  badwolf/cli.py
 
 [report]
 exclude_lines =
