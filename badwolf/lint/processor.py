@@ -141,7 +141,12 @@ class LintProcessor(object):
             else:
                 problem_count += 1
 
-        logger.info('Code lint result: %d problems submited', problem_count)
+        logger.info(
+            'Code lint result: %d problems found, %d submited',
+            len(self.problems),
+            problem_count
+        )
+        return problem_count
 
     def update_build_status(self, state):
         try:
