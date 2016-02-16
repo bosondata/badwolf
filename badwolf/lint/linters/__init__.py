@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import os
 import logging
 
 
@@ -40,3 +41,12 @@ class Linter(object):
 
     def __repr__(self):
         return '<{} linter>'.format(self.name)
+
+    def _relativize_filename(self, filename):
+        if not os.path.isabs(filename):
+            return filename
+
+        old = self.working_dir
+        if not old.endswith(os.path.sep):
+            old = '{}{}'.format(old, os.path.sep)
+        return filename.replace(old, '')
