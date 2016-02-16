@@ -69,10 +69,14 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
+    wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
+    echo 'deb https://deb.nodesource.com/node_5.x trusty main' > /etc/apt/sources.list.d/nodesource.list
+    echo 'deb-src https://deb.nodesource.com/node_5.x trusty main' >> /etc/apt/sources.list.d/nodesource.list
     sudo apt-get update
-    sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git
+    sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs
     sudo pip install ipython ipdb virtualenv
     sudo pip install -U -r /vagrant/dev-requirements.txt
+    sudo npm install -g jscs eslint
     cd /vagrant && sudo python setup.py develop && cd -
   SHELL
 end
