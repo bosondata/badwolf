@@ -64,15 +64,9 @@ class LintProcessor(object):
 
         self.update_build_status('INPROGRESS')
         files = [f.path for f in lint_files]
-        try:
-            # python-unidiff 0.5.2+
-            self.lint_file_revisions = {f.path: (f.revision_before, f.revision_after) for f in lint_files}
-        except AttributeError:
-            revision_before = self.context.target['commit']['hash']
-            revision_after = self.context.source['commit']['hash']
-            self.lint_file_revisions = {f.path: (revision_before, revision_after) for f in lint_files}
-
         self._execute_linters(files)
+        logger.info('%d problems found before limit to changes', len(self.problems))
+
         self.problems.limit_to_changes()
 
         if len(self.problems):
@@ -115,6 +109,8 @@ class LintProcessor(object):
             line_to = inline['to']
             hash_set.add(hash('{}{}{}'.format(filename, line_to, raw)))
 
+        revision_before = self.context.target['commit']['hash']
+        revision_after = self.context.source['commit']['hash']
         problem_count = 0
         for problem in self.problems:
             content = ':broken_heart: **{}**: {}'.format(problem.linter, problem.message)
@@ -126,15 +122,14 @@ class LintProcessor(object):
             if comment_hash in hash_set:
                 continue
 
-            revision = self.lint_file_revisions.get(problem.filename, (None, None))
             try:
                 self.pr.comment(
                     self.context.pr_id,
                     content,
                     line_to=problem.line,
                     filename=problem.filename,
-                    anchor=revision[1],
-                    dest_rev=revision[0],
+                    anchor=revision_after,
+                    dest_rev=revision_before,
                 )
             except BitbucketAPIError:
                 logger.exception('Error creating inline comment for pull request')
