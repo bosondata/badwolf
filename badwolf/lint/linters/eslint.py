@@ -26,7 +26,7 @@ class ESLinter(Linter):
 
         problems = parse_checkstyle(output)
         for filename, line, message in problems:
-            yield Problem(filename, line, message, self.name)
+            yield Problem(self._relativize_filename(filename), line, message, self.name)
 
     def create_command(self, files):
         cmd = 'eslint'

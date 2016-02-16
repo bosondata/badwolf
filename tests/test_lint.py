@@ -186,3 +186,55 @@ index 0000000..66f319a
     problem = lint.problems[0]
     assert problem.filename == 'a.js'
     assert problem.line == 2
+
+
+def test_eslint_lint_a_js(app, caplog):
+    diff = """diff --git a/.eslintrc b/.eslintrc
+new file mode 100644
+index 0000000..45e5d69
+--- /dev/null
++++ b/.eslintrc
+@@ -0,0 +1,5 @@
++{
++    "rules": {
++        "quotes": [2, "single"]
++    }
++}
+diff --git a/a.js b/a.js
+new file mode 100644
+index 0000000..f119a7f
+--- /dev/null
++++ b/a.js
+@@ -0,0 +1 @@
++console.log("bar")
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append('eslint')
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'eslint'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 1
+    problem = lint.problems[0]
+    assert problem.filename == 'a.js'
+    assert problem.line == 1
