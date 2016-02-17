@@ -62,5 +62,5 @@ BITBUCKET_PASSWORD = ''
 # Sentry Release
 try:
     SENTRY_RELEASE = raven.fetch_package_version('badwolf')
-except Exception:  # no cover
+except Exception:  # pragma: no cover
     pass
