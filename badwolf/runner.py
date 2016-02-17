@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import os
+import io
 import time
 import uuid
 import shutil
@@ -177,22 +178,24 @@ class TestRunner(object):
 
             if not docker_image:
                 dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
+                build_options = {
+                    'tag': docker_image_name,
+                    'rm': True,
+                }
                 if not os.path.exists(dockerfile):
                     logger.warning(
-                        'No Dockerfile: %s found for repo: %s',
+                        'No Dockerfile: %s found for repo: %s, using simple runner image',
                         dockerfile,
                         self.repo_full_name
                     )
-                    shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
-                    return
+                    dockerfile_content = 'FROM messense/badwolf-test-runner\n'
+                    fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
+                    build_options['fileobj'] = fileobj
+                else:
+                    build_options['dockerfile'] = self.spec.dockerfile
 
                 logger.info('Running `docker build`...')
-                res = self.docker.build(
-                    self.clone_path,
-                    tag=docker_image_name,
-                    rm=True,
-                    dockerfile=self.spec.dockerfile,
-                )
+                res = self.docker.build(self.clone_path, **build_options)
                 for line in res:
                     logger.info('`docker build` : %s', line)
 
