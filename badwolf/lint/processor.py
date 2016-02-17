@@ -10,6 +10,7 @@ from badwolf.lint import Problems
 from badwolf.lint.linters.eslint import ESLinter
 from badwolf.lint.linters.flake8 import Flake8Linter
 from badwolf.lint.linters.jscs import JSCSLinter
+from badwolf.lint.linters.pep8 import PEP8Linter
 
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class LintProcessor(object):
         'eslint': ESLinter,
         'flake8': Flake8Linter,
         'jscs': JSCSLinter,
+        'pep8': PEP8Linter,
     }
 
     def __init__(self, context, spec, working_dir):

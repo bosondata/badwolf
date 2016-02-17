@@ -70,8 +70,8 @@ Vagrant.configure(2) do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
-    echo 'deb https://deb.nodesource.com/node_5.x trusty main' > /etc/apt/sources.list.d/nodesource.list
-    echo 'deb-src https://deb.nodesource.com/node_5.x trusty main' >> /etc/apt/sources.list.d/nodesource.list
+    sudo echo 'deb https://deb.nodesource.com/node_5.x trusty main' > /etc/apt/sources.list.d/nodesource.list
+    sudo echo 'deb-src https://deb.nodesource.com/node_5.x trusty main' >> /etc/apt/sources.list.d/nodesource.list
     sudo apt-get update
     sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs
     sudo pip install ipython ipdb virtualenv
