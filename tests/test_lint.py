@@ -238,3 +238,49 @@ index 0000000..f119a7f
     problem = lint.problems[0]
     assert problem.filename == 'a.js'
     assert problem.line == 1
+
+
+def test_pep8_lint_a_py(app, caplog):
+    diff = """diff --git a/a.py b/a.py
+new file mode 100644
+index 0000000..fdeea15
+--- /dev/null
++++ b/a.py
+@@ -0,0 +1,6 @@
++# -*- coding: utf-8 -*-
++from __future__ import absolute_import, unicode_literals
++
++
++def add(a, b):
++    return a+ b
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append('pep8')
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'pep8'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 1
+    problem = lint.problems[0]
+    assert problem.filename == 'a.py'
+    assert problem.line == 6
