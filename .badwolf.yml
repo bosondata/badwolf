@@ -1,5 +1,4 @@
 script:
-  - pip install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com -r dev-requirements.txt
   - python setup.py develop
   - py.test --cov=badwolf -v --cov-config .coveragerc
 
