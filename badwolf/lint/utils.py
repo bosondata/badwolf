@@ -58,6 +58,10 @@ def parse_checkstyle(xml):
     for f in tree.iterfind('file'):
         filename = f.get('name')
         for err in f.iterfind('error'):
+            severity = err.get('severity')
+            if severity == 'info':
+                continue
+
             line = err.get('line')
             message = err.get('message')
             if ',' in line:

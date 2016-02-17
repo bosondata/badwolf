@@ -284,3 +284,126 @@ index 0000000..fdeea15
     problem = lint.problems[0]
     assert problem.filename == 'a.py'
     assert problem.line == 6
+
+
+def test_jsonlint_a_json(app, caplog):
+    diff = """diff --git a/a.json b/a.json
+new file mode 100644
+index 0000000..266e19f
+--- /dev/null
++++ b/a.json
+@@ -0,0 +1 @@
++{"a": 1,}
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append('jsonlint')
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 1
+    problem = lint.problems[0]
+    assert problem.filename == 'a.json'
+    assert problem.line == 1
+
+
+def test_shellcheck_a_sh(app, caplog):
+    diff = """diff --git a/a.sh b/a.sh
+new file mode 100644
+index 0000000..9fb9840
+--- /dev/null
++++ b/a.sh
+@@ -0,0 +1 @@
++echo $1
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append('shellcheck')
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'shellcheck'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 1
+    problem = lint.problems[0]
+    assert problem.filename == 'a.sh'
+    assert problem.line == 1
+
+
+def test_csslint_a_css(app, caplog):
+    diff = """diff --git a/a.css b/a.css
+new file mode 100644
+index 0000000..5512dae
+--- /dev/null
++++ b/a.css
+@@ -0,0 +1 @@
++.a {}
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append('csslint')
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'csslint'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 1
+    problem = lint.problems[0]
+    assert problem.filename == 'a.css'
+    assert problem.line == 1

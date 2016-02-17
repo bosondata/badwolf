@@ -11,6 +11,9 @@ from badwolf.lint.linters.eslint import ESLinter
 from badwolf.lint.linters.flake8 import Flake8Linter
 from badwolf.lint.linters.jscs import JSCSLinter
 from badwolf.lint.linters.pep8 import PEP8Linter
+from badwolf.lint.linters.csslint import CSSLinter
+from badwolf.lint.linters.shellcheck import ShellCheckLinter
+from badwolf.lint.linters.jsonlint import JSONLinter
 
 
 logger = logging.getLogger(__name__)
@@ -22,6 +25,9 @@ class LintProcessor(object):
         'flake8': Flake8Linter,
         'jscs': JSCSLinter,
         'pep8': PEP8Linter,
+        'csslint': CSSLinter,
+        'shellcheck': ShellCheckLinter,
+        'jsonlint': JSONLinter,
     }
 
     def __init__(self, context, spec, working_dir):
