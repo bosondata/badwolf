@@ -333,8 +333,9 @@ new file mode 100644
 index 0000000..9fb9840
 --- /dev/null
 +++ b/a.sh
-@@ -0,0 +1 @@
-+echo $1
+@@ -0,0 +2 @@
++#!/bin/sh
++$foo=42
 """
 
     context = TestContext(
@@ -362,10 +363,10 @@ index 0000000..9fb9840
 
         assert load_changes.called
 
-    assert len(lint.problems) == 1
+    assert len(lint.problems) > 0
     problem = lint.problems[0]
     assert problem.filename == 'a.sh'
-    assert problem.line == 1
+    assert problem.line == 2
 
 
 def test_csslint_a_css(app, caplog):
