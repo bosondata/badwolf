@@ -74,9 +74,10 @@ Vagrant.configure(2) do |config|
     sudo echo 'deb-src https://deb.nodesource.com/node_5.x trusty main' >> /etc/apt/sources.list.d/nodesource.list
     sudo apt-get update
     sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs
+    sudo apt-get install -y shellcheck
     sudo pip install ipython ipdb virtualenv
     sudo pip install -U -r /vagrant/dev-requirements.txt
-    sudo npm install -g jscs eslint
+    sudo npm install -g jscs eslint csslint sass-lint jsonlint
     cd /vagrant && sudo python setup.py develop && cd -
   SHELL
 end
