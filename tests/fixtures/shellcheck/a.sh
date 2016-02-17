@@ -1,1 +1,2 @@
-echo $1
+#!/bin/sh
+$foo=42
