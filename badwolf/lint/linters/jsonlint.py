@@ -13,14 +13,10 @@ _LINE_RE = re.compile(r'^(.+)?: line (\d+), col \d+, (.+)$', re.I)
 
 class JSONLinter(Linter):
     name = 'jsonlint'
+    default_pattern = '*.json'
 
     def is_usable(self):
         return in_path('jsonlint') or npm_exists('jsonlint')
-
-    def match_file(self, filename):
-        base = os.path.basename(filename)
-        _, ext = os.path.splitext(base)
-        return ext.lower() == '.json'
 
     def lint_files(self, files):
         for file in files:
