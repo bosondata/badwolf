@@ -55,12 +55,12 @@ class Specification(object):
                 env_map[key] = val
             env_map_list.append(env_map)
 
-        linters = cls._get_list(conf.get('linter', []))
+        linters = cls._parse_linters(cls._get_list(conf.get('linter', [])))
 
         spec = cls()
         spec.services = services
         spec.scripts = scripts
-        spec.dockerfile = dockerfile
+        spec.dockerfile = dockerfile.strip()
         spec.after_success = after_success
         spec.after_failure = after_failure
         spec.branch = branch
@@ -75,3 +75,25 @@ class Specification(object):
         if isinstance(value, list):
             return value
         return [value]
+
+    @classmethod
+    def _parse_linters(cls, linters):
+        ret = []
+        for linter in linters:
+            info = ObjectDict()
+            if isinstance(linter, dict):
+                name = linter.get('name')
+                pattern = linter.get('pattern')
+                if not name:
+                    continue
+
+                info.update(linter)
+            else:
+                name = linter
+                pattern = None
+
+            info['name'] = name.strip()
+            info['pattern'] = pattern
+            ret.append(info)
+
+        return ret

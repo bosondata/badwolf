@@ -9,14 +9,10 @@ from badwolf.lint.utils import in_path, npm_exists, run_command, parse_checkstyl
 
 class ESLinter(Linter):
     name = 'eslint'
+    default_pattern = '*.js'
 
     def is_usable(self):
         return in_path('eslint') or npm_exists('eslint')
-
-    def match_file(self, filename):
-        base = os.path.basename(filename)
-        _, ext = os.path.splitext(base)
-        return ext.lower() == '.js'
 
     def lint_files(self, files):
         command = self.create_command(files)
