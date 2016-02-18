@@ -180,7 +180,7 @@ ol li {
             {% endfor %}
             </ul>
             <h2>Logs</h2>
-            <pre>{{ logs }}</pre>
+            <pre>{{ logs|strip_term_colors }}</pre>
           </td>
         </tr>
       </table>
