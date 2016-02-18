@@ -14,6 +14,7 @@ from badwolf.lint.linters.pep8 import PEP8Linter
 from badwolf.lint.linters.csslint import CSSLinter
 from badwolf.lint.linters.shellcheck import ShellCheckLinter
 from badwolf.lint.linters.jsonlint import JSONLinter
+from badwolf.lint.linters.yamllint import YAMLLinter
 
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class LintProcessor(object):
         'csslint': CSSLinter,
         'shellcheck': ShellCheckLinter,
         'jsonlint': JSONLinter,
+        'yamllint': YAMLLinter,
     }
 
     def __init__(self, context, spec, working_dir):
