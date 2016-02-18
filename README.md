@@ -8,6 +8,7 @@ Features:
 2. Supports multiple test scripts
 3. Supports multiple after success/failure scripts
 4. Supports E-mail notification
+5. Supports code linting
 
 ## Installation
 
@@ -80,6 +81,20 @@ Fields:
 4. ``after_failure``: command(s) to run after failure, ``str`` or ``list``
 5. ``service``: service(s) to start before run script(s), ``str`` or ``list``
 6. ``env``: envrionment variable(s), ``str`` or ``list``, only the first item will be used currently. Eg: ``env: X=1 Y=2 Z=3``
+7. ``linter``: code linter(s), ``str`` or ``list``
 
 ``Dockerfile`` should set ``FROM`` as ``messense/badwolf-test-runner`` in order to use [badwolf-runner](https://bitbucket.org/deepanalyzer/badwolf-runner/overview) to run tests.
-But surely you can build your own docker image and use it as long as you put ``badwolf-runner`` binary in its executable path.
+But surely you can build your own docker image and use it as long as you put ``badwolf-run`` binary in its executable path.
+
+if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as default Docker image to run tests.
+
+## Avaliable linters
+
+1. ``flake8``: Lint Python codes with flake8
+2. ``pep8``: Lint Python codes with pep8
+3. ``jscs``: Lint JavaScript codes with jscs
+4. ``eslint``: Lint ECMAScript 6 codes with eslint
+5. ``csslint``: Lint CSS codes with csslint
+6. ``shellcheck``: Lint bash/sh/zsh shell scripts with shellcheck
+7. ``yamllint``: Lint YAML codes with yamllint
+8. ``jsonlint``: Lint JSON codes with jsonlint
