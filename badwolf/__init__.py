@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import re
+
+
+_TERM_COLOR_RE = re.compile(r'\[\d+m(.*)\[0m', re.I)
 
 
 def create_app(config=None):
@@ -8,6 +12,7 @@ def create_app(config=None):
     app = _create_app(config)
 
     register_extensions(app)
+    register_filters(app)
     register_blueprints(app)
     register_error_handlers(app)
     return app
@@ -35,3 +40,11 @@ def register_extensions(app):
     sentry.init_app(app)
     mail.init_app(app)
     bitbucket.init_app(app)
+
+
+def register_filters(app):
+
+    @app.template_filter()
+    def strip_term_colors(value):
+        """Strip terminal color codes"""
+        return _TERM_COLOR_RE.sub(lambda x: x.group(1), value)
