@@ -169,7 +169,7 @@ ol li {
                 <p>Commit message: <a href="https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}">{{ context.message }}</a></p>
             {% endif %}
             {% if context.type == 'pullrequest' %}
-                <p>Pull Request: {{ context.message }}</a></p>
+                <p>Pull Request: <a href="https://bitbucket.org/{{ context.repository }}/pull-requests/{{ context.pr_id }}">{{ context.message }}</a></p>
             {% endif %}
             <p>Task ID: {{ task_id }}</p>
             <p>Exit code: {{ exit_code }}</p>
