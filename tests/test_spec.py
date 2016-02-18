@@ -140,3 +140,39 @@ def test_parse_env_multi_list():
     assert env1['X'] == '3'
     assert env1['Y'] == '2'
     assert env1['Z'] == '1'
+
+
+def test_parse_simple_linter():
+    s = """linter: flake8"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.linters) == 1
+    linter0 = spec.linters[0]
+    assert linter0.name == 'flake8'
+    assert linter0.pattern is None
+
+
+def test_parse_linter_with_pattern():
+    s = """linter: {name: "flake8", pattern: "*.py", whatever: 123}"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.linters) == 1
+    linter0 = spec.linters[0]
+    assert linter0.name == 'flake8'
+    assert linter0.pattern == '*.py'
+    assert linter0.whatever == 123
+
+
+def test_parse_multi_linters_with_pattern():
+    s = """linter:
+  - {name: "flake8", pattern: "*.py"}
+  - jscs"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.linters) == 2
+    linter0 = spec.linters[0]
+    assert linter0.name == 'flake8'
+    assert linter0.pattern == '*.py'
+    linter1 = spec.linters[1]
+    assert linter1.name == 'jscs'
+    assert linter1.pattern is None

@@ -9,14 +9,10 @@ from badwolf.lint.utils import in_path, npm_exists, run_command, parse_checkstyl
 
 class CSSLinter(Linter):
     name = 'csslint'
+    default_pattern = '*.css'
 
     def is_usable(self):
         return in_path('csslint') or npm_exists('csslint')
-
-    def match_file(self, filename):
-        base = os.path.basename(filename)
-        _, ext = os.path.splitext(base)
-        return ext.lower() == '.css'
 
     def lint_files(self, files):
         command = self.create_command(files)

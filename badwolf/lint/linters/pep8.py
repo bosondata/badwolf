@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-import os
 import logging
 
 from badwolf.lint import Problem
@@ -13,14 +12,10 @@ logger = logging.getLogger(__name__)
 
 class PEP8Linter(Linter):
     name = 'pep8'
+    default_pattern = '*.py'
 
     def is_usable(self):
         return in_path('pep8')
-
-    def match_file(self, filename):
-        base = os.path.basename(filename)
-        _, ext = os.path.splitext(base)
-        return ext.lower() == '.py'
 
     def lint_files(self, files):
         command = ['pep8']
