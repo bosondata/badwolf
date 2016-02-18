@@ -85,13 +85,14 @@ class LintProcessor(object):
             self.update_build_status('SUCCESSFUL')
 
     def _execute_linters(self, files):
-        for name in self.spec.linters:
+        for linter_option in self.spec.linters:
+            name = linter_option.name
             linter_cls = self.LINTERS.get(name)
             if not linter_cls:
                 logger.info('Linter %s not found, ignore.', name)
                 continue
 
-            linter = linter_cls(self.working_dir, self.problems)
+            linter = linter_cls(self.working_dir, self.problems, linter_option)
             if not linter.is_usable():
                 logger.info('Linter %s is not usable, ignore.', name)
                 continue

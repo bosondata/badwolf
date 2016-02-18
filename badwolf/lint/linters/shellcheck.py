@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-import os
-
 from badwolf.lint import Problem
 from badwolf.lint.linters import Linter
 from badwolf.lint.utils import in_path, run_command, parse_checkstyle
@@ -9,14 +7,10 @@ from badwolf.lint.utils import in_path, run_command, parse_checkstyle
 
 class ShellCheckLinter(Linter):
     name = 'shellcheck'
+    default_pattern = '*.sh'
 
     def is_usable(self):
         return in_path('shellcheck')
-
-    def match_file(self, filename):
-        base = os.path.basename(filename)
-        _, ext = os.path.splitext(base)
-        return ext.lower() == '.sh'
 
     def lint_files(self, files):
         command = self.create_command(files)

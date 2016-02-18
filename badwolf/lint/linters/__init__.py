@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import os
+import re
 import logging
+import fnmatch
 
 
 logger = logging.getLogger(__name__)
@@ -9,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Linter(object):
     name = ''
+    default_pattern = ''
 
     def __init__(self, working_dir, problems, options=None):
         self.working_dir = working_dir
@@ -22,7 +25,19 @@ class Linter(object):
     def match_file(self, filename):
         """Used to check if files can be handled by this linter,
         Often this will just file extension checks."""
-        return True
+        pattern = self.options.get('pattern') or self.default_pattern
+        if not pattern:
+            return True
+        if fnmatch.fnmatch(filename, pattern):
+            # 先尝试 glob 匹配
+            return True
+        try:
+            if re.match(pattern, filename, re.I):
+                # 否则尝试正则表达式匹配
+                return True
+        except re.error:
+            pass
+        return False
 
     def lint_files(self, files):
         """Lint all matched files, should yield all problems found"""
