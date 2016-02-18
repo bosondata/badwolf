@@ -176,3 +176,13 @@ def test_parse_multi_linters_with_pattern():
     linter1 = spec.linters[1]
     assert linter1.name == 'jscs'
     assert linter1.pattern is None
+
+
+def test_parse_linter_with_regex_pattern():
+    s = """linter: {name: "flake8", pattern: '.*\.(sls|yml|yaml)$'}"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.linters) == 1
+    linter0 = spec.linters[0]
+    assert linter0.name == 'flake8'
+    assert linter0.pattern == '.*\.(sls|yml|yaml)$'
