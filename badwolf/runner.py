@@ -147,6 +147,9 @@ class TestRunner(object):
         logger.info('Cloning %s to %s...', self.context.clone_url, self.clone_path)
         git.Git().clone(self.context.clone_url, self.clone_path)
 
+        # Change directory to clone_path
+        os.chdir(self.clone_path)
+
         if self.context.target:
             logger.info('Checkout branch %s', self.context.target['branch']['name'])
             git.Git(self.clone_path).checkout(self.context.target['branch']['name'])
