@@ -17,7 +17,7 @@ from badwolf.utils import to_text
 from badwolf.spec import Specification
 from badwolf.lint.processor import LintProcessor
 from badwolf.extensions import bitbucket
-from badwolf.bitbucket import BuildStatus, BitbucketAPIError
+from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest
 
 
 logger = logging.getLogger(__name__)
@@ -68,8 +68,16 @@ class TestRunner(object):
 
         try:
             self.clone_repository()
-        except git.GitCommandError:
+        except git.GitCommandError as e:
             logger.exception('Git command error')
+            self.update_build_status('FAILED')
+            if self.context.pr_id:
+                content = 'Git error: {}'.format(to_text(e))
+                pr = PullRequest(bitbucket, self.context.repository)
+                pr.comment(
+                    self.context.pr_id,
+                    content
+                )
             return
 
         if not self.validate_settings():
@@ -133,7 +141,7 @@ class TestRunner(object):
             git.Git(self.clone_path).checkout(self.context.target['branch']['name'])
 
             logger.info(
-                'Mergeing branch %s into %s',
+                'Merging branch %s into %s',
                 self.context.source['branch']['name'],
                 self.context.target['branch']['name']
             )
