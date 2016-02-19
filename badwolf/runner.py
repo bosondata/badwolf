@@ -18,7 +18,7 @@ from badwolf.utils import to_text
 from badwolf.spec import Specification
 from badwolf.lint.processor import LintProcessor
 from badwolf.extensions import bitbucket
-from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest
+from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest, Changesets
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class TestRunner(object):
 
         self.build_status = BuildStatus(
             bitbucket,
-            context.repository,
+            self.repo_full_name,
             context.source['commit']['hash'],
             'badwolf/test',
             'http://badwolf.bosondata.net',
@@ -72,13 +72,21 @@ class TestRunner(object):
         except git.GitCommandError as e:
             logger.exception('Git command error')
             self.update_build_status('FAILED')
+            content = ':broken_heart: **Git error**: {}'.format(to_text(e))
             if self.context.pr_id:
-                content = ':broken_heart: **Git error**: {}'.format(to_text(e))
-                pr = PullRequest(bitbucket, self.context.repository)
+                pr = PullRequest(bitbucket, self.repo_full_name)
                 pr.comment(
                     self.context.pr_id,
                     content
                 )
+            else:
+                cs = Changesets(bitbucket, self.repo_full_name)
+                cs.comment(
+                    self.context.source['commit']['hash'],
+                    content
+                )
+
+            shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
             return
 
         if not self.validate_settings():
@@ -90,6 +98,7 @@ class TestRunner(object):
             docker_image_name = self.get_docker_image()
             if not docker_image_name:
                 self.update_build_status('FAILED')
+                shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
                 return
 
             exit_code, output = self.run_tests_in_container(docker_image_name)
@@ -311,8 +320,14 @@ class TestRunner(object):
 
         content = ':bar_chart: Code coverage: **{}%**'.format(rate)
         if self.context.pr_id:
-            pr = PullRequest(bitbucket, self.context.repository)
+            pr = PullRequest(bitbucket, self.repo_full_name)
             pr.comment(
                 self.context.pr_id,
+                content
+            )
+        else:
+            cs = Changesets(bitbucket, self.repo_full_name)
+            cs.comment(
+                self.context.source['commit']['hash'],
                 content
             )
