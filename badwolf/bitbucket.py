@@ -318,6 +318,27 @@ class PullRequest(object):
         return patch
 
 
+class Changesets(object):
+    def __init__(self, client, repo):
+        self.client = client
+        self.repo = repo
+
+    def comment(self, node, content, line_from=None, line_to=None,
+                parent_id=None, filename=None):
+        endpoint = '1.0/repositories/{repo}/changesets/{node}/comments'.format(
+            repo=self.repo,
+            node=node,
+        )
+        data = optionaldict(
+            content=content,
+            line_from=line_from,
+            line_to=line_to,
+            parent_id=parent_id,
+            filename=filename,
+        )
+        return self.client.post(endpoint, data=data)
+
+
 class FlaskBitbucket(object):
     def __init__(self, app=None):
         self.app = app
