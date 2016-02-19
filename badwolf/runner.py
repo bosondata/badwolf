@@ -72,7 +72,7 @@ class TestRunner(object):
             logger.exception('Git command error')
             self.update_build_status('FAILED')
             if self.context.pr_id:
-                content = 'Git error: {}'.format(to_text(e))
+                content = ':broken_heart: **Git error**: {}'.format(to_text(e))
                 pr = PullRequest(bitbucket, self.context.repository)
                 pr.comment(
                     self.context.pr_id,
