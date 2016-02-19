@@ -13,7 +13,11 @@ def manage():
               default='0.0.0.0', help='Server host')
 @click.option('--port', '-p', type=int,
               default=8000, help='Server port')
-def runserver(host, port):
+@click.option('--reload', is_flag=True,
+              default=False, help='Auto reload when codes changed')
+@click.option('--debug', is_flag=True,
+              default=False, help='Use debugger')
+def runserver(host, port, reload, debug):
     """Starts a development server"""
     from werkzeug.serving import run_simple
     from badwolf.wsgi import app
@@ -24,8 +28,8 @@ def runserver(host, port):
         host,
         port,
         app,
-        use_reloader=True,
-        use_debugger=True,
+        use_reloader=reload,
+        use_debugger=debug,
     )
 
 
