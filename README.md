@@ -25,7 +25,7 @@ $ python setup.py develop
 
 ## Configuration
 
-There are several ways to configure badwolf, settings loading by order below:
+There are several ways to configure badwolf, settings loading by orders below:
 
 1. Try to load from ``~/.badwolf.conf.py``
 2. Try to use ``BADWOLF_CONF`` environment variable to set configuration file path and load it
@@ -88,7 +88,7 @@ But surely you can build your own docker image and use it as long as you put ``b
 
 if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as default Docker image to run tests.
 
-## Avaliable linters
+## Available linters
 
 1. ``flake8``: Lint Python codes with flake8
 2. ``pep8``: Lint Python codes with pep8
