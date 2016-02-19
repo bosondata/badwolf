@@ -28,9 +28,12 @@ class Linter(object):
         pattern = self.options.get('pattern') or self.default_pattern
         if not pattern:
             return True
-        if fnmatch.fnmatch(filename, pattern):
-            # 先尝试 glob 匹配
-            return True
+
+        globs = pattern.split()
+        for glob in globs:
+            if fnmatch.fnmatch(filename, glob):
+                # 先尝试 glob 匹配
+                return True
         try:
             if re.match(pattern, filename, re.I):
                 # 否则尝试正则表达式匹配
