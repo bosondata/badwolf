@@ -9,7 +9,6 @@ import logging
 import tempfile
 
 import git
-import coverage
 from flask import current_app
 from docker import Client
 from docker.errors import APIError, DockerException
@@ -106,7 +105,6 @@ class TestRunner(object):
                 # Success
                 logger.info('Test succeed for repo: %s', self.repo_full_name)
                 self.update_build_status('SUCCESSFUL')
-                self.report_code_coverage()
             else:
                 # Failed
                 logger.info(
@@ -146,9 +144,6 @@ class TestRunner(object):
 
         logger.info('Cloning %s to %s...', self.context.clone_url, self.clone_path)
         git.Git().clone(self.context.clone_url, self.clone_path)
-
-        # Change directory to clone_path
-        os.chdir(self.clone_path)
 
         if self.context.target:
             logger.info('Checkout branch %s', self.context.target['branch']['name'])
@@ -303,37 +298,4 @@ class TestRunner(object):
                 'Test failed for repository {}'.format(self.repo_full_name),
                 'test_failure',
                 context
-            )
-
-    def report_code_coverage(self):
-        """Report code coverage
-
-        Only Python coverage supported for now
-        """
-        filename = '.coverage'
-        path = os.path.join(self.clone_path, filename)
-        if not os.path.isfile(path):
-            logger.info('Coverage file not found, ignore')
-            return
-
-        cov = coverage.Coverage(filename)
-        try:
-            cov.load()
-            rate = round(cov.report(), 2)
-        except coverage.CoverageException:
-            logger.exception('Get coverage report failed')
-            return
-
-        content = ':bar_chart: Code coverage: **{}%**'.format(rate)
-        if self.context.pr_id:
-            pr = PullRequest(bitbucket, self.repo_full_name)
-            pr.comment(
-                self.context.pr_id,
-                content
-            )
-        else:
-            cs = Changesets(bitbucket, self.repo_full_name)
-            cs.comment(
-                self.context.source['commit']['hash'],
-                content
             )
