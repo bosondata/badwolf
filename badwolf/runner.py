@@ -310,12 +310,14 @@ class TestRunner(object):
         filename = '.coverage'
         path = os.path.join(self.clone_path, filename)
         if not os.path.isfile(path):
+            logger.info('Coverage file not found, ignore')
             return
 
         cov = coverage.Coverage(filename)
         try:
             rate = round(cov.report(), 2)
         except coverage.CoverageException:
+            logger.exception('Get coverage report failed')
             return
 
         content = ':bar_chart: Code coverage: **{}%**'.format(rate)
