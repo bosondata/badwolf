@@ -9,6 +9,7 @@ import logging
 import tempfile
 
 import git
+import coverage
 from flask import current_app
 from docker import Client
 from docker.errors import APIError, DockerException
@@ -96,6 +97,7 @@ class TestRunner(object):
                 # Success
                 logger.info('Test succeed for repo: %s', self.repo_full_name)
                 self.update_build_status('SUCCESSFUL')
+                self.report_code_coverage()
             else:
                 # Failed
                 logger.info(
@@ -289,4 +291,28 @@ class TestRunner(object):
                 'Test failed for repository {}'.format(self.repo_full_name),
                 'test_failure',
                 context
+            )
+
+    def report_code_coverage(self):
+        """Report code coverage
+
+        Only Python coverage supported for now
+        """
+        filename = '.coverage'
+        path = os.path.join(self.clone_path, filename)
+        if not os.path.isfile(path):
+            return
+
+        cov = coverage.Coverage(filename)
+        try:
+            rate = round(cov.report(), 2)
+        except coverage.CoverageException:
+            return
+
+        content = ':bar_chart: Code coverage: **{}%**'.format(rate)
+        if self.context.pr_id:
+            pr = PullRequest(bitbucket, self.context.repository)
+            pr.comment(
+                self.context.pr_id,
+                content
             )
