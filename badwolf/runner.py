@@ -318,6 +318,7 @@ class TestRunner(object):
 
         cov = coverage.Coverage(filename)
         try:
+            cov.load()
             rate = round(cov.report(), 2)
         except coverage.CoverageException:
             logger.exception('Get coverage report failed')
