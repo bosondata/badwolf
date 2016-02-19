@@ -217,7 +217,16 @@ class TestRunner(object):
             environment = self.spec.environments[0]
 
         # TODO: Add more test context related env vars
-        environment['BADWOLF_BRANCH'] = self.branch
+        environment.update({
+            'CI': 'true',
+            'CI_NAME': 'badwolf',
+            'BADWOLF_BRANCH': self.branch,
+            'BADWOLF_COMMIT': self.context.source['commit']['hash'],
+            'BADWOLF_BUILD_DIR': '/mnt/src',
+            'BADWOLF_REPO_SLUG': self.repo_full_name,
+        })
+        if self.context.pr_id:
+            environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
 
         container = self.docker.create_container(
             docker_image_name,
