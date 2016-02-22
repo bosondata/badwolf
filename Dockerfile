@@ -1,4 +1,4 @@
-FROM messense/badwolf-test-runner
+FROM messense/badwolf-test-runner:python
 MAINTAINER Messense Lv "messense@icloud.com"
 ADD dev-requirements.txt /tmp/dev-requirements.txt
 ADD requirements.txt /tmp/requirements.txt
