@@ -22,7 +22,7 @@ def runserver(host, port, reload, debug):
     from werkzeug.serving import run_simple
     from badwolf.wsgi import app
 
-    app.debug = True
+    app.debug = debug
 
     run_simple(
         host,
