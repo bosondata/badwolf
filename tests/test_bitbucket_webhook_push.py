@@ -4,6 +4,8 @@ import json
 
 from flask import url_for
 
+from badwolf.utils import to_text
+
 
 def test_invalid_http_header_bad_request(test_client):
     payload = '{}'
@@ -38,7 +40,7 @@ def test_repo_push_no_new_changes(test_client):
         }
     )
     assert res.status_code == 200
-    assert res.data == ''
+    assert to_text(res.data) == ''
 
 
 def test_repo_push_unsupported_push_type(test_client):
@@ -65,4 +67,4 @@ def test_repo_push_unsupported_push_type(test_client):
         }
     )
     assert res.status_code == 200
-    assert res.data == ''
+    assert to_text(res.data) == ''
