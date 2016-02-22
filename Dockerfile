@@ -18,8 +18,9 @@ RUN set -ex \
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_VERSION 5.6.0
 
-RUN apt-get update \
-    && apt-get install shellcheck \
+RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports restricted main universe" \
+    && apt-get update \
+    && apt-get install -y shellcheck \
     && pip install -U pip \
     && pip install -r /tmp/dev-requirements.txt \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
