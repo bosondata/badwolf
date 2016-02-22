@@ -28,4 +28,4 @@ RUN pip install -U pip \
     && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc \
     && npm config set color false -g \
     && npm install -g jscs eslint csslint sass-lint jsonlint \
-    rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
