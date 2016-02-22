@@ -18,7 +18,9 @@ RUN set -ex \
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_VERSION 5.6.0
 
-RUN pip install -U pip \
+RUN apt-get update \
+    && apt-get install shellcheck \
+    && pip install -U pip \
     && pip install -r /tmp/dev-requirements.txt \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
