@@ -1,7 +1,5 @@
 FROM messense/badwolf-test-runner:python
 MAINTAINER Messense Lv "messense@icloud.com"
-ADD dev-requirements.txt /tmp/dev-requirements.txt
-ADD requirements.txt /tmp/requirements.txt
 
 RUN set -ex \
   && for key in \
@@ -21,8 +19,7 @@ ENV NODE_VERSION 5.6.0
 RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports restricted main universe" \
     && apt-get update \
     && apt-get install -y shellcheck \
-    && pip install -U pip \
-    && pip install -r /tmp/dev-requirements.txt \
+    && pip install -U pip tox \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
     && gpg --verify SHASUMS256.txt.asc \

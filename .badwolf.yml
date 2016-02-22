@@ -1,6 +1,4 @@
-script:
-  - python setup.py develop > /dev/null
-  - py.test --cov=badwolf -v --cov-config .coveragerc
+script: tox --skip-missing-interpreters
 
 linter: flake8
 
