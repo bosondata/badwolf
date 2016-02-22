@@ -1,5 +1,5 @@
 script:
-  - python setup.py develop
+  - python setup.py develop > /dev/null
   - py.test --cov=badwolf -v --cov-config .coveragerc
 
 linter: flake8
