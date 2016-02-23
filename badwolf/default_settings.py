@@ -19,6 +19,7 @@ SENTRY_DSN = ''
 # Docker
 DOCKER_HOST = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
 DOCKER_API_TIMEOUT = 600
+DOCKER_RUN_TIMEOUT = 1200
 
 # Logging
 LOGGING = {
