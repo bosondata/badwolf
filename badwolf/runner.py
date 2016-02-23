@@ -10,6 +10,7 @@ import tempfile
 
 import git
 from flask import current_app
+from requests.exceptions import ReadTimeout
 from docker import Client
 from docker.errors import APIError, DockerException
 
@@ -255,9 +256,9 @@ class TestRunner(object):
 
         try:
             self.docker.start(container_id)
-            exit_code = self.docker.wait(container_id)
+            exit_code = self.docker.wait(container_id, current_app.config['DOCKER_RUN_TIMEOUT'])
             output = list(self.docker.logs(container_id))
-        except (APIError, DockerException) as e:
+        except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
             output = [str(e)]
 
