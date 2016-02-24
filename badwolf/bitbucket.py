@@ -210,26 +210,22 @@ class Bitbucket(object):
 class BuildStatus(object):
     def __init__(self, client, repo, revision, key, url):
         self.client = client
-        owner, slug = repo.split('/')
-        self.owner = owner
-        self.slug = slug
+        self.repo = repo
         self.revision = revision
         self.key = key
         self.url = url
 
     def get(self):
-        endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build/{key}'.format(
-            owner=self.owner,
-            slug=self.slug,
+        endpoint = '2.0/repositories/{repo}/commit/{revision}/statuses/build/{key}'.format(
+            repo=self.repo,
             revision=self.revision,
             key=self.key
         )
         return self.client.get(endpoint)
 
     def update(self, state, name=None, description=None):
-        endpoint = '2.0/repositories/{owner}/{slug}/commit/{revision}/statuses/build'.format(
-            owner=self.owner,
-            slug=self.slug,
+        endpoint = '2.0/repositories/{repo}/commit/{revision}/statuses/build'.format(
+            repo=self.repo,
             revision=self.revision
         )
         return self.client.post(
