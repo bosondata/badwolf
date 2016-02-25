@@ -16,6 +16,7 @@ from badwolf.lint.linters.shellcheck import ShellCheckLinter
 from badwolf.lint.linters.jsonlint import JSONLinter
 from badwolf.lint.linters.yamllint import YAMLLinter
 from badwolf.lint.linters.bandit import BanditLinter
+from badwolf.lint.linters.rstlint import RestructuredTextLinter
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class LintProcessor(object):
         'jsonlint': JSONLinter,
         'yamllint': YAMLLinter,
         'bandit': BanditLinter,
+        'rstlint': RestructuredTextLinter,
     }
 
     def __init__(self, context, spec, working_dir):
