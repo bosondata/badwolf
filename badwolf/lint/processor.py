@@ -15,6 +15,7 @@ from badwolf.lint.linters.csslint import CSSLinter
 from badwolf.lint.linters.shellcheck import ShellCheckLinter
 from badwolf.lint.linters.jsonlint import JSONLinter
 from badwolf.lint.linters.yamllint import YAMLLinter
+from badwolf.lint.linters.bandit import BanditLinter
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class LintProcessor(object):
         'shellcheck': ShellCheckLinter,
         'jsonlint': JSONLinter,
         'yamllint': YAMLLinter,
+        'bandit': BanditLinter,
     }
 
     def __init__(self, context, spec, working_dir):

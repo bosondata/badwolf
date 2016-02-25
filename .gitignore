@@ -20,6 +20,8 @@ sdist/
 var/
 include/
 man/
+etc/
+share/
 *.egg-info/
 .installed.cfg
 *.egg
