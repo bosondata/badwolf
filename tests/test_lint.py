@@ -590,3 +590,47 @@ index 0000000..fdeea15
     problem = lint.problems[0]
     assert problem.filename == 'b.pyx'
     assert problem.line == 6
+
+
+def test_bandit_lint_a_py(app, caplog):
+    diff = """diff --git a/a.py b/a.py
+new file mode 100644
+index 0000000..719cd56
+--- /dev/null
++++ b/a.py
+@@ -0,0 +1,4 @@
++try:
++    a = 1
++except Exception:
++    pass
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append(ObjectDict(name='bandit'))
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'bandit'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 1
+    problem = lint.problems[0]
+    assert problem.filename == 'a.py'
+    assert problem.line == 3

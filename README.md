@@ -98,3 +98,4 @@ if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as
 6. ``shellcheck``: Lint bash/sh/zsh shell scripts with shellcheck
 7. ``yamllint``: Lint YAML codes with yamllint
 8. ``jsonlint``: Lint JSON codes with jsonlint
+9. ``bandit``: Lint Python codes with bandit
