@@ -45,7 +45,7 @@ LOGGING = {
     },
     'formatters': {
         'default': {
-            'format': '%(asctime)s %(levelname)-2s %(pathname)s:%(lineno)-5d %(message)s',  # NOQA
+            'format': '%(asctime)s %(levelname)-2s %(name)s.%(funcName)s:%(lineno)-5d %(message)s',  # NOQA
         },
     },
 }
