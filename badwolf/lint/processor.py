@@ -83,11 +83,15 @@ class LintProcessor(object):
 
         self.problems.limit_to_changes()
 
+        has_error = any(p for p in self.problems if p.is_error)
         if len(self.problems):
             self._report()
-            self.update_build_status('FAILED')
         else:
             logger.info('No problems found when linting codes')
+
+        if has_error:
+            self.update_build_status('FAILED')
+        else:
             self.update_build_status('SUCCESSFUL')
 
     def _execute_linters(self, files):
