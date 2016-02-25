@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-import io
 import csv
 import logging
+
+import six
 
 from badwolf.lint import Problem
 from badwolf.lint.linters import Linter
@@ -26,7 +27,7 @@ class BanditLinter(Linter):
         if not output:
             raise StopIteration()
 
-        reader = csv.DictReader(io.BytesIO(output))
+        reader = csv.DictReader(six.StringIO(output))
         for row in reader:
             msg = '[{}] {}'.format(row['test_name'], row['issue_text'])
             yield Problem(
