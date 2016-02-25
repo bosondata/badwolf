@@ -90,12 +90,12 @@ if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as
 
 ## Available linters
 
-1. ``flake8``: Lint Python codes with flake8
-2. ``pep8``: Lint Python codes with pep8
-3. ``jscs``: Lint JavaScript codes with jscs
-4. ``eslint``: Lint ECMAScript 6 codes with eslint
-5. ``csslint``: Lint CSS codes with csslint
-6. ``shellcheck``: Lint bash/sh/zsh shell scripts with shellcheck
-7. ``yamllint``: Lint YAML codes with yamllint
-8. ``jsonlint``: Lint JSON codes with jsonlint
-9. ``bandit``: Lint Python codes with bandit
+1. ``flake8``: Lint Python codes with [flake8](http://flake8.readthedocs.org/en/latest/)
+2. ``pep8``: Lint Python codes with [pep8](http://pep8.readthedocs.org/en/latest/)
+3. ``jscs``: Lint JavaScript codes with [jscs](http://jscs.info/)
+4. ``eslint``: Lint ECMAScript 6 codes with [eslint](http://eslint.org/)
+5. ``csslint``: Lint CSS codes with [csslint](http://csslint.net/)
+6. ``shellcheck``: Lint bash/sh/zsh shell scripts with [shellcheck](https://github.com/koalaman/shellcheck)
+7. ``yamllint``: Lint YAML codes with [yamllint](https://github.com/adrienverge/yamllint)
+8. ``jsonlint``: Lint JSON codes with [jsonlint](https://github.com/zaach/jsonlint)
+9. ``bandit``: Lint Python codes with [bandit](https://github.com/openstack/bandit)
