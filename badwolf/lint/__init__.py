@@ -3,11 +3,12 @@ from __future__ import absolute_import, unicode_literals
 
 
 class Problem(object):
-    def __init__(self, filename, line, message, linter=None):
+    def __init__(self, filename, line, message, linter, is_error=True):
         self.filename = filename
         self.line = line
         self.message = message
         self.linter = linter
+        self.is_error = is_error
 
     def __hash__(self):
         return hash(self.__str__())
@@ -29,11 +30,8 @@ class Problems(object):
         self._items = set()
         self._changes = None
 
-    def add(self, filename, line=None, message=None, linter=None):
-        if isinstance(filename, Problem):
-            self._items.add(filename)
-        else:
-            self._items.add(Problem(filename, line, message, linter))
+    def add(self, problem):
+        self._items.add(problem)
 
     def set_changes(self, changes):
         self._changes = changes

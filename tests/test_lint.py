@@ -634,6 +634,7 @@ index 0000000..719cd56
     problem = lint.problems[0]
     assert problem.filename == 'a.py'
     assert problem.line == 3
+    assert not problem.is_error
 
 
 def test_rstlint_a_rst(app, caplog):

@@ -30,9 +30,11 @@ class BanditLinter(Linter):
         reader = csv.DictReader(six.StringIO(output))
         for row in reader:
             msg = '[{}] {}'.format(row['test_name'], row['issue_text'])
+            is_error = row['issue_severity'] != 'LOW'
             yield Problem(
                 row['filename'],
                 int(row['line_number']),
                 msg,
-                self.name
+                self.name,
+                is_error
             )
