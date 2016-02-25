@@ -1,6 +1,8 @@
 script: tox --skip-missing-interpreters
 
-linter: flake8
+linter:
+  - flake8
+  - bandit
 
 branch:
   - master
