@@ -215,7 +215,7 @@ class TestRunner(object):
                 logger.info('Running `docker build`...')
                 res = self.docker.build(self.clone_path, **build_options)
                 for line in res:
-                    logger.info('`docker build` : %s', line)
+                    logger.info('`docker build` : %s', line.strip())
 
         return docker_image_name
 
