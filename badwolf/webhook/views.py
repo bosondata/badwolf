@@ -60,6 +60,9 @@ def handle_repo_push(payload):
     if not latest_change['new'] or latest_change['new']['type'] != 'branch':
         logger.info('Unsupported push type: %s', latest_change['new']['type'])
         return
+    if not latest_change['commits']:
+        logger.warning('Can not find any commits')
+        return
 
     commit_hash = latest_change['commits'][0]['hash']
     commit_message = latest_change['commits'][0]['message']
