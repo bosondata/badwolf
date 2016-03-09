@@ -86,13 +86,15 @@ class LintProcessor(object):
         has_error = any(p for p in self.problems if p.is_error)
         if len(self.problems):
             self._report()
+            description = 'Found {} code issues'.format(len(self.problems))
         else:
+            description = 'No code issues found'
             logger.info('No problems found when linting codes')
 
         if has_error:
-            self.update_build_status('FAILED')
+            self.update_build_status('FAILED', description)
         else:
-            self.update_build_status('SUCCESSFUL')
+            self.update_build_status('SUCCESSFUL', description)
 
     def _execute_linters(self, files):
         for linter_option in self.spec.linters:
@@ -162,8 +164,8 @@ class LintProcessor(object):
         )
         return problem_count
 
-    def update_build_status(self, state):
+    def update_build_status(self, state, description=None):
         try:
-            self.build_status.update(state)
+            self.build_status.update(state, description=description)
         except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
