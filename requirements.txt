@@ -8,7 +8,6 @@ blinker>=1.4
 pyyaml>=3.11
 futures>=3.0.3
 flask-mail>=0.9.1
-requests>=2.9.1
 unidiff>=0.5.2
 optionaldict>=0.1.1
 flake8>=2.5.2
@@ -17,3 +16,5 @@ pep8>=1.7.0
 yamllint>=1.0.0
 bandit>=0.17.3
 restructuredtext-lint>=0.14.2
+certifi
+requests[security]
