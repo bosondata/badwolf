@@ -18,7 +18,7 @@ ENV NODE_VERSION 5.6.0
 
 RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports restricted main universe" \
     && apt-get update \
-    && apt-get install -y shellcheck \
+    && apt-get install -y shellcheck libffi-dev \
     && pip install -U pip tox \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
     && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
