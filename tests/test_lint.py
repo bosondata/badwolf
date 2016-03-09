@@ -511,8 +511,8 @@ index 0000000..1eccee8
 +++ b/a.yml
 @@ -0,0 +1,3 @@
 +---
-+a:
-+    b
++a: 1
++a: 2
 """
 
     context = TestContext(
