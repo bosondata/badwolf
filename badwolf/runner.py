@@ -71,7 +71,7 @@ class TestRunner(object):
             self.clone_repository()
         except git.GitCommandError as e:
             logger.exception('Git command error')
-            self.update_build_status('FAILED')
+            self.update_build_status('FAILED', 'Git clone repository failed')
             content = ':broken_heart: **Git error**: {}'.format(to_text(e))
             if self.context.pr_id:
                 pr = PullRequest(bitbucket, self.repo_full_name)
@@ -97,7 +97,7 @@ class TestRunner(object):
             self.update_build_status('INPROGRESS')
             docker_image_name = self.get_docker_image()
             if not docker_image_name:
-                self.update_build_status('FAILED')
+                self.update_build_status('FAILED', 'Build or get Docker image failed')
                 shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
                 return
 
@@ -105,7 +105,7 @@ class TestRunner(object):
             if exit_code == 0:
                 # Success
                 logger.info('Test succeed for repo: %s', self.repo_full_name)
-                self.update_build_status('SUCCESSFUL')
+                self.update_build_status('SUCCESSFUL', '1 of 1 test succeed')
             else:
                 # Failed
                 logger.info(
@@ -113,7 +113,7 @@ class TestRunner(object):
                     self.repo_full_name,
                     exit_code
                 )
-                self.update_build_status('FAILED')
+                self.update_build_status('FAILED', '1 of 1 test failed')
 
             end_time = time.time()
 
@@ -271,9 +271,9 @@ class TestRunner(object):
 
         return exit_code, output
 
-    def update_build_status(self, state):
+    def update_build_status(self, state, description=None):
         try:
-            self.build_status.update(state)
+            self.build_status.update(state, description=description)
         except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
 
