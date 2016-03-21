@@ -186,3 +186,20 @@ def test_parse_linter_with_regex_pattern():
     linter0 = spec.linters[0]
     assert linter0.name == 'flake8'
     assert linter0.pattern == '.*\.(sls|yml|yaml)$'
+
+
+def test_parse_privileged():
+    s = """privileged: True"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.privileged
+
+    s = """privileged: no"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert not spec.privileged
+
+    s = """linter: flake8"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert not spec.privileged

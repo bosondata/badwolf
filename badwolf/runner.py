@@ -244,12 +244,15 @@ class TestRunner(object):
             environment=environment,
             working_dir='/mnt/src',
             volumes=['/mnt/src'],
-            host_config=self.docker.create_host_config(binds={
-                self.clone_path: {
-                    'bind': '/mnt/src',
-                    'mode': 'rw',
-                },
-            })
+            host_config=self.docker.create_host_config(
+                privileged=self.spec.privileged,
+                binds={
+                    self.clone_path: {
+                        'bind': '/mnt/src',
+                        'mode': 'rw',
+                    },
+                }
+            )
         )
         container_id = container['Id']
         logger.info('Created container %s from image %s', container_id, docker_image_name)
