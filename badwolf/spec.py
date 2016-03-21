@@ -24,6 +24,7 @@ class Specification(object):
         self.branch = set()
         self.environments = []
         self.linters = []
+        self.privileged = False
 
     @classmethod
     def parse_file(cls, path):
@@ -56,6 +57,7 @@ class Specification(object):
             env_map_list.append(env_map)
 
         linters = cls._parse_linters(cls._get_list(conf.get('linter', [])))
+        privileged = conf.get('privileged', False)
 
         spec = cls()
         spec.services = services
@@ -66,6 +68,7 @@ class Specification(object):
         spec.branch = branch
         spec.environments = env_map_list
         spec.linters = linters
+        spec.privileged = privileged
         if isinstance(notification, dict) and notification.get('email'):
             spec.notification.emails = cls._get_list(notification['email'])
         return spec
