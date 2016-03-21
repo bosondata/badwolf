@@ -68,7 +68,7 @@ class Specification(object):
         spec.branch = branch
         spec.environments = env_map_list
         spec.linters = linters
-        spec.privileged = privileged
+        spec.privileged = bool(privileged)
         if isinstance(notification, dict) and notification.get('email'):
             spec.notification.emails = cls._get_list(notification['email'])
         return spec
