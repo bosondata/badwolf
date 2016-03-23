@@ -17,6 +17,7 @@ from badwolf.lint.linters.jsonlint import JSONLinter
 from badwolf.lint.linters.yamllint import YAMLLinter
 from badwolf.lint.linters.bandit import BanditLinter
 from badwolf.lint.linters.rstlint import RestructuredTextLinter
+from badwolf.lint.linters.pylint import PylintLinter
 
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ class LintProcessor(object):
         'yamllint': YAMLLinter,
         'bandit': BanditLinter,
         'rstlint': RestructuredTextLinter,
+        'pylint': PylintLinter,
     }
 
     def __init__(self, context, spec, working_dir):

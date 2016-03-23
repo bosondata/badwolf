@@ -677,3 +677,48 @@ index 0000000..4e46cf9
     problem = lint.problems[0]
     assert problem.filename == 'a.rst'
     assert problem.line == 2
+
+
+def test_pylint_lint_a_py(app, caplog):
+    diff = """diff --git a/a.py b/a.py
+new file mode 100644
+index 0000000..fdeea15
+--- /dev/null
++++ b/a.py
+@@ -0,0 +1,6 @@
++# -*- coding: utf-8 -*-
++from __future__ import absolute_import, unicode_literals
++
++
++def add(a, b):
++    return a+ b
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append(ObjectDict(name='pylint', pattern=None))
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'pylint'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 4
+    problem = lint.problems[0]
+    assert problem.filename == 'a.py'
