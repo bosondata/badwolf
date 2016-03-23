@@ -99,4 +99,5 @@ if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as
 7. ``yamllint``: Lint YAML codes with [yamllint](https://github.com/adrienverge/yamllint)
 8. ``jsonlint``: Lint JSON codes with [jsonlint](https://github.com/zaach/jsonlint)
 9. ``bandit``: Lint Python codes with [bandit](https://github.com/openstack/bandit)
-10. ``rstlint`` Lint RestructuredText codes with [restructuredtext-lint](https://github.com/twolfson/restructuredtext-lint)
+10. ``rstlint``: Lint RestructuredText codes with [restructuredtext-lint](https://github.com/twolfson/restructuredtext-lint)
+11. ``pylint``: Lint Python codes with [pylint](https://docs.pylint.org)
