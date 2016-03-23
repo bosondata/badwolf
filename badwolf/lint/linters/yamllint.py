@@ -26,7 +26,8 @@ class YAMLLinter(Linter):
 
         for line in output:
             filename, line, message = self._parse_line(line)
-            yield Problem(filename, line, message, self.name)
+            is_error = not message.startswith('[warning]')
+            yield Problem(filename, line, message, self.name, is_error)
 
     def _parse_line(self, line):
         parts = line.split(':', 3)
