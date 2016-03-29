@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import logging
 
+from badwolf.utils import to_text
 from badwolf.lint import Problem
 from badwolf.lint.linters import Linter
 from badwolf.lint.utils import in_path, run_command
@@ -30,7 +31,7 @@ class PylintLinter(Linter):
             raise StopIteration()
 
         for line in output:
-            parsed = self._parse_line(line)
+            parsed = self._parse_line(to_text(line))
             if parsed is None:
                 continue
 
