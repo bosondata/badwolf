@@ -44,4 +44,7 @@ class PylintLinter(Linter):
             return
 
         message = parts[2].strip()
-        return parts[0], int(parts[1]), message
+        try:
+            return parts[0], int(parts[1]), message
+        except ValueError:
+            return
