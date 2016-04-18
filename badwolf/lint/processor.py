@@ -128,9 +128,16 @@ class LintProcessor(object):
                 continue
 
             raw = comment['content']['raw']
-            filename = inline['path']
-            line_to = inline['to']
-            hash_set.add(hash('{}{}{}'.format(filename, line_to, raw)))
+            if self.context.cleanup_lint and raw.startswith(':broken_heart:'):
+                # Delete comment
+                try:
+                    self.pr.delete_comment(self.context.pr_id, comment['id'])
+                except BitbucketAPIError:
+                    logger.exception('Error deleting pull request comment')
+            else:
+                filename = inline['path']
+                line_to = inline['to']
+                hash_set.add(hash('{}{}{}'.format(filename, line_to, raw)))
 
         revision_before = self.context.target['commit']['hash']
         revision_after = self.context.source['commit']['hash']

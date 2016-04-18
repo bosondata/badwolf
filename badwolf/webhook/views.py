@@ -214,9 +214,10 @@ def handle_repo_commit_comment(payload):
 @register_event_handler('pullrequest:comment_created')
 def handle_pull_request_comment(payload):
     comment = payload['comment']
-    comment_content = comment['content']['raw']
+    comment_content = comment['content']['raw'].lower()
     retry = 'ci retry' in comment_content
     rebuild = 'ci rebuild' in comment_content
+    cleanup_lint = 'cleanup lint' in comment_content
     if not (retry or rebuild):
         return
 
@@ -244,6 +245,7 @@ def handle_pull_request_comment(payload):
         source,
         target,
         rebuild=rebuild,
-        pr_id=pr['id']
+        pr_id=pr['id'],
+        cleanup_lint=cleanup_lint,
     )
     run_test.delay(context)
