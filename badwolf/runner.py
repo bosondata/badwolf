@@ -28,7 +28,7 @@ class TestContext(object):
     """Test context"""
     def __init__(self, repository, clone_url, actor, type,
                  message, source, target=None, rebuild=False,
-                 pr_id=None):
+                 pr_id=None, cleanup_lint=False):
         self.repository = repository
         self.clone_url = clone_url
         self.actor = actor
@@ -38,6 +38,7 @@ class TestContext(object):
         self.target = target
         self.rebuild = rebuild
         self.pr_id = pr_id
+        self.cleanup_lint = cleanup_lint
 
 
 class TestRunner(object):
