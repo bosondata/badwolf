@@ -39,6 +39,9 @@ htmlcov/
 nosetests.xml
 coverage.xml
 
+# Profiling
+prof/
+
 # Translations
 *.mo
 

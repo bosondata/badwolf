@@ -212,10 +212,15 @@ class TestRunner(object):
                 else:
                     build_options['dockerfile'] = self.spec.dockerfile
 
+                build_success = False
                 logger.info('Running `docker build`...')
                 res = self.docker.build(self.clone_path, **build_options)
                 for line in res:
                     logger.info('`docker build` : %s', line.strip())
+                    if 'Successfully built' in line:
+                        build_success = True
+                if not build_success:
+                    return None
 
         return docker_image_name
 
