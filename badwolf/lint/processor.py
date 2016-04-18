@@ -87,11 +87,13 @@ class LintProcessor(object):
 
         has_error = any(p for p in self.problems if p.is_error)
         if len(self.problems):
-            self._report()
             description = 'Found {} code issues'.format(len(self.problems))
         else:
             description = 'No code issues found'
             logger.info('No problems found when linting codes')
+
+        # Report error or cleanup lint
+        self._report()
 
         if has_error:
             self.update_build_status('FAILED', description)
@@ -138,6 +140,9 @@ class LintProcessor(object):
                 filename = inline['path']
                 line_to = inline['to']
                 hash_set.add(hash('{}{}{}'.format(filename, line_to, raw)))
+
+        if len(self.problems) == 0:
+            return
 
         revision_before = self.context.target['commit']['hash']
         revision_after = self.context.source['commit']['hash']
