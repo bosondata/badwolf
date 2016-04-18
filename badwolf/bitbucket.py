@@ -301,6 +301,14 @@ class PullRequest(object):
             rs.extend(res['values'])
         return rs
 
+    def delete_comment(self, id, comment_id):
+        endpoint = '1.0/repositories/{repo}/pullrequests/{id}/comments/{cid}'.format(
+            repo=self.repo,
+            id=id,
+            cid=comment_id,
+        )
+        return self.client.delete(endpoint)
+
     def diff(self, id):
         from unidiff import PatchSet
 
