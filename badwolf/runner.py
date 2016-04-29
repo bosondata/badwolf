@@ -218,7 +218,7 @@ class TestRunner(object):
                 res = self.docker.build(self.clone_path, **build_options)
                 for line in res:
                     logger.info('`docker build` : %s', line.strip())
-                    if 'Successfully built' in line:
+                    if b'Successfully built' in line:
                         build_success = True
                 if not build_success:
                     return None
