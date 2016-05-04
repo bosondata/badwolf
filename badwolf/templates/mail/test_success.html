@@ -166,7 +166,7 @@ ol li {
             <p>Branch: <a href="https://bitbucket.org/{{ context.repository }}/src?at={{ branch }}">{{ branch }}</a></p>
             {% if context.type == 'commit' %}
                 <p>Commit: <a href="https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}">{{ context.source.commit.hash }}</a></p>
-                <p>Commit message: <a href="https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}">{{ context.message }}</a></p>
+                <p>{{ context.message }}</p>
             {% endif %}
             {% if context.type == 'pullrequest' %}
                 <p>Pull Request: <a href="https://bitbucket.org/{{ context.repository }}/pull-requests/{{ context.pr_id }}">{{ context.message }}</a></p>
