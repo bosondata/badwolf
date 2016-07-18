@@ -168,7 +168,7 @@ class Bitbucket(object):
         try:
             res.raise_for_status()
         except requests.RequestException as reqe:
-            if res.status_code == 401:
+            if res.status_code == 401 and isinstance(self._dispatcher, OAuth2Dispatcher):
                 # Access token expired
                 self.refresh_access_token()
                 return self.request(method, url, **kwargs)
