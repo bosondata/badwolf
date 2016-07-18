@@ -10,6 +10,23 @@ Features:
 4. Supports E-mail notification
 5. Supports code linting
 
+## Requirements
+
+1. Python 2.7
+2. Docker
+3. NodeJS
+
+You can configure the system by shell:
+
+```bash
+wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
+sudo echo 'deb https://deb.nodesource.com/node_5.x trusty main' > /etc/apt/sources.list.d/nodesource.list
+sudo echo 'deb-src https://deb.nodesource.com/node_5.x trusty main' >> /etc/apt/sources.list.d/nodesource.list
+sudo apt-get update
+sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs shellcheck
+sudo npm install -g jscs eslint csslint sass-lint jsonlint eslint-plugin-react
+```
+
 ## Installation
 
 ```bash
