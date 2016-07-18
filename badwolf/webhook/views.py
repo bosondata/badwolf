@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import json
 import logging
 
 from flask import Blueprint, request, current_app
@@ -33,7 +34,7 @@ def webhook_push():
     logger.info(
         'Incoming Bitbucket webhook request, event key: %s, payload: %s',
         event_key,
-        payload
+        json.dumps(payload, ensure_ascii=False)
     )
     if not payload:
         return ''
