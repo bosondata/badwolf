@@ -78,7 +78,7 @@ class LintProcessor(object):
             logger.info('No changed files found, ignore lint')
             return
 
-        self.update_build_status('INPROGRESS')
+        self.update_build_status('INPROGRESS', 'Lint in progress')
         files = [f.path for f in lint_files]
         self._execute_linters(files)
         logger.info('%d problems found before limit to changes', len(self.problems))
