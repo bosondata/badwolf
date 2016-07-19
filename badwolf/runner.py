@@ -95,7 +95,7 @@ class TestRunner(object):
             return
 
         if self.spec.scripts:
-            self.update_build_status('INPROGRESS')
+            self.update_build_status('INPROGRESS', 'Test in progress')
             docker_image_name = self.get_docker_image()
             if not docker_image_name:
                 self.update_build_status('FAILED', 'Build or get Docker image failed')
