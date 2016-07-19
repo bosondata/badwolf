@@ -65,8 +65,10 @@ def parse_checkstyle(xml):
             line = err.get('line')
             message = err.get('message')
             if ',' in line:
-                lines = [int(x) for x in line.split(',')]
+                lines = [int(x) for x in line.split(',') if x != 'undefined']
             else:
+                if line == 'undefined':
+                    continue
                 lines = [int(line)]
 
             for line in lines:
