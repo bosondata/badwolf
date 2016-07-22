@@ -40,7 +40,7 @@ setup(
     version='0.3.12',
     author='messense',
     author_email='messense@icloud.com',
-    packages=find_packages(),
+    packages=find_packages(exclude=('tests', 'tests.*')),
     keywords='ci, bitbucket',
     description='ci',
     long_description=long_description,
