@@ -18,7 +18,7 @@ class Flake8Linter(Linter):
         return in_path('flake8')
 
     def lint_files(self, files):
-        command = ['flake8']
+        command = ['flake8', '--filename', '*.py*']
         command += files
         _, output = run_command(command, split=True, cwd=self.working_dir)
         if not output:
