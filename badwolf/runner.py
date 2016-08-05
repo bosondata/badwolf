@@ -215,6 +215,7 @@ class TestRunner(object):
 
                 build_success = False
                 logger.info('Running `docker build`...')
+                self.update_build_status('INPROGRESS', 'Building Docker image')
                 res = self.docker.build(self.clone_path, **build_options)
                 for line in res:
                     logger.info('`docker build` : %s', line.strip())
@@ -265,6 +266,7 @@ class TestRunner(object):
 
         try:
             self.docker.start(container_id)
+            self.update_build_status('INPROGRESS', 'Running tests in Docker container')
             exit_code = self.docker.wait(container_id, current_app.config['DOCKER_RUN_TIMEOUT'])
             output = list(self.docker.logs(container_id))
         except (APIError, DockerException, ReadTimeout) as e:
