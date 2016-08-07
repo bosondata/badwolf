@@ -5,21 +5,23 @@ import sys
 
 import raven
 
-# is debugging
-DEBUG = False
+from badwolf.utils import yesish
 
-JSON_AS_ASCII = False
+# is debugging
+DEBUG = yesish(os.environ.get('BADWOLF_DEBUG', False))
+
+JSON_AS_ASCII = yesish(os.environ.get('JSON_AS_ASCII', False))
 
 # secret key
-SECRET_KEY = ''
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # Sentry
-SENTRY_DSN = ''
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
 
 # Docker
 DOCKER_HOST = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
-DOCKER_API_TIMEOUT = 600
-DOCKER_RUN_TIMEOUT = 1200
+DOCKER_API_TIMEOUT = int(os.environ.get('DOCKER_API_TIMEOUT', 600))
+DOCKER_RUN_TIMEOUT = int(os.environ.get('DOCKER_RUN_TIMEOUT', 1200))
 
 # Logging
 LOGGING = {
@@ -51,14 +53,14 @@ LOGGING = {
 }
 
 BADWOLF_PROJECT_CONF = '.badwolf.yml'
-AUTO_MERGE_ENABLED = True
-AUTO_MERGE_APPROVAL_COUNT = 3
+AUTO_MERGE_ENABLED = yesish(os.environ.get('AUTO_MERGE_ENABLED', True))
+AUTO_MERGE_APPROVAL_COUNT = int(os.environ.get('AUTO_MERGE_APPROVAL_COUNT', 3))
 
-BITBUCKET_OAUTH_KEY = ''
-BITBUCKET_OAUTH_SECRET = ''
+BITBUCKET_OAUTH_KEY = os.environ.get('BITBUCKET_OAUTH_KEY', '')
+BITBUCKET_OAUTH_SECRET = os.environ.get('BITBUCKET_OAUTH_SECRET', '')
 
-BITBUCKET_USERNAME = ''
-BITBUCKET_PASSWORD = ''
+BITBUCKET_USERNAME = os.environ.get('BITBUCKET_USERNAME', '')
+BITBUCKET_PASSWORD = os.environ.get('BITBUCKET_PASSWORD', '')
 
 # Sentry Release
 try:

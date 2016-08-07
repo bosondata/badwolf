@@ -28,3 +28,15 @@ def to_text(value, encoding='utf-8', errors='ignore'):
     if isinstance(value, six.binary_type):
         return value.decode(encoding, errors)
     return six.text_type(value)
+
+
+def yesish(value):
+    """Typecast booleanish environment variables to :py:class:`bool`.
+
+    :param string value: An environment variable value.
+    :returns: :py:class:`True` if ``value`` is ``1``, ``true``, or ``yes``
+        (case-insensitive); :py:class:`False` otherwise.
+    """
+    if isinstance(value, bool):
+        return value
+    return value.lower() in ('1', 'true', 'yes')
