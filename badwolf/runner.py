@@ -121,7 +121,7 @@ class TestRunner(object):
             context = {
                 'context': self.context,
                 'task_id': self.task_id,
-                'logs': ''.join(map(to_text, output)),
+                'logs': to_text(output),
                 'exit_code': exit_code,
                 'branch': self.branch,
                 'scripts': self.spec.scripts,
@@ -268,10 +268,10 @@ class TestRunner(object):
             self.docker.start(container_id)
             self.update_build_status('INPROGRESS', 'Running tests in Docker container')
             exit_code = self.docker.wait(container_id, current_app.config['DOCKER_RUN_TIMEOUT'])
-            output = list(self.docker.logs(container_id))
+            output = self.docker.logs(container_id)
         except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
-            output = [str(e)]
+            output = str(e)
 
             logger.exception('Docker error')
         finally:
