@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import sys
 import logging
 
 from badwolf.lint import Problem
@@ -18,7 +19,12 @@ class Flake8Linter(Linter):
         return in_path('flake8')
 
     def lint_files(self, files):
-        command = ['flake8', '--filename', '*.py*']
+        python_version = int(self.options.get('python_version', sys.version_info.major))
+        if python_version not in (2, 3):
+            python_version = sys.version_info.major
+
+        python = 'python{}'.format(python_version)
+        command = [python, '-m', 'flake8', '--filename', '*.py*']
         command += files
         _, output = run_command(command, split=True, cwd=self.working_dir)
         if not output:
