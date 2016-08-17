@@ -1,30 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-import sys
 import logging
 
 from badwolf.lint import Problem
-from badwolf.lint.linters import Linter
+from badwolf.lint.linters import PythonLinter
 from badwolf.lint.utils import in_path, run_command
 
 
 logger = logging.getLogger(__name__)
 
 
-class Flake8Linter(Linter):
+class Flake8Linter(PythonLinter):
     name = 'flake8'
-    default_pattern = '*.py'
 
     def is_usable(self):
         return in_path('flake8')
 
     def lint_files(self, files):
-        python_version = int(self.options.get('python_version', sys.version_info.major))
-        if python_version not in (2, 3):
-            python_version = sys.version_info.major
-
-        python = 'python{}'.format(python_version)
-        command = [python, '-m', 'flake8', '--filename', '*.py*']
+        command = [self.python_name, '-m', 'flake8', '--filename', '*.py*']
         command += files
         _, output = run_command(command, split=True, cwd=self.working_dir)
         if not output:
