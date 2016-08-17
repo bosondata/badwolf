@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
 import re
+import sys
 import logging
 import fnmatch
 
@@ -68,3 +69,15 @@ class Linter(object):
         if not old.endswith(os.path.sep):
             old = '{}{}'.format(old, os.path.sep)
         return filename.replace(old, '')
+
+
+class PythonLinter(Linter):
+    default_pattern = '*.py'
+
+    @property
+    def python_name(self):
+        python_version = int(self.options.get('python_version', sys.version_info.major))
+        if python_version not in (2, 3):
+            python_version = sys.version_info.major
+
+        return 'python{}'.format(python_version)

@@ -3,22 +3,21 @@ from __future__ import absolute_import, unicode_literals
 import logging
 
 from badwolf.lint import Problem
-from badwolf.lint.linters import Linter
+from badwolf.lint.linters import PythonLinter
 from badwolf.lint.utils import in_path, run_command
 
 
 logger = logging.getLogger(__name__)
 
 
-class PEP8Linter(Linter):
+class PEP8Linter(PythonLinter):
     name = 'pep8'
-    default_pattern = '*.py'
 
     def is_usable(self):
         return in_path('pep8')
 
     def lint_files(self, files):
-        command = ['pep8']
+        command = [self.python_name, '-m', 'pep8']
         command += files
         _, output = run_command(command, split=True, cwd=self.working_dir)
         if not output:
