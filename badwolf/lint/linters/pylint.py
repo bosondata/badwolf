@@ -4,22 +4,21 @@ import logging
 
 from badwolf.utils import to_text
 from badwolf.lint import Problem
-from badwolf.lint.linters import Linter
+from badwolf.lint.linters import PythonLinter
 from badwolf.lint.utils import in_path, run_command
 
 
 logger = logging.getLogger(__name__)
 
 
-class PylintLinter(Linter):
+class PylintLinter(PythonLinter):
     name = 'pylint'
-    default_pattern = '*.py'
 
     def is_usable(self):
         return in_path('pylint')
 
     def lint_files(self, files):
-        command = ['pylint', '-r', 'n', '-f', 'parseable']
+        command = [self.python_name, '-m', 'pylint', '-r', 'n', '-f', 'parseable']
         command += files
         _, output = run_command(
             command,
