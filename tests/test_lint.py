@@ -722,3 +722,45 @@ index 0000000..fdeea15
     assert len(lint.problems) == 4
     problem = lint.problems[0]
     assert problem.filename == 'a.py'
+
+
+def test_sasslint_lint_a_scss(app, caplog):
+    diff = """diff --git a/a.scss b/a.scss
+new file mode 100644
+index 0000000..48b3ebe
+--- /dev/null
++++ b/a.scss
+@@ -0,0 +1,3 @@
++.test {
++    background-color: "#FFF"
++}
+"""
+
+    context = TestContext(
+        'deepanalyzer/badwolf',
+        'git@bitbucket.org:deepanalyzer/badwolf.git',
+        None,
+        'pullrequest',
+        'message',
+        {'commit': {'hash': '000000'}},
+        {'commit': {'hash': '111111'}},
+        pr_id=1
+    )
+    spec = Specification()
+    spec.linters.append(ObjectDict(name='sasslint', pattern=None))
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'sasslint'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = None
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 3
+    problem = lint.problems[0]
+    assert problem.filename == 'a.scss'
