@@ -27,5 +27,5 @@ RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports re
     && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
     && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc \
     && npm config set color false -g \
-    && npm install -g jscs eslint csslint sass-lint jsonlint \
+    && npm install -g jscs eslint csslint sass-lint jsonlint stylelint \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
