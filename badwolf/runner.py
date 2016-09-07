@@ -220,7 +220,7 @@ class TestRunner(object):
                         build_success = True
                     log = to_text(json.loads(to_text(line))['stream'])
                     output.append(log)
-                    logger.info('`docker build` : %s', log)
+                    logger.info('`docker build` : %s', log.strip())
                 if not build_success:
                     return None, ''.join(output)
 
