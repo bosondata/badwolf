@@ -1,3 +1,5 @@
+dockerfile: Dockerfile.test
+
 script: tox --skip-missing-interpreters
 
 linter:
