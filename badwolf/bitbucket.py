@@ -63,13 +63,16 @@ class BasicAuthDispatcher(APIDispatcher):
             **kwargs
         )
 
-    def clone_repository(self, full_name, path):
+    def clone_repository(self, full_name, path, depth=None):
         clone_url = 'https://{username}:{password}@bitbucket.org/{name}.git'.format(
             username=self._username,
             password=self._password,
             name=full_name
         )
-        return git.Git().clone(clone_url, path)
+        if depth is None:
+            return git.Git().clone(clone_url, path)
+        else:
+            return git.Git().clone(clone_url, path, depth=depth)
 
 
 class OAuth2Dispatcher(APIDispatcher):
@@ -146,12 +149,15 @@ class OAuth2Dispatcher(APIDispatcher):
         kwargs['headers'] = headers
         return self._session.request(method, url, **kwargs)
 
-    def clone_repository(self, full_name, path):
+    def clone_repository(self, full_name, path, depth=None):
         clone_url = 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
             access_token=self._access_token,
             name=full_name
         )
-        return git.Git().clone(clone_url, path)
+        if depth is None:
+            return git.Git().clone(clone_url, path)
+        else:
+            return git.Git().clone(clone_url, path, depth=depth)
 
 
 class Bitbucket(object):
@@ -203,8 +209,8 @@ class Bitbucket(object):
     def delete(self, url, **kwargs):
         return self.request('DELETE', url, **kwargs)
 
-    def clone(self, repo_full_name, clone_path):
-        return self._dispatcher.clone_repository(repo_full_name, clone_path)
+    def clone(self, repo_full_name, clone_path, depth=None):
+        return self._dispatcher.clone_repository(repo_full_name, clone_path, depth)
 
 
 class BuildStatus(object):
@@ -370,5 +376,5 @@ class FlaskBitbucket(object):
     def delete(self, url, **kwargs):
         return self.client.delete(url, **kwargs)
 
-    def clone(self, repo_full_name, clone_path):
-        return self.client.clone(repo_full_name, clone_path)
+    def clone(self, repo_full_name, clone_path, depth=None):
+        return self.client.clone(repo_full_name, clone_path, depth)
