@@ -147,7 +147,7 @@ class TestRunner(object):
         )
 
         logger.info('Cloning %s to %s...', self.context.clone_url, self.clone_path)
-        bitbucket.clone(self.context.clone_url, self.clone_path, depth=50)
+        bitbucket.clone(self.repo_full_name, self.clone_path, depth=50)
 
         if self.context.target:
             logger.info('Checkout branch %s', self.context.target['branch']['name'])
