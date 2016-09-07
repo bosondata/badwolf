@@ -179,6 +179,10 @@ ol li {
                 <li>{{ script }}</li>
             {% endfor %}
             </ul>
+            {% if build_logs %}
+            <h2>Docker build logs</h2>
+            <pre>{{ build_logs }}</pre>
+            {% endif %}
             <h2>Logs</h2>
             <pre>{{ logs|strip_term_colors }}</pre>
           </td>

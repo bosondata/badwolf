@@ -31,7 +31,7 @@ def webhook_push():
         return 'Bad request', 400
 
     payload = request.get_json(force=True)
-    logger.info(
+    logger.debug(
         'Incoming Bitbucket webhook request, event key: %s, payload: %s',
         event_key,
         json.dumps(payload, ensure_ascii=False)
