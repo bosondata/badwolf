@@ -4,6 +4,7 @@ import os
 import io
 import time
 import uuid
+import json
 import shutil
 import logging
 import tempfile
@@ -96,7 +97,7 @@ class TestRunner(object):
 
         if self.spec.scripts:
             self.update_build_status('INPROGRESS', 'Test in progress')
-            docker_image_name = self.get_docker_image()
+            docker_image_name, build_output = self.get_docker_image()
             if not docker_image_name:
                 self.update_build_status('FAILED', 'Build or get Docker image failed')
                 shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
@@ -122,6 +123,7 @@ class TestRunner(object):
                 'context': self.context,
                 'task_id': self.task_id,
                 'logs': to_text(output),
+                'build_logs': to_text(build_output),
                 'exit_code': exit_code,
                 'branch': self.branch,
                 'scripts': self.spec.scripts,
@@ -188,14 +190,10 @@ class TestRunner(object):
 
     def get_docker_image(self):
         docker_image_name = self.repo_full_name.replace('/', '-')
+        output = []
         with self.lock:
             docker_image = self.docker.images(docker_image_name)
-            if docker_image and self.context.rebuild:
-                # Delete docker image first
-                self.docker.remove_image(docker_image_name, force=True)
-                docker_image = None
-
-            if not docker_image:
+            if not docker_image or self.context.rebuild:
                 dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
                 build_options = {
                     'tag': docker_image_name,
@@ -214,17 +212,19 @@ class TestRunner(object):
                     build_options['dockerfile'] = self.spec.dockerfile
 
                 build_success = False
-                logger.info('Running `docker build`...')
+                logger.info('Building Docker image %s', docker_image_name)
                 self.update_build_status('INPROGRESS', 'Building Docker image')
                 res = self.docker.build(self.clone_path, **build_options)
                 for line in res:
-                    logger.info('`docker build` : %s', line.strip())
                     if b'Successfully built' in line:
                         build_success = True
+                    log = to_text(json.loads(line)['stream'])
+                    output.append(log)
+                    logger.info('`docker build` : %s', log)
                 if not build_success:
-                    return None
+                    return None, ''.join(output)
 
-        return docker_image_name
+        return docker_image_name, ''.join(output)
 
     def run_tests_in_container(self, docker_image_name):
         command = '/bin/sh -c badwolf-run'
