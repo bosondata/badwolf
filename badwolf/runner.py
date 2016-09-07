@@ -218,7 +218,7 @@ class TestRunner(object):
                 for line in res:
                     if b'Successfully built' in line:
                         build_success = True
-                    log = to_text(json.loads(line)['stream'])
+                    log = to_text(json.loads(to_text(line))['stream'])
                     output.append(log)
                     logger.info('`docker build` : %s', log)
                 if not build_success:
