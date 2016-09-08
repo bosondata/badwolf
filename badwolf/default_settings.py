@@ -23,6 +23,19 @@ DOCKER_HOST = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
 DOCKER_API_TIMEOUT = int(os.environ.get('DOCKER_API_TIMEOUT', 600))
 DOCKER_RUN_TIMEOUT = int(os.environ.get('DOCKER_RUN_TIMEOUT', 1200))
 
+# Mail
+MAIL_SERVER = os.environ.get('MAIL_SERVER', '')
+MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+MAIL_USE_TLS = yesish(os.environ.get('MAIL_USE_TLS', True))
+MAIL_USE_SSL = yesish(os.environ.get('MAIL_USE_SSL', False))
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+MAIL_MAX_EMAILS = None
+MAIL_DEFAULT_SENDER = (
+    os.environ.get('MAIL_SENDER_NAME', 'badwolf'),
+    os.environ.get('MAIL_SENDER_ADDRESS', '')
+)
+
 # Logging
 LOGGING = {
     'version': 1,
