@@ -32,6 +32,9 @@ RUN apt-get update \
     ca-certificates \
     shellcheck \
     libffi-dev \
+    python \
+    python-dev \
+    python-pip \
     python3 \
     python3-dev \
     python3-setuptools \
@@ -47,7 +50,8 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && npm config set color false -g \
     && npm install -g jscs eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native
 
-RUN pip3 install -Ur requirements.txt \
+RUN pip install -Ur requirements.txt && \
+    pip3 install -Ur requirements.txt \
     && pip3 install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
