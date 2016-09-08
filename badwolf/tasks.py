@@ -5,8 +5,6 @@ import logging
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
-from flask import render_template
-
 from badwolf.extensions import mail, sentry
 
 
@@ -42,9 +40,8 @@ def async_task(f):
 
 
 @async_task
-def send_mail(recipients, subject, template, context):
+def send_mail(recipients, subject, html):
     logger.info('Sending email to %s', recipients)
-    html = render_template('mail/' + template + '.html', **context)
     mail.send_message(
         subject=subject,
         recipients=recipients,

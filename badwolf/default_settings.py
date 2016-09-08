@@ -76,6 +76,8 @@ BITBUCKET_OAUTH_SECRET = os.environ.get('BITBUCKET_OAUTH_SECRET', '')
 BITBUCKET_USERNAME = os.environ.get('BITBUCKET_USERNAME', '')
 BITBUCKET_PASSWORD = os.environ.get('BITBUCKET_PASSWORD', '')
 
+BADWOLF_LOG_DIR = os.environ.get('BADWOLF_LOG_DIR', '/var/lib/badwolf/log')
+
 # Sentry Release
 try:
     SENTRY_RELEASE = raven.fetch_package_version('badwolf')

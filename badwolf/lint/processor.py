@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import logging
 
+from flask import url_for
 from unidiff import UnidiffParseError
 
 from badwolf.extensions import bitbucket
@@ -48,12 +49,13 @@ class LintProcessor(object):
         self.working_dir = working_dir
         self.problems = Problems()
         self.pr = PullRequest(bitbucket, context.repository)
+        commit_hash = context.source['commit']['hash']
         self.build_status = BuildStatus(
             bitbucket,
             context.repository,
-            context.source['commit']['hash'],
+            commit_hash,
             'badwolf/lint',
-            'http://badwolf.bosondata.net',
+            url_for('log.lint_log', sha=commit_hash, _external=True)
         )
 
     def load_changes(self):
