@@ -38,7 +38,7 @@ RUN apt-get update \
     python3-pip \
     git \
     libssl-dev \
-    && pip3 install -U pip setuptools
+    && pip3 install -U pip setuptools wheel
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
@@ -46,7 +46,7 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && npm install -g jscs eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native
 
 RUN pip3 install -Ur requirements.txt \
-    && python3 setup.py install \
+    && pip3 install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
 EXPOSE 8000
