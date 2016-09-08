@@ -13,7 +13,7 @@ class StyleLinter(Linter):
     default_pattern = '*.css *.scss *.less *.sss'
 
     def is_usable(self):
-        return in_path('stylelint') or npm_exists('stylelint')
+        return in_path('stylelint') or npm_exists('stylelint', self.working_dir)
 
     def lint_files(self, files):
         command = self.create_command(files)
@@ -37,8 +37,8 @@ class StyleLinter(Linter):
 
     def create_command(self, files):
         cmd = 'stylelint'
-        if npm_exists('stylelint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'stylelint')
+        if npm_exists('stylelint', self.working_dir):
+            cmd = os.path.join(self.working_dir, 'node_modules', '.bin', 'stylelint')
         command = [cmd, '--no-color', '-f', 'json']
         command += files
         return command

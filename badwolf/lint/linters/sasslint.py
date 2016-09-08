@@ -12,7 +12,7 @@ class SassLinter(Linter):
     default_pattern = '*.scss'
 
     def is_usable(self):
-        return in_path('sass-lint') or npm_exists('sass-lint')
+        return in_path('sass-lint') or npm_exists('sass-lint', self.working_dir)
 
     def lint_files(self, files):
         command = self.create_command(files)
@@ -26,8 +26,8 @@ class SassLinter(Linter):
 
     def create_command(self, files):
         cmd = 'sass-lint'
-        if npm_exists('sass-lint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'sass-lint')
+        if npm_exists('sass-lint', self.working_dir):
+            cmd = os.path.join(self.working_dir, 'node_modules', '.bin', 'sass-lint')
         command = [cmd, '-v', '-f', 'checkstyle']
         command += files
         return command

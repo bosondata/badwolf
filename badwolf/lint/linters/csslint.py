@@ -12,7 +12,7 @@ class CSSLinter(Linter):
     default_pattern = '*.css'
 
     def is_usable(self):
-        return in_path('csslint') or npm_exists('csslint')
+        return in_path('csslint') or npm_exists('csslint', self.working_dir)
 
     def lint_files(self, files):
         command = self.create_command(files)
@@ -26,8 +26,8 @@ class CSSLinter(Linter):
 
     def create_command(self, files):
         cmd = 'csslint'
-        if npm_exists('csslint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'csslint')
+        if npm_exists('csslint', self.working_dir):
+            cmd = os.path.join(self.working_dir, 'node_modules', '.bin', 'csslint')
         command = [cmd, '--format=checkstyle-xml']
         command += files
         return command

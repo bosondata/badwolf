@@ -16,7 +16,7 @@ class JSONLinter(Linter):
     default_pattern = '*.json'
 
     def is_usable(self):
-        return in_path('jsonlint') or npm_exists('jsonlint')
+        return in_path('jsonlint') or npm_exists('jsonlint', self.working_dir)
 
     def lint_files(self, files):
         for file in files:
@@ -35,8 +35,8 @@ class JSONLinter(Linter):
 
     def create_command(self, file):
         cmd = 'jsonlint'
-        if npm_exists('jsonlint'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'jsonlint')
+        if npm_exists('jsonlint', self.working_dir):
+            cmd = os.path.join(self.working_dir, 'node_modules', '.bin', 'jsonlint')
         command = [cmd, '-q', '-c', file]
         return command
 

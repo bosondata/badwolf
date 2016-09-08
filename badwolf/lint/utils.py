@@ -16,12 +16,12 @@ def in_path(name):
     return False
 
 
-def npm_exists(name):
+def npm_exists(name, cwd=None):
     """
     Check whether a cli tool exists in a node_modules/.bin
     dir in os.cwd
     """
-    cwd = os.getcwd()
+    cwd = cwd or os.getcwd()
     path = os.path.join(cwd, 'node_modules', '.bin', name)
     return os.path.exists(path)
 

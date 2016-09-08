@@ -12,7 +12,7 @@ class JSCSLinter(Linter):
     default_pattern = '*.js'
 
     def is_usable(self):
-        return in_path('jscs') or npm_exists('jscs')
+        return in_path('jscs') or npm_exists('jscs', self.working_dir)
 
     def lint_files(self, files):
         command = self.create_command(files)
@@ -26,8 +26,8 @@ class JSCSLinter(Linter):
 
     def create_command(self, files):
         cmd = 'jscs'
-        if npm_exists('jscs'):
-            cmd = os.path.join(os.getcwd(), 'node_modules', '.bin', 'jscs')
+        if npm_exists('jscs', self.working_dir):
+            cmd = os.path.join(self.working_dir, 'node_modules', '.bin', 'jscs')
         command = [cmd, '--reporter=checkstyle']
         command += files
         return command
