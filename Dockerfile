@@ -38,7 +38,9 @@ RUN apt-get update \
     python3-pip \
     git \
     libssl-dev \
-    && pip3 install -U pip setuptools wheel
+    && pip3 install -U pip setuptools wheel \
+    && git config --global user.email "badwolf@localhost" \
+    && git config --global user.name "badwolf"
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
