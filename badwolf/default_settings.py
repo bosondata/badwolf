@@ -11,6 +11,7 @@ from badwolf.utils import yesish
 DEBUG = yesish(os.environ.get('BADWOLF_DEBUG', False))
 
 JSON_AS_ASCII = yesish(os.environ.get('JSON_AS_ASCII', False))
+SERVER_NAME = os.environ.get('SERVER_NAME', 'localhost')
 
 # secret key
 SECRET_KEY = os.environ.get('SECRET_KEY', '')

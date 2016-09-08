@@ -7,6 +7,7 @@ ENV NPM_CONFIG_LOGLEVEL warn
 
 ENV DOCKER_HOST 'unix://var/run/docker.sock'
 ENV BADWOLF_DEBUG 'false'
+ENV SERVER_NAME 'localhost:8000'
 ENV SECRET_KEY ''
 ENV SENTRY_DSN ''
 ENV DOCKER_API_TIMEOUT 600
@@ -41,6 +42,7 @@ RUN apt-get update \
     python3-pip \
     git \
     libssl-dev \
+    && pip install -U pip setuptools wheel \
     && pip3 install -U pip setuptools wheel \
     && git config --global user.email "badwolf@localhost" \
     && git config --global user.name "badwolf"
