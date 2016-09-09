@@ -19,3 +19,13 @@ def test_sanitize_basic_auth_urls():
     assert 'user' not in sanitized
     assert 'pwd' not in sanitized
     assert 'http://example.com' in sanitized
+
+    text = '''abc
+    -e git+https://user:pwd@example.com/
+
+    def
+    '''
+    sanitized = sanitize_sensitive_data(text)
+    assert 'user' not in sanitized
+    assert 'pwd' not in sanitized
+    assert 'https://example.com' in sanitized
