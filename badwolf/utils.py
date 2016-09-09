@@ -4,8 +4,8 @@ import re
 import six
 
 BASIC_AUTH_URL_RE = re.compile(
-    r'^(?P<protocol>.+?//)(?P<username>.+?):(?P<password>.+?)@(?P<address>.+)$',
-    re.I | re.S | re.M
+    r'(?P<protocol>\S+?//)(?P<username>.+?):(?P<password>.+?)@(?P<address>\S+)',
+    re.I | re.U
 )
 
 
@@ -71,6 +71,6 @@ def _sanitize_urls(s):
     def remove_basic_auth(match):
         return '{}{}'.format(
             match.group('protocol'),
-            match.group('address')
+            match.group('address'),
         )
     return BASIC_AUTH_URL_RE.sub(remove_basic_auth, s)

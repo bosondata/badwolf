@@ -21,6 +21,8 @@ def test_sanitize_basic_auth_urls():
     assert 'http://example.com' in sanitized
 
     text = '''abc
+    http://example.com
+
     -e git+https://user:pwd@example.com/
 
     def
