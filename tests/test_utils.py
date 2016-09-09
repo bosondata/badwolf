@@ -8,7 +8,7 @@ def test_sanitize_basic_auth_urls():
     sanitized = sanitize_sensitive_data(text)
     assert 'user' not in sanitized
     assert 'pwd' not in sanitized
-    assert 'http://example.com' in sanitized
+    assert 'http://***:***@example.com' in sanitized
 
     text = '''abc
     http://user:pwd@example.com
@@ -18,7 +18,7 @@ def test_sanitize_basic_auth_urls():
     sanitized = sanitize_sensitive_data(text)
     assert 'user' not in sanitized
     assert 'pwd' not in sanitized
-    assert 'http://example.com' in sanitized
+    assert 'http://***:***@example.com' in sanitized
 
     text = '''abc
     http://example.com
@@ -30,4 +30,5 @@ def test_sanitize_basic_auth_urls():
     sanitized = sanitize_sensitive_data(text)
     assert 'user' not in sanitized
     assert 'pwd' not in sanitized
-    assert 'https://example.com' in sanitized
+    assert 'http://example.com' in sanitized
+    assert 'git+https://***:***@example.com' in sanitized

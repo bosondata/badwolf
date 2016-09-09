@@ -69,7 +69,7 @@ def sanitize_sensitive_data(s):
 
 def _sanitize_urls(s):
     def remove_basic_auth(match):
-        return '{}{}'.format(
+        return '{}***:***@{}'.format(
             match.group('protocol'),
             match.group('address'),
         )
