@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import re
 import six
+
+BASIC_AUTH_URL_RE = re.compile(
+    r'(?P<protocol>\S+?//)(?P<username>.+?):(?P<password>.+?)@(?P<address>\S+)',
+    re.I | re.U
+)
 
 
 class ObjectDict(dict):
@@ -55,3 +61,16 @@ def yesish(value):
     if isinstance(value, bool):
         return value
     return value.lower() in ('1', 'true', 'yes')
+
+
+def sanitize_sensitive_data(s):
+    return _sanitize_urls(s)
+
+
+def _sanitize_urls(s):
+    def remove_basic_auth(match):
+        return '{}***:***@{}'.format(
+            match.group('protocol'),
+            match.group('address'),
+        )
+    return BASIC_AUTH_URL_RE.sub(remove_basic_auth, s)

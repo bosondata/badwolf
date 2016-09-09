@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-import os
-import sys
 import pytest
-
-CURR_DIR = os.path.abspath(os.path.dirname(__file__))
-PROJ_DIR = os.path.dirname(CURR_DIR)
-if PROJ_DIR not in sys.path:
-    sys.path.insert(0, PROJ_DIR)
 
 
 @pytest.fixture(scope='module')
