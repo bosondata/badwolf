@@ -10,12 +10,12 @@ import logging
 import tempfile
 
 import git
-from flask import current_app
+from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import Client
 from docker.errors import APIError, DockerException
 
-from badwolf.utils import to_text
+from badwolf.utils import to_text, to_binary
 from badwolf.spec import Specification
 from badwolf.lint.processor import LintProcessor
 from badwolf.extensions import bitbucket
@@ -51,13 +51,13 @@ class TestRunner(object):
         self.repo_full_name = context.repository
         self.repo_name = context.repository.split('/')[-1]
         self.task_id = str(uuid.uuid4())
-
+        self.commit_hash = context.source['commit']['hash']
         self.build_status = BuildStatus(
             bitbucket,
             self.repo_full_name,
-            context.source['commit']['hash'],
+            self.commit_hash,
             'badwolf/test',
-            'http://badwolf.bosondata.net',
+            url_for('log.build_log', sha=self.commit_hash, _external=True)
         )
 
         self.docker = Client(
@@ -84,7 +84,7 @@ class TestRunner(object):
             else:
                 cs = Changesets(bitbucket, self.repo_full_name)
                 cs.comment(
-                    self.context.source['commit']['hash'],
+                    self.commit_hash,
                     content
                 )
 
@@ -162,8 +162,8 @@ class TestRunner(object):
                 'origin/{}'.format(self.context.source['branch']['name'])
             )
         else:
-            logger.info('Checkout commit %s', self.context.source['commit']['hash'])
-            git.Git(self.clone_path).checkout(self.context.source['commit']['hash'])
+            logger.info('Checkout commit %s', self.commit_hash)
+            git.Git(self.clone_path).checkout(self.commit_hash)
 
     def validate_settings(self):
         conf_file = os.path.join(self.clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
@@ -238,7 +238,7 @@ class TestRunner(object):
             'CI': 'true',
             'CI_NAME': 'badwolf',
             'BADWOLF_BRANCH': self.branch,
-            'BADWOLF_COMMIT': self.context.source['commit']['hash'],
+            'BADWOLF_COMMIT': self.commit_hash,
             'BADWOLF_BUILD_DIR': '/mnt/src',
             'BADWOLF_REPO_SLUG': self.repo_full_name,
         })
@@ -290,6 +290,17 @@ class TestRunner(object):
 
     def send_notifications(self, context):
         exit_code = context['exit_code']
+        template = 'test_success' if exit_code == 0 else 'test_failure'
+        html = render_template('mail/' + template + '.html', **context)
+
+        # Save log html
+        log_dir = os.path.join(current_app.config['BADWOLF_LOG_DIR'], self.commit_hash)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        log_file = os.path.join(log_dir, 'build.html')
+        with open(log_file, 'wb') as f:
+            f.write(to_binary(html))
+
         notification = self.spec.notification
         emails = notification['emails']
         if not emails:
@@ -298,16 +309,7 @@ class TestRunner(object):
         from badwolf.tasks import send_mail
 
         if exit_code == 0:
-            send_mail(
-                emails,
-                'Test succeed for repository {}'.format(self.repo_full_name),
-                'test_success',
-                context
-            )
+            subject = 'Test succeed for repository {}'.format(self.repo_full_name)
         else:
-            send_mail(
-                emails,
-                'Test failed for repository {}'.format(self.repo_full_name),
-                'test_failure',
-                context
-            )
+            subject = 'Test failed for repository {}'.format(self.repo_full_name)
+        send_mail(emails, subject, html)

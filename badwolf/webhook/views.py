@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import json
 import logging
 
-from flask import Blueprint, request, current_app
+from flask import Blueprint, request, current_app, url_for
 
 from badwolf.runner import TestContext
 from badwolf.tasks import run_test
@@ -166,12 +166,14 @@ def handle_pull_request_approved(payload):
     if len(approved_users) < current_app.config['AUTO_MERGE_APPROVAL_COUNT']:
         return
 
+    commit_hash = pr_info['source']['commit']['hash']
+
     build_status = BuildStatus(
         bitbucket,
         repo['full_name'],
-        pr_info['source']['commit']['hash'],
+        commit_hash,
         'badwolf/test',
-        'http://badwolf.bosondata.net'
+        url_for('log.build_log', sha=commit_hash, _external=True)
     )
     message = 'Auto merge pull request #{}: {}'.format(pr_id, title)
     try:
