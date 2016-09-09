@@ -298,7 +298,7 @@ class TestRunner(object):
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         log_file = os.path.join(log_dir, 'build.html')
-        with open(log_file, 'w') as f:
+        with open(log_file, 'wb') as f:
             f.write(to_binary(html))
 
         notification = self.spec.notification
