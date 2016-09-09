@@ -12,20 +12,9 @@ Features:
 
 ## Requirements
 
-1. Python 2.7
+1. Python 2.7 or Python 3.4+
 2. Docker
 3. NodeJS
-
-You can configure the system by shell:
-
-```bash
-wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
-sudo echo 'deb https://deb.nodesource.com/node_5.x trusty main' > /etc/apt/sources.list.d/nodesource.list
-sudo echo 'deb-src https://deb.nodesource.com/node_5.x trusty main' >> /etc/apt/sources.list.d/nodesource.list
-sudo apt-get update
-sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs shellcheck
-sudo npm install -g jscs eslint csslint sass-lint jsonlint eslint-plugin-react eslint-plugin-react-native
-```
 
 ## Installation
 
@@ -39,6 +28,49 @@ for development:
 $ pip install -r dev-requirements.txt
 $ python setup.py develop
 ```
+
+## Deploy
+
+### Standalone
+
+You can configure the system by shell:
+
+```bash
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs shellcheck
+sudo npm install -g jscs eslint csslint sass-lint jsonlint eslint-plugin-react eslint-plugin-react-native
+```
+
+Then install `badwolf` by `pip install -U badwolf` and run it:
+
+```bash
+badwolf runserver --port 8000
+```
+
+### Docker
+
+Build Docker image:
+
+```bash
+docker build -t badwolf .
+```
+
+Run it:
+
+```bash
+docker run \
+--volume /var/run/docker.sock:/var/run/docker.sock \
+--volume /var/lib/badwolf/log:/var/lib/badwolf/log \
+--volume /tmp/badwolf:/tmp/badwolf \
+--env-file ~/.badwolfrc \
+--publish=8000:8000 \
+--detach=true \
+--restart=always \
+--name=badwolf \
+badwolf
+```
+
+The `~/.badwolfrc` file is environment variable configuraiton file for Docker.
 
 ## Configuration
 
@@ -107,16 +139,18 @@ if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as
 
 ## Available linters
 
-1. ``flake8``: Lint Python codes with [flake8](http://flake8.readthedocs.org/en/latest/)
-2. ``pep8``: Lint Python codes with [pep8](http://pep8.readthedocs.org/en/latest/)
-3. ``jscs``: Lint JavaScript codes with [jscs](http://jscs.info/)
-4. ``eslint``: Lint ECMAScript 6 codes with [eslint](http://eslint.org/)
-5. ``csslint``: Lint CSS codes with [csslint](http://csslint.net/)
-6. ``shellcheck``: Lint bash/sh/zsh shell scripts with [shellcheck](https://github.com/koalaman/shellcheck)
-7. ``yamllint``: Lint YAML codes with [yamllint](https://github.com/adrienverge/yamllint)
-8. ``jsonlint``: Lint JSON codes with [jsonlint](https://github.com/zaach/jsonlint)
-9. ``bandit``: Lint Python codes with [bandit](https://github.com/openstack/bandit)
-10. ``rstlint``: Lint RestructuredText codes with [restructuredtext-lint](https://github.com/twolfson/restructuredtext-lint)
-11. ``pylint``: Lint Python codes with [pylint](https://docs.pylint.org)
-12. ``sasslint``: Lint SASS codes with [sass-lint](https://github.com/sasstools/sass-lint)
-13. ``stylelint``: Lint stylesheet codes with [stylelint](http://stylelint.io/)
+| Name         | Description                                                                                                     |
+|--------------|-----------------------------------------------------------------------------------------------------------------|
+| flake8       | Lint Python codes with [flake8](http://flake8.readthedocs.org/en/latest/)                                       |
+| pep8         | Lint Python codes with [pep8](http://pep8.readthedocs.org/en/latest/)                                           |
+| jscs         | Lint JavaScript codes with [jscs](http://jscs.info/)                                                            |
+| eslint       | Lint ECMAScript 6 codes with [eslint](http://eslint.org/)                                                       |
+| csslint      | Lint CSS codes with [csslint](http://csslint.net/)                                                              |
+| shellcheck   | Lint bash/sh/zsh shell scripts with [shellcheck](https://github.com/koalaman/shellcheck)                        |
+| yamllint     | Lint YAML codes with [yamllint](https://github.com/adrienverge/yamllint)                                        |
+| jsonlint     | Lint JSON codes with [jsonlint](https://github.com/zaach/jsonlint)                                              |
+| bandit       | Lint Python codes with [bandit](https://github.com/openstack/bandit)                                            |
+| rstlint      | Lint RestructuredText codes with [restructuredtext-lint](https://github.com/twolfson/restructuredtext-lint)     |
+| pylint       | Lint Python codes with [pylint](https://docs.pylint.org)                                                        |
+| sasslint     | Lint SASS codes with [sass-lint](https://github.com/sasstools/sass-lint)                                        |
+| stylelint    | Lint stylesheet codes with [stylelint](http://stylelint.io/)                                                    |
