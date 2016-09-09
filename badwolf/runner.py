@@ -15,7 +15,7 @@ from requests.exceptions import ReadTimeout
 from docker import Client
 from docker.errors import APIError, DockerException
 
-from badwolf.utils import to_text, to_binary
+from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
 from badwolf.spec import Specification
 from badwolf.lint.processor import LintProcessor
 from badwolf.extensions import bitbucket
@@ -292,6 +292,7 @@ class TestRunner(object):
         exit_code = context['exit_code']
         template = 'test_success' if exit_code == 0 else 'test_failure'
         html = render_template('mail/' + template + '.html', **context)
+        html = sanitize_sensitive_data(html)
 
         # Save log html
         log_dir = os.path.join(current_app.config['BADWOLF_LOG_DIR'], self.commit_hash)
