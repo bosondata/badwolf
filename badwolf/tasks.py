@@ -5,7 +5,7 @@ import logging
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
-from badwolf.extensions import mail, sentry
+from badwolf.extensions import sentry
 
 
 logger = logging.getLogger(__name__)
@@ -37,16 +37,6 @@ def async_task(f):
         return executor.submit(_run_task, f, *args, **kwargs)
     f.delay = delay
     return f
-
-
-@async_task
-def send_mail(recipients, subject, html):
-    logger.info('Sending email to %s', recipients)
-    mail.send_message(
-        subject=subject,
-        recipients=recipients,
-        html=html,
-    )
 
 
 @async_task
