@@ -154,3 +154,7 @@ if no ``Dockerfile`` found, badwolf will use ``messense/badwolf-test-runner`` as
 | pylint       | Lint Python codes with [pylint](https://docs.pylint.org)                                                        |
 | sasslint     | Lint SASS codes with [sass-lint](https://github.com/sasstools/sass-lint)                                        |
 | stylelint    | Lint stylesheet codes with [stylelint](http://stylelint.io/)                                                    |
+
+## License
+
+MIT
