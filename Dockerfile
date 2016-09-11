@@ -5,24 +5,6 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV NPM_CONFIG_LOGLEVEL warn
 
-ENV DOCKER_HOST 'unix://var/run/docker.sock'
-ENV BADWOLF_DEBUG 'false'
-ENV SERVER_NAME 'localhost:8000'
-ENV SECRET_KEY ''
-ENV SENTRY_DSN ''
-ENV DOCKER_API_TIMEOUT 600
-ENV DOCKER_RUN_TIMEOUT 1200
-ENV AUTO_MERGE_ENABLED 'true'
-ENV AUTO_MERGE_APPROVAL_COUNT 3
-ENV BITBUCKET_USERNAME ''
-ENV BITBUCKET_PASSWORD ''
-ENV MAIL_SERVER ''
-ENV MAIL_PORT 587
-ENV MAIL_USERNAME ''
-ENV MAIL_PASSWORD ''
-ENV MAIL_SENDER_NAME 'badwolf'
-ENV MAIL_SENDER_ADDRESS ''
-
 COPY . /src
 WORKDIR /src
 
@@ -42,8 +24,10 @@ RUN apt-get update \
     python3-pip \
     git \
     libssl-dev \
+    libre2-dev \
     && pip install -U pip setuptools wheel \
     && pip3 install -U pip setuptools wheel \
+    && pip3 install https://github.com/axiak/pyre2/archive/master.zip \
     && git config --global user.email "badwolf@localhost" \
     && git config --global user.name "badwolf"
 
