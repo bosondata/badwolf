@@ -2,6 +2,8 @@
 
 [What is badwolf](https://en.wikipedia.org/wiki/Bad_Wolf)
 
+Docker based continuous integration and code lint review system for BitBucket
+
 Features:
 
 1. Run tests in Docker container
