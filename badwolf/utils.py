@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+
 import six
 
 BASIC_AUTH_URL_RE = re.compile(
-    r'(?P<protocol>\S+?//)(?P<username>.+?):(?P<password>.+?)@(?P<address>\S+)',
+    r'(?P<protocol>\S+?//)(?P<username>[^:]+?):(?P<password>[^@]+?)@(?P<address>\S+?)',
     re.I | re.U
 )
 
