@@ -73,4 +73,7 @@ def _sanitize_urls(s):
             match.group('protocol'),
             match.group('address'),
         )
-    return BASIC_AUTH_URL_RE.sub(remove_basic_auth, s)
+    ret = []
+    for line in s.split('\n'):
+        ret.append(BASIC_AUTH_URL_RE.sub(remove_basic_auth, line))
+    return '\n'.join(ret)
