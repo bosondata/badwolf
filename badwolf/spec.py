@@ -20,6 +20,7 @@ class Specification(object):
         self.after_failure = []
         self.notification = ObjectDict(
             emails=[],
+            slack_webhooks=[],
         )
         self.branch = set()
         self.environments = []
@@ -69,8 +70,11 @@ class Specification(object):
         spec.environments = env_map_list
         spec.linters = linters
         spec.privileged = bool(privileged)
-        if isinstance(notification, dict) and notification.get('email'):
-            spec.notification.emails = cls._get_list(notification['email'])
+        if isinstance(notification, dict):
+            if 'email' in notification:
+                spec.notification.emails = cls._get_list(notification['email'])
+            if 'slack_webhook' in notification:
+                spec.notification.slack_webhooks = cls._get_list(notification['slack_webhook'])
         return spec
 
     @classmethod

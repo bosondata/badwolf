@@ -20,6 +20,7 @@ from badwolf.spec import Specification
 from badwolf.lint.processor import LintProcessor
 from badwolf.extensions import bitbucket
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest, Changesets
+from badwolf.notification import send_mail, trigger_slack_webhook
 
 
 logger = logging.getLogger(__name__)
@@ -302,15 +303,19 @@ class TestRunner(object):
         with open(log_file, 'wb') as f:
             f.write(to_binary(html))
 
-        notification = self.spec.notification
-        emails = notification['emails']
-        if not emails:
-            return
-
-        from badwolf.tasks import send_mail
-
         if exit_code == 0:
             subject = 'Test succeed for repository {}'.format(self.repo_full_name)
         else:
             subject = 'Test failed for repository {}'.format(self.repo_full_name)
-        send_mail(emails, subject, html)
+        notification = self.spec.notification
+        emails = notification['emails']
+        if emails:
+            send_mail(emails, subject, html)
+
+        slack_webhooks = notification['slack_webhooks']
+        if slack_webhooks:
+            message = '<{}|{}>'.format(
+                url_for('log.build_log', sha=self.commit_hash, _external=True),
+                subject
+            )
+            trigger_slack_webhook(slack_webhooks, message)
