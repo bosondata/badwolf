@@ -26,7 +26,7 @@ RUN apt-get update \
     libssl-dev \
     libre2-dev \
     && pip install -U pip setuptools wheel \
-    && pip3 install -U pip setuptools wheel \
+    && pip3 install -U pip setuptools wheel cython \
     && pip3 install https://github.com/andreasvc/pyre2/archive/master.zip \
     && git config --global user.email "badwolf@localhost" \
     && git config --global user.name "badwolf"
