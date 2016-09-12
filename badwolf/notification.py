@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import logging
+import smtplib
 
 import requests
 
-from badwolf.extensions import mail
+from badwolf.extensions import mail, sentry
 
 
 logger = logging.getLogger(__name__)
@@ -13,11 +14,15 @@ session = requests.Session()
 
 def send_mail(recipients, subject, html):
     logger.info('Sending email to %s', recipients)
-    mail.send_message(
-        subject=subject,
-        recipients=recipients,
-        html=html,
-    )
+    try:
+        mail.send_message(
+            subject=subject,
+            recipients=recipients,
+            html=html,
+        )
+    except smtplib.SMTPException:
+        logger.exception('Error sending email to %s', recipients)
+        sentry.captureException()
 
 
 def trigger_slack_webhook(webhooks, message):
