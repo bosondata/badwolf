@@ -125,6 +125,7 @@ class TestRunner(object):
                 'task_id': self.task_id,
                 'logs': to_text(output),
                 'build_logs': to_text(build_output),
+                'build_log_url': url_for('log.build_log', sha=self.commit_hash, _external=True),
                 'exit_code': exit_code,
                 'branch': self.branch,
                 'scripts': self.spec.scripts,
@@ -314,8 +315,5 @@ class TestRunner(object):
 
         slack_webhooks = notification['slack_webhooks']
         if slack_webhooks:
-            message = '<{}|{}>'.format(
-                url_for('log.build_log', sha=self.commit_hash, _external=True),
-                subject
-            )
+            message = render_template('slack_webhook/' + template + '.md', **context)
             trigger_slack_webhook(slack_webhooks, message)
