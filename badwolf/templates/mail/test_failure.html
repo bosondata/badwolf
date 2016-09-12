@@ -3,7 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Test failed for repo: {{ context.repository }}</title>
+<title>Test failed for repository {{ context.repository }}</title>
 <style>
 /* -------------------------------------
     GLOBAL
@@ -184,8 +184,10 @@ ol li {
             <h2>Docker build logs</h2>
             <pre>{{ build_logs }}</pre>
             {% endif %}
+            {% if logs %}
             <h2>Logs</h2>
             <pre>{{ logs|strip_term_colors }}</pre>
+            {% endif %}
           </td>
         </tr>
       </table>

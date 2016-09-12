@@ -89,19 +89,34 @@ class TestRunner(object):
                     content
                 )
 
-            shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
+            self.cleanup()
             return
 
         if not self.validate_settings():
-            shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
+            self.cleanup()
             return
+
+        context = {
+            'context': self.context,
+            'task_id': self.task_id,
+            'build_log_url': url_for('log.build_log', sha=self.commit_hash, _external=True),
+            'branch': self.branch,
+            'scripts': self.spec.scripts,
+        }
 
         if self.spec.scripts:
             self.update_build_status('INPROGRESS', 'Test in progress')
             docker_image_name, build_output = self.get_docker_image()
+            context['build_logs'] = to_text(build_output)
+            context.update({
+                'build_logs': to_text(build_output),
+                'elapsed_time': int(time.time() - start_time),
+            })
             if not docker_image_name:
                 self.update_build_status('FAILED', 'Build or get Docker image failed')
-                shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
+                context['exit_code'] = -1
+                self.send_notifications(context)
+                self.cleanup()
                 return
 
             exit_code, output = self.run_tests_in_container(docker_image_name)
@@ -118,19 +133,11 @@ class TestRunner(object):
                 )
                 self.update_build_status('FAILED', '1 of 1 test failed')
 
-            end_time = time.time()
-
-            context = {
-                'context': self.context,
-                'task_id': self.task_id,
+            context.update({
                 'logs': to_text(output),
-                'build_logs': to_text(build_output),
-                'build_log_url': url_for('log.build_log', sha=self.commit_hash, _external=True),
                 'exit_code': exit_code,
-                'branch': self.branch,
-                'scripts': self.spec.scripts,
-                'elapsed_time': int(end_time - start_time),
-            }
+                'elapsed_time': int(time.time() - start_time),
+            })
             self.send_notifications(context)
 
         # Code linting
@@ -138,7 +145,7 @@ class TestRunner(object):
             lint = LintProcessor(self.context, self.spec, self.clone_path)
             lint.process()
 
-        shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
+        self.cleanup()
 
     def clone_repository(self):
         self.clone_path = os.path.join(
@@ -317,3 +324,6 @@ class TestRunner(object):
         if slack_webhooks:
             message = render_template('slack_webhook/' + template + '.md', **context)
             trigger_slack_webhook(slack_webhooks, message)
+
+    def cleanup(self):
+        shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
