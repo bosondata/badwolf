@@ -5,7 +5,7 @@
 {% if context.type == 'commit' -%}
 *Commit*: <https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}|{{ context.source.commit.hash }}>
 {{ context.message }}
-{% endif %}
+{%- endif %}
 {% if context.type == 'pullrequest' -%}
 *Pull Request*: <https://bitbucket.org/{{ context.repository }}/pull-requests/{{ context.pr_id }}|{{ context.message }}>
-{% endif %}
+{%- endif %}
