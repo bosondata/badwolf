@@ -30,4 +30,8 @@ def trigger_slack_webhook(webhooks, message):
     for webhook in webhooks:
         logger.info('Triggering Slack webhook %s', webhook)
         res = session.post(webhook, json=payload, timeout=10)
-        res.raise_for_status()
+        try:
+            res.raise_for_status()
+        except requests.RequestException:
+            logger.exception('Error triggering Slack webhook %s', webhook)
+            sentry.captureException()
