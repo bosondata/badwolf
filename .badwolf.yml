@@ -11,3 +11,4 @@ branch:
 
 notification:
   email: tech@bosondata.com.cn
+  slack_webhook: https://hooks.slack.com/services/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
