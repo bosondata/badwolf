@@ -1,4 +1,4 @@
-:broken_heart: <{{ build_log_url }}|Test succeed for repository {{ context.repository }}>
+:broken_heart: <{{ build_log_url }}|Test failed for repository {{ context.repository }}>
 
 **Repository**: <https://bitbucket.org/{{ context.repository }}|{{ context.repository }}>
 **Branch**: <https://bitbucket.org/{{ context.repository }}/src?at={{ branch }}|{{ branch }}>
