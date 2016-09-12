@@ -1,0 +1,34 @@
+language: python
+
+# Use container-based infrastructure
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - shellcheck
+      - libffi-dev
+      - libssl-dev
+      - nodejs
+
+matrix:
+  include:
+    - env: TOX_ENV=py27
+    - env: TOX_ENV=py35
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+before_install:
+  - curl -sL https://deb.nodesource.com/setup_6.x | bash -
+
+install:
+  - npm install -g jscs eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native babel-eslint
+  - pip install -U tox
+
+script: tox -e $TOX_ENV
+
+after_success:
+  - pip install codecov
+  - codecov
