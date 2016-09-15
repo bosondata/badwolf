@@ -273,15 +273,16 @@ class TestRunner(object):
         container_id = container['Id']
         logger.info('Created container %s from image %s', container_id, docker_image_name)
 
+        output = []
         try:
             self.docker.start(container_id)
             self.update_build_status('INPROGRESS', 'Running tests in Docker container')
+            for line in self.docker.logs(container_id, stream=True):
+                output.append(to_text(line))
             exit_code = self.docker.wait(container_id, current_app.config['DOCKER_RUN_TIMEOUT'])
-            output = self.docker.logs(container_id)
         except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
-            output = str(e)
-
+            output.append(to_text(e))
             logger.exception('Docker error')
         finally:
             try:
@@ -289,7 +290,7 @@ class TestRunner(object):
             except (APIError, DockerException):
                 logger.exception('Error removing docker container')
 
-        return exit_code, output
+        return exit_code, ''.join(output)
 
     def update_build_status(self, state, description=None):
         try:
