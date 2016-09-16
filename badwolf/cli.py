@@ -4,9 +4,13 @@ import signal
 
 import click
 
+import badwolf
+
 
 @click.group()
+@click.version_option(version=badwolf.__version__)
 def manage():
+    """badwolf - A continuous integration and code lint review system for BitBucket"""
     try:
         import faulthandler
         faulthandler.register(signal.SIGUSR1)
