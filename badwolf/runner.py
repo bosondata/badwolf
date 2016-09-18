@@ -244,6 +244,7 @@ class TestRunner(object):
 
         # TODO: Add more test context related env vars
         environment.update({
+            'DEBIAN_FRONTEND': 'noninteractive',
             'CI': 'true',
             'CI_NAME': 'badwolf',
             'BADWOLF_BRANCH': self.branch,
