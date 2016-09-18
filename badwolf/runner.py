@@ -154,25 +154,20 @@ class TestRunner(object):
             self.task_id,
             self.repo_name
         )
-
         logger.info('Cloning %s to %s...', self.context.clone_url, self.clone_path)
-        bitbucket.clone(self.repo_full_name, self.clone_path)
-
+        bitbucket.clone(self.repo_full_name, self.clone_path, depth=50, branch=self.branch)
+        gitcmd = git.Git(self.clone_path)
         if self.context.target:
-            logger.info('Checkout branch %s', self.context.target['branch']['name'])
-            git.Git(self.clone_path).checkout(self.context.target['branch']['name'])
-
-            logger.info(
-                'Merging branch %s into %s',
-                self.context.source['branch']['name'],
-                self.context.target['branch']['name']
-            )
-            git.Git(self.clone_path).merge(
-                'origin/{}'.format(self.context.source['branch']['name'])
-            )
+            # Pull Request
+            target_branch = self.context.target['branch']['name']
+            logger.debug('Fetch branch origin %s', target_branch)
+            gitcmd.fetch('origin', target_branch)
+            gitcmd.checkout('FETCH_HEAD')
+            gitcmd.merge('origin/{}'.format(self.branch))
         else:
+            # Push to branch, use shallow clone to speedup
             logger.info('Checkout commit %s', self.commit_hash)
-            git.Git(self.clone_path).checkout(self.commit_hash)
+            gitcmd.checkout(self.commit_hash)
 
     def validate_settings(self):
         conf_file = os.path.join(self.clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
