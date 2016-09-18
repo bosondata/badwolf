@@ -169,6 +169,10 @@ class TestRunner(object):
             logger.info('Checkout commit %s', self.commit_hash)
             gitcmd.checkout(self.commit_hash)
 
+        gitmodules = os.path.join(self.clone_path, '.gitmodules')
+        if os.path.exists(gitmodules):
+            gitcmd.submodule('update', '--init', '--recursive')
+
     def validate_settings(self):
         conf_file = os.path.join(self.clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
         if not os.path.exists(conf_file):
