@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import signal
+
 import click
 
 
 @click.group()
 def manage():
-    pass
+    try:
+        import faulthandler
+        faulthandler.register(signal.SIGUSR1)
+    except ImportError:
+        pass
 
 
 @manage.command()
