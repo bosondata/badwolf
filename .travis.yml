@@ -1,15 +1,7 @@
 language: python
 
-# Use container-based infrastructure
-sudo: false
-
-addons:
-  apt:
-    packages:
-      - shellcheck
-      - libffi-dev
-      - libssl-dev
-      - nodejs
+sudo: required
+dist: trusty
 
 matrix:
   include:
@@ -21,7 +13,8 @@ cache:
     - $HOME/.cache/pip
 
 before_install:
-  - curl -sL https://deb.nodesource.com/setup_6.x | bash -
+  - curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+  - sudo apt-get install -y libffi-dev libssl-dev nodejs shellcheck
 
 install:
   - npm install -g jscs eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native babel-eslint
