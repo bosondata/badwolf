@@ -8,6 +8,11 @@ Welcome to badwolf's documentation!
 
 badwolf is a Docker based continuous integration and code lint review system for BitBucket
 
+.. image:: https://travis-ci.org/bosondata/badwolf.svg?branch=master
+
+.. image:: https://codecov.io/gh/bosondata/badwolf/branch/master/graph/badge.svg
+
+
 User Guide:
 
 .. toctree::

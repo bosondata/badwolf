@@ -1,5 +1,8 @@
 # badwolf
 
+[![Build Status](https://travis-ci.org/bosondata/badwolf.svg?branch=master)](https://travis-ci.org/bosondata/badwolf)
+[![codecov](https://codecov.io/gh/bosondata/badwolf/branch/master/graph/badge.svg)](https://codecov.io/gh/bosondata/badwolf)
+
 [What is badwolf](https://en.wikipedia.org/wiki/Bad_Wolf)
 
 Docker based continuous integration and code lint review system for BitBucket
