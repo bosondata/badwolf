@@ -63,12 +63,15 @@ class BasicAuthDispatcher(APIDispatcher):
             **kwargs
         )
 
-    def clone_repository(self, full_name, path, **kwargs):
-        clone_url = 'https://{username}:{password}@bitbucket.org/{name}.git'.format(
+    def get_git_url(self, full_name):
+        return 'https://{username}:{password}@bitbucket.org/{name}.git'.format(
             username=self._username,
             password=self._password,
             name=full_name
         )
+
+    def clone_repository(self, full_name, path, **kwargs):
+        clone_url = self.get_git_url(full_name)
         return git.Git().clone(clone_url, path, **kwargs)
 
 
@@ -146,11 +149,14 @@ class OAuth2Dispatcher(APIDispatcher):
         kwargs['headers'] = headers
         return self._session.request(method, url, **kwargs)
 
-    def clone_repository(self, full_name, path, **kwargs):
-        clone_url = 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
+    def get_git_url(self, full_name):
+        return 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
             access_token=self._access_token,
             name=full_name
         )
+
+    def clone_repository(self, full_name, path, **kwargs):
+        clone_url = self.get_git_url(full_name)
         return git.Git().clone(clone_url, path, **kwargs)
 
 
@@ -205,6 +211,9 @@ class Bitbucket(object):
 
     def clone(self, repo_full_name, clone_path, **kwargs):
         return self._dispatcher.clone_repository(repo_full_name, clone_path, **kwargs)
+
+    def get_git_url(self, repo_full_name):
+        return self._dispatcher.get_git_url(repo_full_name)
 
 
 class BuildStatus(object):
@@ -372,3 +381,6 @@ class FlaskBitbucket(object):
 
     def clone(self, repo_full_name, clone_path, **kwargs):
         return self.client.clone(repo_full_name, clone_path, **kwargs)
+
+    def get_git_url(self, repo_full_name):
+        return self.client.get_git_url(repo_full_name)
