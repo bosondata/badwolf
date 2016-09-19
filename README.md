@@ -12,7 +12,7 @@ Features:
 4. Supports E-mail/Slack notification
 5. Supports code linting
 
-## Documentation
+## [Documentation](http://badwolf.readthedocs.io/en/latest/)
 
 Documentation can be built using Sphinx in `docs/` directory.
 
