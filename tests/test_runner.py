@@ -16,11 +16,11 @@ from badwolf.bitbucket import PullRequest, Changesets
 def push_context():
     return TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         {},
         'commit',
         'Update',
         {
+            'repository': {'full_name': 'deepanalyzer/badwolf'},
             'branch': {'name': 'master'},
             'commit': {'hash': '2cedc1af762'},
         }

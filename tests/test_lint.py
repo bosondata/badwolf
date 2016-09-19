@@ -18,7 +18,6 @@ FIXTURES_PATH = os.path.join(CURR_PATH, 'fixtures')
 def test_no_linters_ignore(app):
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -36,7 +35,6 @@ def test_no_linters_ignore(app):
 def test_load_changes_failed_ignore(app, caplog):
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -70,7 +68,6 @@ index 1f38447..0000000
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -108,7 +105,6 @@ index 0000000..fdeea15
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -160,7 +156,6 @@ index 0000000..66f319a
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -212,7 +207,6 @@ index 0000000..f119a7f
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -258,7 +252,6 @@ index 0000000..fdeea15
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -299,7 +292,6 @@ index 0000000..266e19f
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -341,7 +333,6 @@ index 0000000..9fb9840
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -382,7 +373,6 @@ index 0000000..5512dae
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -428,7 +418,6 @@ index 0000000..fdeea15
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -474,7 +463,6 @@ index 0000000..fdeea15
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -517,7 +505,6 @@ index 0000000..1eccee8
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -563,7 +550,6 @@ index 0000000..fdeea15
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -607,7 +593,6 @@ index 0000000..719cd56
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -650,7 +635,6 @@ index 0000000..4e46cf9
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -696,7 +680,6 @@ index 0000000..fdeea15
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -738,7 +721,6 @@ index 0000000..48b3ebe
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',
@@ -778,7 +760,6 @@ index 0000000..e545209
 
     context = TestContext(
         'deepanalyzer/badwolf',
-        'git@bitbucket.org:deepanalyzer/badwolf.git',
         None,
         'pullrequest',
         'message',

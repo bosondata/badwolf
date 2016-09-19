@@ -76,15 +76,14 @@ def handle_repo_push(payload):
         rebuild = True
 
     repo_name = repo['full_name']
-    git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
 
     context = TestContext(
         repo_name,
-        git_clone_url,
         payload['actor'],
         'commit',
         commit_message,
         {
+            'repository': {'full_name': repo_name},
             'branch': {'name': latest_change['new']['name']},
             'commit': {'hash': commit_hash},
         },
@@ -122,7 +121,6 @@ def handle_pull_request(payload):
 
     context = TestContext(
         repo['full_name'],
-        'git@bitbucket.org:{}.git'.format(repo['full_name']),
         payload['actor'],
         'pullrequest',
         title,
@@ -170,7 +168,7 @@ def handle_pull_request_approved(payload):
 
     build_status = BuildStatus(
         bitbucket,
-        repo['full_name'],
+        pr_info['source']['repository']['full_name'],
         commit_hash,
         'badwolf/test',
         url_for('log.build_log', sha=commit_hash, _external=True)
@@ -197,15 +195,14 @@ def handle_repo_commit_comment(payload):
     commit_hash = payload['commit']['hash']
     repo = payload['repository']
     repo_name = repo['full_name']
-    git_clone_url = 'git@bitbucket.org:{}.git'.format(repo_name)
 
     context = TestContext(
         repo_name,
-        git_clone_url,
         payload['actor'],
         'commit',
         payload['commit']['message'],
         {
+            'repository': {'full_name': repo_name},
             'branch': {'name': 'master'},
             'commit': {'hash': commit_hash},
         },
@@ -241,7 +238,6 @@ def handle_pull_request_comment(payload):
 
     context = TestContext(
         repo['full_name'],
-        'git@bitbucket.org:{}.git'.format(repo['full_name']),
         payload['actor'],
         'pullrequest',
         title,

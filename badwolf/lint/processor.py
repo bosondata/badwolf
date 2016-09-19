@@ -52,7 +52,7 @@ class LintProcessor(object):
         commit_hash = context.source['commit']['hash']
         self.build_status = BuildStatus(
             bitbucket,
-            context.repository,
+            context.source['repository']['full_name'],
             commit_hash,
             'badwolf/lint',
             url_for('log.lint_log', sha=commit_hash, _external=True)
