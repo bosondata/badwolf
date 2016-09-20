@@ -40,10 +40,16 @@ Standalone 模式
 Docker 模式
 ------------------
 
-构建 Docker 镜像
+获取 Docker 镜像
 ~~~~~~~~~~~~~~~~~~~~~~
 
-在代码根目录中运行：
+从 Docker Hub 上拉取镜像：
+
+.. code-block:: bash
+
+    docker pull messense/badwolf
+
+如果需要自行构建 Docker 镜像，可以在代码根目录中运行：
 
 .. code-block:: bash
 
