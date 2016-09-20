@@ -1,4 +1,4 @@
-dockerfile: Dockerfile.test
+dockerfile: test.Dockerfile
 
 script: tox --skip-missing-interpreters
 
