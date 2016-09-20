@@ -2,7 +2,6 @@
 from __future__ import absolute_import, unicode_literals
 import os
 import tempfile
-from multiprocessing import Lock
 
 import git
 import mock
@@ -29,7 +28,7 @@ def push_context():
 
 @pytest.fixture(scope='function')
 def push_runner(push_context):
-    runner = TestRunner(push_context, Lock())
+    runner = TestRunner(push_context, docker_version=None)
     runner.clone_path = os.path.join(
         tempfile.gettempdir(),
         'badwolf',
