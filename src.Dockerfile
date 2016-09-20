@@ -5,6 +5,9 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV NPM_CONFIG_LOGLEVEL warn
 
+COPY . /src
+WORKDIR /src
+
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
@@ -36,8 +39,9 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     eslint-plugin-react eslint-plugin-react-native \
     babel-eslint
 
-RUN pip install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
-    pip3 install -U badwolf \
+RUN pip install -Ur requirements.txt && \
+    pip3 install -Ur requirements.txt \
+    && pip3 install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
 EXPOSE 8000
