@@ -99,3 +99,18 @@ Docker 模式
 Docker 模式一般使用独立环境变量进行配置。
 
 可供配置的项请参考 :ref:`配置选项 <settings>` 文档。
+
+Docker 镜像和容器日常清理
+-------------------------------
+
+批量删除停止的无用的容器：
+
+.. code-block:: bash
+
+    docker ps -a | grep Exited | awk '{print $1}' | xargs docker rm
+
+批量删除无用的镜像：
+
+.. code-block:: bash
+
+    docker images | grep none | awk '{print $3}' | xargs docker rmi
