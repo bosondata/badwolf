@@ -65,7 +65,21 @@ Docker 模式
     --name=badwolf \
     badwolf
 
-其中 `~/.badwolfrc` 为 Docker 环境变量配置文件
+其中 `~/.badwolfrc` 为 Docker 环境变量配置文件，配置示例：
+
+.. code-block:: bash
+
+    SERVER_NAME=badwolf.example.com:8000
+    SECRET_KEY=top-secret
+    MAIL_SERVER=smtp.mailgun.org
+    MAIL_PORT=587
+    MAIL_USERNAME=badwolf@example.com
+    MAIL_PASSWORD=password
+    MAIL_SENDER_ADDRESS=badwolf@example.com
+    BITBUCKET_USERNAME=username
+    BITBUCKET_PASSWORD=password
+    SENTRY_DSN=http://username:password@sentry.example.com/1
+
 
 配置 badwolf
 ------------------
