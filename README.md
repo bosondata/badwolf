@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/bosondata/badwolf.svg?branch=master)](https://travis-ci.org/bosondata/badwolf)
 [![codecov](https://codecov.io/gh/bosondata/badwolf/branch/master/graph/badge.svg)](https://codecov.io/gh/bosondata/badwolf)
+[![PyPI](https://img.shields.io/pypi/v/badwolf.svg)](https://pypi.python.org/pypi/badwolf)
 
 [What is badwolf](https://en.wikipedia.org/wiki/Bad_Wolf)
 

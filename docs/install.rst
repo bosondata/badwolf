@@ -53,7 +53,7 @@ Docker 模式
 
 .. code-block:: bash
 
-    docker build --rm -t badwolf .
+    docker build --rm -t messense/badwolf .
 
 运行
 ~~~~~~~~~~~
@@ -69,7 +69,7 @@ Docker 模式
     --detach=true \
     --restart=always \
     --name=badwolf \
-    badwolf
+    messense/badwolf
 
 其中 `~/.badwolfrc` 为 Docker 环境变量配置文件，配置示例：
 
