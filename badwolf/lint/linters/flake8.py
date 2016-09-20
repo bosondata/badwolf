@@ -55,7 +55,7 @@ class Flake8Linter(PythonLinter):
             os.path.join(self.working_dir, 'setup.cfg'),
             os.path.join(self.working_dir, 'tox.ini'),
         ]
-        parser = configparser.ConfigParser(interpolation=None)
+        parser = configparser.RawConfigParser()
         try:
             parser.read(files)
         except configparser.ParsingError:
