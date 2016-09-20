@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import os
 import logging
+
+from six.moves import configparser
 
 from badwolf.lint import Problem
 from badwolf.lint.linters import PythonLinter
@@ -17,7 +20,17 @@ class Flake8Linter(PythonLinter):
         return in_path('flake8')
 
     def lint_files(self, files):
-        command = [self.python_name, '-m', 'flake8', '--filename', '*.py*']
+        config = self._read_flake8_config()
+        import_order_style = config.get('import-order-style', 'pep8')
+        command = [
+            self.python_name,
+            '-m',
+            'flake8',
+            '--import-order-style',
+            import_order_style,
+            '--filename',
+            '*.py*'
+        ]
         command += files
         _, output = run_command(command, split=True, cwd=self.working_dir)
         if not output:
@@ -36,3 +49,18 @@ class Flake8Linter(PythonLinter):
         else:
             message = parts[3].strip()
         return parts[0], int(parts[1]), message
+
+    def _read_flake8_config(self):
+        files = [
+            os.path.join(self.working_dir, 'setup.cfg'),
+            os.path.join(self.working_dir, 'tox.ini'),
+        ]
+        parser = configparser.RawConfigParser()
+        try:
+            parser.read(files)
+        except configparser.ParsingError:
+            logger.exception('Error parsing flake8 config file %s', files)
+
+        if parser.has_section('flake8'):
+            return dict(parser.items('flake8'))
+        return {}

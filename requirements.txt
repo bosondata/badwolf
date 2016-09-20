@@ -19,3 +19,4 @@ restructuredtext-lint>=0.14.2
 pylint>=1.5.4
 certifi
 requests[security]<2.11
+flake8-import-order>=0.9.2
