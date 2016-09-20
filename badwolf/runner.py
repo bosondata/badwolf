@@ -47,9 +47,8 @@ class TestContext(object):
 class TestRunner(object):
     """Badwolf test runner"""
 
-    def __init__(self, context, lock, docker_version='auto'):
+    def __init__(self, context, docker_version='auto'):
         self.context = context
-        self.lock = lock
         self.repo_full_name = context.repository
         self.repo_name = context.repository.split('/')[-1]
         self.task_id = str(uuid.uuid4())
@@ -208,38 +207,37 @@ class TestRunner(object):
     def get_docker_image(self):
         docker_image_name = self.repo_full_name.replace('/', '-')
         output = []
-        with self.lock:
-            docker_image = self.docker.images(docker_image_name)
-            if not docker_image or self.context.rebuild:
-                dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
-                build_options = {
-                    'tag': docker_image_name,
-                    'rm': True,
-                }
-                if not os.path.exists(dockerfile):
-                    logger.warning(
-                        'No Dockerfile: %s found for repo: %s, using simple runner image',
-                        dockerfile,
-                        self.repo_full_name
-                    )
-                    dockerfile_content = 'FROM messense/badwolf-test-runner\n'
-                    fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
-                    build_options['fileobj'] = fileobj
-                else:
-                    build_options['dockerfile'] = self.spec.dockerfile
+        docker_image = self.docker.images(docker_image_name)
+        if not docker_image or self.context.rebuild:
+            dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
+            build_options = {
+                'tag': docker_image_name,
+                'rm': True,
+            }
+            if not os.path.exists(dockerfile):
+                logger.warning(
+                    'No Dockerfile: %s found for repo: %s, using simple runner image',
+                    dockerfile,
+                    self.repo_full_name
+                )
+                dockerfile_content = 'FROM messense/badwolf-test-runner\n'
+                fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
+                build_options['fileobj'] = fileobj
+            else:
+                build_options['dockerfile'] = self.spec.dockerfile
 
-                build_success = False
-                logger.info('Building Docker image %s', docker_image_name)
-                self.update_build_status('INPROGRESS', 'Building Docker image')
-                res = self.docker.build(self.clone_path, **build_options)
-                for line in res:
-                    if b'Successfully built' in line:
-                        build_success = True
-                    log = to_text(json.loads(to_text(line))['stream'])
-                    output.append(log)
-                    logger.info('`docker build` : %s', log.strip())
-                if not build_success:
-                    return None, ''.join(output)
+            build_success = False
+            logger.info('Building Docker image %s', docker_image_name)
+            self.update_build_status('INPROGRESS', 'Building Docker image')
+            res = self.docker.build(self.clone_path, **build_options)
+            for line in res:
+                if b'Successfully built' in line:
+                    build_success = True
+                log = to_text(json.loads(to_text(line))['stream'])
+                output.append(log)
+                logger.info('`docker build` : %s', log.strip())
+            if not build_success:
+                return None, ''.join(output)
 
         return docker_image_name, ''.join(output)
 

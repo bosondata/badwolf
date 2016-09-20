@@ -2,7 +2,6 @@
 from __future__ import absolute_import, unicode_literals
 import atexit
 import logging
-import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
 from badwolf.extensions import sentry
@@ -11,8 +10,6 @@ from badwolf.extensions import sentry
 logger = logging.getLogger(__name__)
 
 executor = ProcessPoolExecutor(max_workers=10)
-# per repository lock
-_LOCKS = {}
 
 
 @atexit.register
@@ -43,6 +40,5 @@ def async_task(f):
 def run_test(context):
     from badwolf.runner import TestRunner
 
-    lock = _LOCKS.setdefault(context.repository, multiprocessing.Lock())
-    runner = TestRunner(context, lock)
+    runner = TestRunner(context)
     runner.run()
