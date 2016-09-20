@@ -2,7 +2,6 @@ FROM messense/badwolf-test-runner:python
 MAINTAINER Messense Lv "messense@icloud.com"
 
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_VERSION 5.6.0
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs
