@@ -47,7 +47,7 @@ class TestContext(object):
 class TestRunner(object):
     """Badwolf test runner"""
 
-    def __init__(self, context, lock):
+    def __init__(self, context, lock, docker_version='auto'):
         self.context = context
         self.lock = lock
         self.repo_full_name = context.repository
@@ -65,7 +65,7 @@ class TestRunner(object):
         self.docker = Client(
             base_url=current_app.config['DOCKER_HOST'],
             timeout=current_app.config['DOCKER_API_TIMEOUT'],
-            version='auto',
+            version=docker_version,
         )
 
     def run(self):
