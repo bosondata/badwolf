@@ -65,6 +65,7 @@ class TestRunner(object):
         self.docker = Client(
             base_url=current_app.config['DOCKER_HOST'],
             timeout=current_app.config['DOCKER_API_TIMEOUT'],
+            version='auto',
         )
 
     def run(self):
@@ -276,7 +277,9 @@ class TestRunner(object):
                         'mode': 'rw',
                     },
                 }
-            )
+            ),
+            stdin_open=False,
+            tty=False
         )
         container_id = container['Id']
         logger.info('Created container %s from image %s', container_id, docker_image_name)
@@ -285,8 +288,6 @@ class TestRunner(object):
         try:
             self.docker.start(container_id)
             self.update_build_status('INPROGRESS', 'Running tests in Docker container')
-            for line in self.docker.logs(container_id, stream=True):
-                output.append(to_text(line))
             exit_code = self.docker.wait(container_id, current_app.config['DOCKER_RUN_TIMEOUT'])
         except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
@@ -294,8 +295,9 @@ class TestRunner(object):
             logger.exception('Docker error')
         finally:
             try:
+                output.append(to_text(self.docker.logs(container_id)))
                 self.docker.remove_container(container_id, force=True)
-            except (APIError, DockerException):
+            except (APIError, DockerException, ReadTimeout):
                 logger.exception('Error removing docker container')
 
         return exit_code, ''.join(output)
