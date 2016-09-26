@@ -40,6 +40,7 @@ def runserver(host, port, reload, debug):
         app,
         use_reloader=reload,
         use_debugger=debug,
+        threaded=True,
     )
 
 
