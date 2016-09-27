@@ -43,11 +43,11 @@ LOGGING = {
     'disable_existing_loggers': False,
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'INFO' if not DEBUG else 'DEBUG',
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'INFO' if not DEBUG else 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'default',
             'stream': sys.stderr,

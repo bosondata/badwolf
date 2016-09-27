@@ -4,7 +4,6 @@ import os
 import io
 import time
 import uuid
-import json
 import shutil
 import logging
 import tempfile
@@ -213,6 +212,8 @@ class TestRunner(object):
             build_options = {
                 'tag': docker_image_name,
                 'rm': True,
+                'stream': True,
+                'decode': True,
             }
             if not os.path.exists(dockerfile):
                 logger.warning(
@@ -220,7 +221,7 @@ class TestRunner(object):
                     dockerfile,
                     self.repo_full_name
                 )
-                dockerfile_content = 'FROM messense/badwolf-test-runner\n'
+                dockerfile_content = 'FROM messense/badwolf-test-runner:python\n'
                 fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
                 build_options['fileobj'] = fileobj
             else:
@@ -230,12 +231,19 @@ class TestRunner(object):
             logger.info('Building Docker image %s', docker_image_name)
             self.update_build_status('INPROGRESS', 'Building Docker image')
             res = self.docker.build(self.clone_path, **build_options)
-            for line in res:
-                if b'Successfully built' in line:
+            for log in res:
+                if 'errorDetail' in log:
+                    msg = log['errorDetail']['message']
+                elif 'error' in log:
+                    # Deprecated
+                    # https://github.com/docker/docker/blob/master/pkg/jsonmessage/jsonmessage.go#L104
+                    msg = log['error']
+                else:
+                    msg = log['stream']
+                if 'Successfully built' in msg:
                     build_success = True
-                log = to_text(json.loads(to_text(line))['stream'])
-                output.append(log)
-                logger.info('`docker build` : %s', log.strip())
+                output.append(msg)
+                logger.info('`docker build` : %s', msg.strip())
             if not build_success:
                 return None, ''.join(output)
 
