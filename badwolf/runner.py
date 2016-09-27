@@ -9,10 +9,12 @@ import logging
 import tempfile
 
 import git
+import deansi
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import Client
 from docker.errors import APIError, DockerException
+from markupsafe import Markup
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
 from badwolf.spec import Specification
@@ -102,14 +104,14 @@ class TestRunner(object):
             'build_log_url': url_for('log.build_log', sha=self.commit_hash, _external=True),
             'branch': self.branch,
             'scripts': self.spec.scripts,
+            'ansi_termcolor_style': deansi.styleSheet(),
         }
 
         if self.spec.scripts:
             self.update_build_status('INPROGRESS', 'Test in progress')
             docker_image_name, build_output = self.get_docker_image()
-            context['build_logs'] = to_text(build_output)
             context.update({
-                'build_logs': to_text(build_output),
+                'build_logs': Markup(build_output),
                 'elapsed_time': int(time.time() - start_time),
             })
             if not docker_image_name:
@@ -134,7 +136,7 @@ class TestRunner(object):
                 self.update_build_status('FAILED', '1 of 1 test failed')
 
             context.update({
-                'logs': to_text(output),
+                'logs': Markup(deansi.deansi(output)),
                 'exit_code': exit_code,
                 'elapsed_time': int(time.time() - start_time),
             })
@@ -242,7 +244,8 @@ class TestRunner(object):
                     msg = log['stream']
                 if 'Successfully built' in msg:
                     build_success = True
-                output.append(msg)
+
+                output.append(deansi.deansi(msg))
                 logger.info('`docker build` : %s', msg.strip())
             if not build_success:
                 return None, ''.join(output)
