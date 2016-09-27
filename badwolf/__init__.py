@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import re
 
 
-__version__ = u'0.4.2'
+__version__ = u'0.4.3'
 _TERM_COLOR_RE = re.compile(r'\[\d+m(.*)\[0m', re.I)
 
 
