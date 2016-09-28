@@ -174,6 +174,7 @@ ol li {
             {% endif %}
             <p>Task ID: {{ task_id }}</p>
             <p>Elapsed time: {{ elapsed_time }} seconds</p>
+            <p><a href="{{ context.build_log_url }}">View in browser</a></p>
             <h2>Test script(s)</h2>
             <ul>
             {% for script in scripts %}
