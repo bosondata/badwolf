@@ -29,6 +29,24 @@ def test_valid_http_header(test_client):
     assert res.status_code == 200
 
 
+def test_unhandled_event(test_client):
+    payload = json.dumps({
+        'push': {
+            'changes': [
+            ]
+        }
+    })
+    res = test_client.post(
+        url_for('webhook.webhook_push'),
+        data=payload,
+        headers={
+            'X-Event-Key': 'repo:created',
+        }
+    )
+    assert res.status_code == 200
+    assert to_text(res.data) == ''
+
+
 def test_repo_push_no_new_changes(test_client):
     payload = json.dumps({
         'push': {
