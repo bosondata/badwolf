@@ -297,7 +297,7 @@ class TestRunner(object):
                 }
             ),
             stdin_open=False,
-            tty=False
+            tty=True
         )
         container_id = container['Id']
         logger.info('Created container %s from image %s', container_id, docker_image_name)
