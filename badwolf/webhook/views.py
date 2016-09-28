@@ -228,10 +228,6 @@ def handle_pull_request_comment(payload):
     repo = payload['repository']
     pr = payload['pullrequest']
     title = pr['title']
-    description = pr['description']
-    if 'ci skip' in title or 'ci skip' in description:
-        logger.info('ci skip found, ignore tests.')
-        return
 
     if pr['state'] != 'OPEN':
         logger.info('Pull request state is not OPEN, ignore tests.')
