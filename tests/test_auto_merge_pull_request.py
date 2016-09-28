@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import json
-import mock
+try:
+    import unittest.mock as mock
+except ImportError:
+    import mock
+
 from flask import url_for
 
 import badwolf.bitbucket as bitbucket

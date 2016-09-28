@@ -2,9 +2,12 @@
 from __future__ import absolute_import, unicode_literals
 import os
 import tempfile
+try:
+    import unittest.mock as mock
+except ImportError:
+    import mock
 
 import git
-import mock
 import pytest
 
 from badwolf.runner import TestContext, TestRunner
