@@ -189,6 +189,7 @@ def handle_repo_commit_comment(payload):
 
     retry = 'ci retry' in comment_content
     rebuild = 'ci rebuild' in comment_content
+    nocache = 'no cache' in comment_content
     if not (retry or rebuild):
         return
 
@@ -207,6 +208,7 @@ def handle_repo_commit_comment(payload):
             'commit': {'hash': commit_hash},
         },
         rebuild=rebuild,
+        nocache=nocache
     )
     run_test.delay(context)
 
@@ -218,7 +220,8 @@ def handle_pull_request_comment(payload):
     retry = 'ci retry' in comment_content
     rebuild = 'ci rebuild' in comment_content
     cleanup_lint = 'cleanup lint' in comment_content
-    if not (retry or rebuild):
+    nocache = 'no cache' in comment_content
+    if not (retry or rebuild or cleanup_lint):
         return
 
     repo = payload['repository']
@@ -246,5 +249,6 @@ def handle_pull_request_comment(payload):
         rebuild=rebuild,
         pr_id=pr['id'],
         cleanup_lint=cleanup_lint,
+        nocache=nocache
     )
     run_test.delay(context)

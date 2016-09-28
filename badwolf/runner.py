@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 class TestContext(object):
     """Test context"""
     def __init__(self, repository, actor, type, message, source,
-                 target=None, rebuild=False, pr_id=None, cleanup_lint=False):
+                 target=None, rebuild=False, pr_id=None, cleanup_lint=False, nocache=False):
         self.repository = repository
         self.actor = actor
         self.type = type
@@ -40,6 +40,8 @@ class TestContext(object):
         self.rebuild = rebuild
         self.pr_id = pr_id
         self.cleanup_lint = cleanup_lint
+        # Don't use cache when build Docker image
+        self.nocache = nocache
 
         if 'repository' not in self.source:
             self.source['repository'] = {'full_name': repository}
@@ -216,6 +218,7 @@ class TestRunner(object):
                 'rm': True,
                 'stream': True,
                 'decode': True,
+                'nocache': self.context.nocache,
             }
             if not os.path.exists(dockerfile):
                 logger.warning(
