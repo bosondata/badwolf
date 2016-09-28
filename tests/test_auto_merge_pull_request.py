@@ -23,6 +23,7 @@ def test_auto_merge_not_enabled(app, test_client):
             }
         )
         pr_get.assert_not_called()
+    app.config['AUTO_MERGE_ENABLED'] = True
 
 
 def test_auto_merge_skip_title(test_client):
