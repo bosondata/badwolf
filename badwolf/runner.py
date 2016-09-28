@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 class TestContext(object):
     """Test context"""
     def __init__(self, repository, actor, type, message, source,
-                 target=None, rebuild=False, pr_id=None, cleanup_lint=False, nocache=False):
+                 target=None, rebuild=False, pr_id=None, cleanup_lint=False,
+                 nocache=False, clone_depth=50):
         self.repository = repository
         self.actor = actor
         self.type = type
@@ -42,6 +43,7 @@ class TestContext(object):
         self.cleanup_lint = cleanup_lint
         # Don't use cache when build Docker image
         self.nocache = nocache
+        self.clone_depth = clone_depth
 
         if 'repository' not in self.source:
             self.source['repository'] = {'full_name': repository}
@@ -159,8 +161,12 @@ class TestRunner(object):
             self.repo_name
         )
         source_repo = self.context.source['repository']['full_name']
-        # Use shallow clone to speed up
-        bitbucket.clone(source_repo, self.clone_path, depth=50, branch=self.branch)
+        if self.context.clone_depth > 0:
+            # Use shallow clone to speed up
+            bitbucket.clone(source_repo, self.clone_path, depth=50, branch=self.branch)
+        else:
+            # Full clone for ci retry in single commit
+            bitbucket.clone(source_repo, self.clone_path)
         gitcmd = git.Git(self.clone_path)
         if self.context.target:
             # Pull Request

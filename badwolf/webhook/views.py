@@ -208,7 +208,8 @@ def handle_repo_commit_comment(payload):
             'commit': {'hash': commit_hash},
         },
         rebuild=rebuild,
-        nocache=nocache
+        nocache=nocache,
+        clone_depth=0,  # Force a full git clone
     )
     run_test.delay(context)
 
