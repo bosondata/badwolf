@@ -24,6 +24,7 @@ env                           string                环境变量，如: `env: X=
 linter                        string/list           启用的代码检查工具
 notification.email            string/list           邮件通知地址列表
 notification.slack_webhook    string/list           Slack webhook 地址列表
+privileged                    boolean               使用特权模式启动 Docker 容器
 ============================= ===================== ===================================================================
 
 如果需要自定义 Docker 镜像中安装的软件、库等，需要在根目录中提供上述 `dockerfile` 字段配置的 dockerfile 文件名称，
@@ -43,6 +44,6 @@ Tips
 -----------
 
 * 在 commit 的 message 中包含 `ci skip` 跳过测试
-* 在评论中包含 `ci retry` 重跑测试，同时包含 `cleanup lint` 清理之前代码检查产生的评论
-* 在评论或 commit message 或 Pull Request 的标题/描述中包含 `ci rebuild` 重新构建 Docker 镜像
+* 在评论中包含 `ci retry` 重跑测试，包含 `cleanup lint` 清理之前代码检查产生的评论
+* 在评论或 commit message 或 Pull Request 的标题/描述中包含 `ci rebuild` 重新构建 Docker 镜像，同时包含 `no cache` 禁用 Docker 构建缓存
 * 在 Pull Request 的标题/描述中包含 `merge skip` 禁用自动合并 Pull Request 功能
