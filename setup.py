@@ -42,7 +42,7 @@ setup(
     author_email='messense@icloud.com',
     packages=find_packages(exclude=('tests', 'tests.*')),
     keywords='ci, bitbucket',
-    description='ci',
+    description='Docker based continuous integration and code lint review system for BitBucket',
     long_description=long_description,
     install_requires=requirements,
     include_package_data=True,
