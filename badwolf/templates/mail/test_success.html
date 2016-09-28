@@ -144,6 +144,7 @@ ol li {
 .content table {
   width: 100%;
 }
+{{ ansi_termcolor_style|safe }}
 </style>
 </head>
 
@@ -181,10 +182,10 @@ ol li {
             </ul>
             {% if build_logs %}
             <h2>Docker build logs</h2>
-            <pre>{{ build_logs }}</pre>
+            <pre class="ansi_terminal">{{ build_logs }}</pre>
             {% endif %}
             <h2>Logs</h2>
-            <pre>{{ logs|strip_term_colors }}</pre>
+            <pre class="ansi_terminal">{{ logs }}</pre>
           </td>
         </tr>
       </table>
