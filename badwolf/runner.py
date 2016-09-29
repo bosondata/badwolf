@@ -82,6 +82,7 @@ class TestRunner(object):
             logger.exception('Git command error')
             self.update_build_status('FAILED', 'Git clone repository failed')
             content = ':broken_heart: **Git error**: {}'.format(to_text(e))
+            content = sanitize_sensitive_data(content)
             if self.context.pr_id:
                 pr = PullRequest(bitbucket, self.repo_full_name)
                 pr.comment(
