@@ -352,6 +352,30 @@ class Changesets(object):
         return self.client.post(endpoint, data=data)
 
 
+class Hooks(object):
+    def __init__(self, client, repo):
+        self.client = client
+        self.repo = repo
+
+    def add(self, name, url, events=None):
+        endpoint = '2.0/repositories/{repo}/hooks'.format(
+            repo=self.repo,
+        )
+        data = optionaldict(
+            url=url,
+            description=name,
+            events=events,
+            active=True
+        )
+        return self.client.post(endpoint, json=data)
+
+    def list(self):
+        endpoint = '2.0/repositories/{repo}/hooks'.format(
+            repo=self.repo,
+        )
+        return self.client.get(endpoint)
+
+
 class FlaskBitbucket(object):
     def __init__(self, app=None):
         self.app = app

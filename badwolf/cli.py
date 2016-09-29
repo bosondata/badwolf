@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import signal
 
 import click
+from flask import url_for
 
 import badwolf
 
@@ -90,3 +91,31 @@ def shell():
         import code
 
         code.interact(local=context)
+
+
+@manage.command()
+@click.argument('repo', required=True)
+def register_webhook(repo):
+    '''Register badwolf webhook on BitBucket for REPO'''
+    from badwolf.wsgi import app
+    from badwolf.extensions import bitbucket
+    from badwolf.bitbucket import Hooks
+
+    with app.app_context():
+        webhook_url = url_for('webhook.webhook_push', _external=True)
+        hooks = Hooks(bitbucket, repo)
+        existing_hooks = hooks.list()
+        existing_urls = [hook['url'] for hook in existing_hooks['values']]
+        if webhook_url in existing_urls:
+            click.echo('Webhook {} already registered'.format(webhook_url))
+            return
+
+        hooks.add('badwolf', webhook_url, events=(
+            'repo:push',
+            'repo:commit_comment_created',
+            'pullrequest:created',
+            'pullrequest:updated',
+            'pullrequest:approved',
+            'pullrequest:comment_updated',
+        ))
+        click.echo('Webhook {} registered'.format(webhook_url))
