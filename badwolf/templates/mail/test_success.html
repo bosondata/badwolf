@@ -181,7 +181,7 @@ ol li {
             {% if context.type == 'pullrequest' %}
                 <p>Pull Request: <a href="https://bitbucket.org/{{ context.repository }}/pull-requests/{{ context.pr_id }}">{{ context.message }}</a></p>
             {% endif %}
-            <p>Task ID: {{ task_id }}</p>
+            <p>Task ID: {{ context.task_id }}</p>
             <p>Elapsed time: {{ elapsed_time }} seconds</p>
             <p><a href="{{ build_log_url }}">View in browser</a></p>
             <h2>Test script(s)</h2>

@@ -9,7 +9,7 @@ except ImportError:
 from unidiff import PatchSet
 
 from badwolf.spec import Specification
-from badwolf.runner import BuildContext
+from badwolf.context import Context
 from badwolf.lint.processor import LintProcessor
 from badwolf.utils import ObjectDict
 
@@ -19,7 +19,7 @@ FIXTURES_PATH = os.path.join(CURR_PATH, 'fixtures')
 
 
 def test_no_linters_ignore(app):
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -36,7 +36,7 @@ def test_no_linters_ignore(app):
 
 
 def test_load_changes_failed_ignore(app, caplog):
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -69,7 +69,7 @@ index 1f38447..0000000
 -This file will be removed.
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -106,7 +106,7 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -157,7 +157,7 @@ index 0000000..66f319a
 +if(foo  === 'bar') {}
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -208,7 +208,7 @@ index 0000000..f119a7f
 +console.log("bar")
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -253,7 +253,7 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -293,7 +293,7 @@ index 0000000..266e19f
 +{"a": 1,}
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -334,7 +334,7 @@ index 0000000..9fb9840
 +$foo=42
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -374,7 +374,7 @@ index 0000000..5512dae
 +.a {}
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -419,7 +419,7 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -464,7 +464,7 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -506,7 +506,7 @@ index 0000000..1eccee8
 +a: 2
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -551,7 +551,7 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -594,7 +594,7 @@ index 0000000..719cd56
 +    pass
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -636,7 +636,7 @@ index 0000000..4e46cf9
 +====
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -681,7 +681,7 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -722,7 +722,7 @@ index 0000000..48b3ebe
 +}
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
@@ -761,7 +761,7 @@ index 0000000..e545209
 +a[id="foo"] { content: "x"; }
 """
 
-    context = BuildContext(
+    context = Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',

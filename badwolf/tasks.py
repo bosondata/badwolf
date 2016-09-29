@@ -5,6 +5,7 @@ import logging
 from concurrent.futures import ProcessPoolExecutor
 
 from badwolf.extensions import sentry
+from badwolf.pipeline import Pipeline
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ def _shutdown_executor():
 
 
 def _run_task(_task_func, *args, **kwargs):
+    logger.debug('Running task func %r', _task_func.__name__)
     try:
         _task_func(*args, **kwargs)
     except Exception:
@@ -37,8 +39,5 @@ def async_task(f):
 
 
 @async_task
-def run_test(context):
-    from badwolf.runner import BuildRunner
-
-    runner = BuildRunner(context)
-    runner.run()
+def start_pipeline(context):
+    Pipeline(context).start()

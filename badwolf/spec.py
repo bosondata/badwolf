@@ -104,3 +104,8 @@ class Specification(object):
             ret.append(info)
 
         return ret
+
+    def is_branch_enabled(self, branch):
+        if not self.branch:
+            return True
+        return branch in self.branch
