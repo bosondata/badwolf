@@ -27,8 +27,8 @@ from badwolf.notification import send_mail, trigger_slack_webhook
 logger = logging.getLogger(__name__)
 
 
-class TestContext(object):
-    """Test context"""
+class BuildContext(object):
+    """Badwolf build context"""
     def __init__(self, repository, actor, type, message, source,
                  target=None, rebuild=False, pr_id=None, cleanup_lint=False,
                  nocache=False, clone_depth=50):
@@ -49,8 +49,8 @@ class TestContext(object):
             self.source['repository'] = {'full_name': repository}
 
 
-class TestRunner(object):
-    """Badwolf test runner"""
+class BuildRunner(object):
+    """Badwolf build runner"""
 
     def __init__(self, context, docker_version='auto'):
         self.context = context
@@ -193,14 +193,15 @@ class TestRunner(object):
 
     def validate_settings(self):
         conf_file = os.path.join(self.clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
-        if not os.path.exists(conf_file):
+        try:
+            self.spec = spec = Specification.parse_file(conf_file)
+        except OSError:
             logger.warning(
                 'No project configuration file found for repo: %s',
                 self.repo_full_name
             )
             return False
 
-        self.spec = spec = Specification.parse_file(conf_file)
         if self.context.type == 'commit' and spec.branch and self.branch not in spec.branch:
             logger.info(
                 'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
@@ -335,8 +336,7 @@ class TestRunner(object):
 
         # Save log html
         log_dir = os.path.join(current_app.config['BADWOLF_LOG_DIR'], self.commit_hash)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+        os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, 'build.html')
         with open(log_file, 'wb') as f:
             f.write(to_binary(html))

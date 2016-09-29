@@ -5,7 +5,7 @@ import logging
 
 from flask import Blueprint, request, current_app, url_for
 
-from badwolf.runner import TestContext
+from badwolf.runner import BuildContext
 from badwolf.tasks import run_test
 from badwolf.extensions import bitbucket
 from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus
@@ -77,7 +77,7 @@ def handle_repo_push(payload):
 
     repo_name = repo['full_name']
 
-    context = TestContext(
+    context = BuildContext(
         repo_name,
         payload['actor'],
         'commit',
@@ -119,7 +119,7 @@ def handle_pull_request(payload):
     source = pr['source']
     target = pr['destination']
 
-    context = TestContext(
+    context = BuildContext(
         repo['full_name'],
         payload['actor'],
         'pullrequest',
@@ -197,7 +197,7 @@ def handle_repo_commit_comment(payload):
     repo = payload['repository']
     repo_name = repo['full_name']
 
-    context = TestContext(
+    context = BuildContext(
         repo_name,
         payload['actor'],
         'commit',
@@ -236,7 +236,7 @@ def handle_pull_request_comment(payload):
     source = pr['source']
     target = pr['destination']
 
-    context = TestContext(
+    context = BuildContext(
         repo['full_name'],
         payload['actor'],
         'pullrequest',

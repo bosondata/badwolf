@@ -10,13 +10,13 @@ except ImportError:
 import git
 import pytest
 
-from badwolf.runner import TestContext, TestRunner
+from badwolf.runner import BuildContext, BuildRunner
 from badwolf.bitbucket import PullRequest, Changesets
 
 
 @pytest.fixture(scope='function')
 def push_context():
-    return TestContext(
+    return BuildContext(
         'deepanalyzer/badwolf',
         {},
         'commit',
@@ -31,7 +31,7 @@ def push_context():
 
 @pytest.fixture(scope='function')
 def push_runner(push_context):
-    runner = TestRunner(push_context, docker_version=None)
+    runner = BuildRunner(push_context, docker_version=None)
     runner.clone_path = os.path.join(
         tempfile.gettempdir(),
         'badwolf',

@@ -38,7 +38,7 @@ def async_task(f):
 
 @async_task
 def run_test(context):
-    from badwolf.runner import TestRunner
+    from badwolf.runner import BuildRunner
 
-    runner = TestRunner(context)
+    runner = BuildRunner(context)
     runner.run()
