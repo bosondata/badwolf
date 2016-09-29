@@ -8,7 +8,7 @@ except ImportError:
 import six
 
 BASIC_AUTH_URL_RE = re.compile(
-    r'(?P<protocol>\S+?//)(?P<username>[^:]+?):(?P<password>[^@]+?)@(?P<address>\S+?)',
+    r'(?P<protocol>\S+?//)(?P<username>[^:\s]+?):(?P<password>[^@\s]+?)@(?P<address>\S+?)',
     re.I | re.U
 )
 
