@@ -9,5 +9,3 @@
 {% if context.type == 'pullrequest' -%}
 *Pull Request*: <https://bitbucket.org/{{ context.repository }}/pull-requests/{{ context.pr_id }}|{{ context.message }}>
 {%- endif %}
-
-<{{ context.build_log_url }}|View build logs>
