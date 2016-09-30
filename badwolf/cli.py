@@ -116,6 +116,6 @@ def register_webhook(repo):
             'pullrequest:created',
             'pullrequest:updated',
             'pullrequest:approved',
-            'pullrequest:comment_updated',
+            'pullrequest:comment_created',
         ))
         click.echo('Webhook {} registered'.format(webhook_url))
