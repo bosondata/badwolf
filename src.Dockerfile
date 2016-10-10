@@ -18,10 +18,12 @@ RUN apt-get update \
     python \
     python-dev \
     python-pip \
+    python-pkg-resources \
     python3 \
     python3-dev \
     python3-setuptools \
     python3-pip \
+    python3-pkg-resources \
     git \
     libssl-dev \
     libre2-dev \
