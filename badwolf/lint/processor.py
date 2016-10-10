@@ -43,10 +43,10 @@ class LintProcessor(object):
         'stylelint': StyleLinter,
     }
 
-    def __init__(self, context, spec, working_dir):
+    def __init__(self, context, spec, working_dir=None):
         self.context = context
         self.spec = spec
-        self.working_dir = working_dir
+        self.working_dir = working_dir or context.clone_path
         self.problems = Problems()
         self.pr = PullRequest(bitbucket, context.repository)
         commit_hash = context.source['commit']['hash']

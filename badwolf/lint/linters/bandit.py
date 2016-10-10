@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import os
 import csv
 import logging
 
@@ -22,6 +23,9 @@ class BanditLinter(Linter):
 
     def lint_files(self, files):
         command = ['bandit', '-f', 'csv']
+        ini_conf = os.path.join(self.working_dir, '.bandit')
+        if os.path.exists(ini_conf):
+            command.extend(['--ini', '.bandit'])
         command += files
         _, output = run_command(command, cwd=self.working_dir)
         if not output:

@@ -9,9 +9,9 @@ except ImportError:
 from flask import url_for
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_repo_commit_comment_created_ci_retry(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_repo_commit_comment_created_ci_retry(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -36,12 +36,12 @@ def test_repo_commit_comment_created_ci_retry(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    assert mock_run_test.delay.called
+    assert mock_start_pipeline.delay.called
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_repo_commit_comment_created_ci_rebuild(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_repo_commit_comment_created_ci_rebuild(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -66,12 +66,12 @@ def test_repo_commit_comment_created_ci_rebuild(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    assert mock_run_test.delay.called
+    assert mock_start_pipeline.delay.called
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_repo_commit_comment_created_do_nothing(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_repo_commit_comment_created_do_nothing(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -96,12 +96,12 @@ def test_repo_commit_comment_created_do_nothing(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    mock_run_test.delay.assert_not_called()
+    mock_start_pipeline.delay.assert_not_called()
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_pr_commit_comment_created_do_nothing(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_pr_commit_comment_created_do_nothing(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -129,12 +129,12 @@ def test_pr_commit_comment_created_do_nothing(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    mock_run_test.delay.assert_not_called()
+    mock_start_pipeline.delay.assert_not_called()
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_pr_commit_comment_created_ci_retry(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_pr_commit_comment_created_ci_retry(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -162,12 +162,12 @@ def test_pr_commit_comment_created_ci_retry(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    assert mock_run_test.delay.called
+    assert mock_start_pipeline.delay.called
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_pr_commit_comment_created_ci_rebuild(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_pr_commit_comment_created_ci_rebuild(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -195,12 +195,12 @@ def test_pr_commit_comment_created_ci_rebuild(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    assert mock_run_test.delay.called
+    assert mock_start_pipeline.delay.called
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_pr_commit_comment_created_cleanup_lint(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_pr_commit_comment_created_cleanup_lint(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -228,12 +228,12 @@ def test_pr_commit_comment_created_cleanup_lint(mock_run_test, test_client):
         }
     )
     assert res.status_code == 200
-    assert mock_run_test.delay.called
+    assert mock_start_pipeline.delay.called
 
 
-@mock.patch('badwolf.webhook.views.run_test')
-def test_pr_commit_comment_created_ci_retry_state_not_open(mock_run_test, test_client):
-    mock_run_test.delay.return_value = None
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_pr_commit_comment_created_ci_retry_state_not_open(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -261,4 +261,4 @@ def test_pr_commit_comment_created_ci_retry_state_not_open(mock_run_test, test_c
         }
     )
     assert res.status_code == 200
-    mock_run_test.delay.assert_not_called()
+    mock_start_pipeline.delay.assert_not_called()

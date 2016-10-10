@@ -5,8 +5,8 @@ import logging
 
 from flask import Blueprint, request, current_app, url_for
 
-from badwolf.runner import BuildContext
-from badwolf.tasks import run_test
+from badwolf.context import Context
+from badwolf.tasks import start_pipeline
 from badwolf.extensions import bitbucket
 from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus
 
@@ -77,7 +77,7 @@ def handle_repo_push(payload):
 
     repo_name = repo['full_name']
 
-    context = BuildContext(
+    context = Context(
         repo_name,
         payload['actor'],
         'commit',
@@ -89,7 +89,7 @@ def handle_repo_push(payload):
         },
         rebuild=rebuild,
     )
-    run_test.delay(context)
+    start_pipeline.delay(context)
 
 
 @register_event_handler('pullrequest:created')
@@ -119,7 +119,7 @@ def handle_pull_request(payload):
     source = pr['source']
     target = pr['destination']
 
-    context = BuildContext(
+    context = Context(
         repo['full_name'],
         payload['actor'],
         'pullrequest',
@@ -129,7 +129,7 @@ def handle_pull_request(payload):
         rebuild=rebuild,
         pr_id=pr['id']
     )
-    run_test.delay(context)
+    start_pipeline.delay(context)
 
 
 @register_event_handler('pullrequest:approved')
@@ -197,7 +197,7 @@ def handle_repo_commit_comment(payload):
     repo = payload['repository']
     repo_name = repo['full_name']
 
-    context = BuildContext(
+    context = Context(
         repo_name,
         payload['actor'],
         'commit',
@@ -211,7 +211,7 @@ def handle_repo_commit_comment(payload):
         nocache=nocache,
         clone_depth=0,  # Force a full git clone
     )
-    run_test.delay(context)
+    start_pipeline.delay(context)
 
 
 @register_event_handler('pullrequest:comment_created')
@@ -236,7 +236,7 @@ def handle_pull_request_comment(payload):
     source = pr['source']
     target = pr['destination']
 
-    context = BuildContext(
+    context = Context(
         repo['full_name'],
         payload['actor'],
         'pullrequest',
@@ -248,4 +248,4 @@ def handle_pull_request_comment(payload):
         cleanup_lint=cleanup_lint,
         nocache=nocache
     )
-    run_test.delay(context)
+    start_pipeline.delay(context)

@@ -3,12 +3,8 @@ from __future__ import absolute_import, unicode_literals
 import os
 import io
 import time
-import uuid
-import shutil
 import logging
-import tempfile
 
-import git
 import deansi
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
@@ -17,46 +13,21 @@ from docker.errors import APIError, DockerException
 from markupsafe import Markup
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
-from badwolf.spec import Specification
-from badwolf.lint.processor import LintProcessor
 from badwolf.extensions import bitbucket
-from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest, Changesets
+from badwolf.bitbucket import BuildStatus, BitbucketAPIError
 from badwolf.notification import send_mail, trigger_slack_webhook
 
 
 logger = logging.getLogger(__name__)
 
 
-class BuildContext(object):
-    """Badwolf build context"""
-    def __init__(self, repository, actor, type, message, source,
-                 target=None, rebuild=False, pr_id=None, cleanup_lint=False,
-                 nocache=False, clone_depth=50):
-        self.repository = repository
-        self.actor = actor
-        self.type = type
-        self.message = message
-        self.source = source
-        self.target = target
-        self.rebuild = rebuild
-        self.pr_id = pr_id
-        self.cleanup_lint = cleanup_lint
-        # Don't use cache when build Docker image
-        self.nocache = nocache
-        self.clone_depth = clone_depth
-
-        if 'repository' not in self.source:
-            self.source['repository'] = {'full_name': repository}
-
-
-class BuildRunner(object):
+class Builder(object):
     """Badwolf build runner"""
 
-    def __init__(self, context, docker_version='auto'):
+    def __init__(self, context, spec, docker_version='auto'):
         self.context = context
-        self.repo_full_name = context.repository
+        self.spec = spec
         self.repo_name = context.repository.split('/')[-1]
-        self.task_id = str(uuid.uuid4())
         self.commit_hash = context.source['commit']['hash']
         self.build_status = BuildStatus(
             bitbucket,
@@ -75,152 +46,53 @@ class BuildRunner(object):
     def run(self):
         start_time = time.time()
         self.branch = self.context.source['branch']['name']
-
-        try:
-            self.clone_repository()
-        except git.GitCommandError as e:
-            logger.exception('Git command error')
-            self.update_build_status('FAILED', 'Git clone repository failed')
-            content = ':broken_heart: **Git error**: {}'.format(to_text(e))
-            content = sanitize_sensitive_data(content)
-            if self.context.pr_id:
-                pr = PullRequest(bitbucket, self.repo_full_name)
-                pr.comment(
-                    self.context.pr_id,
-                    content
-                )
-            else:
-                cs = Changesets(bitbucket, self.repo_full_name)
-                cs.comment(
-                    self.commit_hash,
-                    content
-                )
-
-            self.cleanup()
-            return
-
-        if not self.validate_settings():
-            self.cleanup()
-            return
-
         context = {
             'context': self.context,
-            'task_id': self.task_id,
             'build_log_url': url_for('log.build_log', sha=self.commit_hash, _external=True),
             'branch': self.branch,
             'scripts': self.spec.scripts,
             'ansi_termcolor_style': deansi.styleSheet(),
         }
 
-        if self.spec.scripts:
-            self.update_build_status('INPROGRESS', 'Test in progress')
-            docker_image_name, build_output = self.get_docker_image()
-            context.update({
-                'build_logs': Markup(build_output),
-                'elapsed_time': int(time.time() - start_time),
-            })
-            if not docker_image_name:
-                self.update_build_status('FAILED', 'Build or get Docker image failed')
-                context['exit_code'] = -1
-                self.send_notifications(context)
-                self.cleanup()
-                return
-
-            exit_code, output = self.run_tests_in_container(docker_image_name)
-            if exit_code == 0:
-                # Success
-                logger.info('Test succeed for repo: %s', self.repo_full_name)
-                self.update_build_status('SUCCESSFUL', '1 of 1 test succeed')
-            else:
-                # Failed
-                logger.info(
-                    'Test failed for repo: %s, exit code: %s',
-                    self.repo_full_name,
-                    exit_code
-                )
-                self.update_build_status('FAILED', '1 of 1 test failed')
-
-            context.update({
-                'logs': Markup(deansi.deansi(output)),
-                'exit_code': exit_code,
-                'elapsed_time': int(time.time() - start_time),
-            })
+        self.update_build_status('INPROGRESS', 'Test in progress')
+        docker_image_name, build_output = self.get_docker_image()
+        context.update({
+            'build_logs': Markup(build_output),
+            'elapsed_time': int(time.time() - start_time),
+        })
+        if not docker_image_name:
+            self.update_build_status('FAILED', 'Build or get Docker image failed')
+            context['exit_code'] = -1
             self.send_notifications(context)
+            return
 
-        # Code linting
-        if self.context.pr_id and self.spec.linters:
-            lint = LintProcessor(self.context, self.spec, self.clone_path)
-            lint.process()
-
-        self.cleanup()
-
-    def clone_repository(self):
-        self.clone_path = os.path.join(
-            tempfile.gettempdir(),
-            'badwolf',
-            self.task_id,
-            self.repo_name
-        )
-        source_repo = self.context.source['repository']['full_name']
-        if self.context.clone_depth > 0:
-            # Use shallow clone to speed up
-            bitbucket.clone(source_repo, self.clone_path, depth=50, branch=self.branch)
+        exit_code, output = self.run_in_container(docker_image_name)
+        if exit_code == 0:
+            # Success
+            logger.info('Test succeed for repo: %s', self.context.repository)
+            self.update_build_status('SUCCESSFUL', '1 of 1 test succeed')
         else:
-            # Full clone for ci retry in single commit
-            bitbucket.clone(source_repo, self.clone_path)
-        gitcmd = git.Git(self.clone_path)
-        if self.context.target:
-            # Pull Request
-            target_repo = self.context.target['repository']['full_name']
-            target_branch = self.context.target['branch']['name']
-            if source_repo == target_repo:
-                target_remote = 'origin'
-            else:
-                # Pull Reuqest across forks
-                target_remote = target_repo.split('/', 1)[0]
-                gitcmd.remote('add', target_remote, bitbucket.get_git_url(target_repo))
-            gitcmd.fetch(target_remote, target_branch)
-            gitcmd.checkout('FETCH_HEAD')
-            gitcmd.merge('origin/{}'.format(self.branch))
-        else:
-            # Push to branch or ci retry comment on some commit
-            logger.info('Checkout commit %s', self.commit_hash)
-            gitcmd.checkout(self.commit_hash)
-
-        gitmodules = os.path.join(self.clone_path, '.gitmodules')
-        if os.path.exists(gitmodules):
-            gitcmd.submodule('update', '--init', '--recursive')
-
-    def validate_settings(self):
-        conf_file = os.path.join(self.clone_path, current_app.config['BADWOLF_PROJECT_CONF'])
-        try:
-            self.spec = spec = Specification.parse_file(conf_file)
-        except OSError:
-            logger.warning(
-                'No project configuration file found for repo: %s',
-                self.repo_full_name
-            )
-            return False
-
-        if self.context.type == 'commit' and spec.branch and self.branch not in spec.branch:
+            # Failed
             logger.info(
-                'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
-                self.branch,
-                spec.branch
+                'Test failed for repo: %s, exit code: %s',
+                self.context.repository,
+                exit_code
             )
-            return False
+            self.update_build_status('FAILED', '1 of 1 test failed')
 
-        if not spec.scripts and not spec.linters:
-            logger.warning('No script(s) or linter(s) to run')
-            return False
-        return True
+        context.update({
+            'logs': Markup(deansi.deansi(output)),
+            'exit_code': exit_code,
+            'elapsed_time': int(time.time() - start_time),
+        })
+        self.send_notifications(context)
 
     def get_docker_image(self):
-        docker_image_name = self.repo_full_name.replace('/', '-')
+        docker_image_name = self.context.repository.replace('/', '-')
         output = []
         docker_image = self.docker.images(docker_image_name)
         if not docker_image or self.context.rebuild:
-            dockerfile = os.path.join(self.clone_path, self.spec.dockerfile)
+            dockerfile = os.path.join(self.context.clone_path, self.spec.dockerfile)
             build_options = {
                 'tag': docker_image_name,
                 'rm': True,
@@ -232,7 +104,7 @@ class BuildRunner(object):
                 logger.warning(
                     'No Dockerfile: %s found for repo: %s, using simple runner image',
                     dockerfile,
-                    self.repo_full_name
+                    self.context.repository
                 )
                 dockerfile_content = 'FROM messense/badwolf-test-runner:python\n'
                 fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
@@ -243,7 +115,7 @@ class BuildRunner(object):
             build_success = False
             logger.info('Building Docker image %s', docker_image_name)
             self.update_build_status('INPROGRESS', 'Building Docker image')
-            res = self.docker.build(self.clone_path, **build_options)
+            res = self.docker.build(self.context.clone_path, **build_options)
             for log in res:
                 if 'errorDetail' in log:
                     msg = log['errorDetail']['message']
@@ -263,7 +135,7 @@ class BuildRunner(object):
 
         return docker_image_name, ''.join(output)
 
-    def run_tests_in_container(self, docker_image_name):
+    def run_in_container(self, docker_image_name):
         command = '/bin/sh -c badwolf-run'
         environment = {}
         if self.spec.environments:
@@ -278,7 +150,7 @@ class BuildRunner(object):
             'BADWOLF_BRANCH': self.branch,
             'BADWOLF_COMMIT': self.commit_hash,
             'BADWOLF_BUILD_DIR': '/mnt/src',
-            'BADWOLF_REPO_SLUG': self.repo_full_name,
+            'BADWOLF_REPO_SLUG': self.context.repository,
         })
         if self.context.pr_id:
             environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
@@ -292,7 +164,7 @@ class BuildRunner(object):
             host_config=self.docker.create_host_config(
                 privileged=self.spec.privileged,
                 binds={
-                    self.clone_path: {
+                    self.context.clone_path: {
                         'bind': '/mnt/src',
                         'mode': 'rw',
                     },
@@ -342,9 +214,9 @@ class BuildRunner(object):
             f.write(to_binary(html))
 
         if exit_code == 0:
-            subject = 'Test succeed for repository {}'.format(self.repo_full_name)
+            subject = 'Test succeed for repository {}'.format(self.context.repository)
         else:
-            subject = 'Test failed for repository {}'.format(self.repo_full_name)
+            subject = 'Test failed for repository {}'.format(self.context.repository)
         notification = self.spec.notification
         emails = notification['emails']
         if emails:
@@ -354,6 +226,3 @@ class BuildRunner(object):
         if slack_webhooks:
             message = render_template('slack_webhook/' + template + '.md', **context)
             trigger_slack_webhook(slack_webhooks, message)
-
-    def cleanup(self):
-        shutil.rmtree(os.path.dirname(self.clone_path), ignore_errors=True)
