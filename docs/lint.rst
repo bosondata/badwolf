@@ -6,7 +6,8 @@
 项目接入
 --------------
 
-请参考 :ref:`构建和测试 <build>` 文档接入项目，对于代码检查，需要配置 `linter` 选项，如：
+请参考 :ref:`构建和测试 <build>` 文档接入项目，如不需要构建/测试可忽略相关配置，
+对于代码检查，需要配置 `linter` 选项，如：
 
 单个 linter 示例
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,3 +54,12 @@ yamllint            YAML                https://github.com/adrienverge/yamllint
 jsonlint            JSON                https://github.com/zaach/jsonlint
 rstlint             RestructuredText    https://github.com/twolfson/restructuredtext-lint
 =================== =================== =======================================================
+
+指定 Python 代码检查工具使用的 Python 版本
+--------------------------------------------------
+
+对于 Python 相关的代码检查工具，支持指定其使用的 Python 版本（默认使用 Python 3）：
+
+.. code-block:: yaml
+
+    linter: {name: 'pylint', python_version: 2}
