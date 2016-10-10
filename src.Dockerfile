@@ -25,7 +25,7 @@ RUN apt-get update \
     git \
     libssl-dev \
     libre2-dev \
-    && pip install -U pip setuptools wheel \
+    && pip2 install -U pip setuptools wheel \
     && pip3 install -U pip setuptools wheel cython \
     && pip3 install https://github.com/andreasvc/pyre2/archive/master.zip \
     && git config --global user.email "badwolf@localhost" \
@@ -39,7 +39,7 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     eslint-plugin-react eslint-plugin-react-native \
     babel-eslint
 
-RUN pip install -Ur requirements.txt && \
+RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
     pip3 install -Ur requirements.txt \
     && pip3 install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
