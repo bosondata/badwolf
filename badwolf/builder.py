@@ -152,6 +152,7 @@ class Builder(object):
             'BADWOLF_BUILD_DIR': '/mnt/src',
             'BADWOLF_REPO_SLUG': self.context.repository,
         })
+        environment.setdefault('TERM', 'xterm-256color')
         if self.context.pr_id:
             environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
 
