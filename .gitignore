@@ -26,6 +26,9 @@ share/
 .installed.cfg
 *.egg
 
+# pyenv
+.python-version
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
