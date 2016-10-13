@@ -61,3 +61,12 @@ class RepositoryCloner(object):
         gitcmd.fetch(target_remote, target_branch)
         gitcmd.checkout('FETCH_HEAD')
         gitcmd.merge('origin/{}'.format(self.context.source['branch']['name']))
+
+    @staticmethod
+    def get_conflicted_files(repo_path):
+        gitcmd = git.Git(repo_path)
+        try:
+            return gitcmd.diff('--name-only', '--diff-filter=U')
+        except git.GitCommandError:
+            logger.exception('Error get conflicted files by git diff command')
+            return None
