@@ -6,6 +6,7 @@ import git
 import requests
 from requests.auth import HTTPBasicAuth
 from optionaldict import optionaldict
+from six.moves.urllib.parse import quote
 
 
 logger = logging.getLogger(__name__)
@@ -65,8 +66,8 @@ class BasicAuthDispatcher(APIDispatcher):
 
     def get_git_url(self, full_name):
         return 'https://{username}:{password}@bitbucket.org/{name}.git'.format(
-            username=self._username,
-            password=self._password,
+            username=quote(self._username),
+            password=quote(self._password),
             name=full_name
         )
 
@@ -151,7 +152,7 @@ class OAuth2Dispatcher(APIDispatcher):
 
     def get_git_url(self, full_name):
         return 'https://x-token-auth:{access_token}@bitbucket.org/{name}.git'.format(
-            access_token=self._access_token,
+            access_token=quote(self._access_token),
             name=full_name
         )
 
