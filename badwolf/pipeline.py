@@ -58,7 +58,17 @@ class Pipeline(object):
 
     def _report_git_error(self, exc):
         self.build_status.update('FAILED', description='Git clone repository failed')
-        content = ':broken_heart: **Git error**: {}'.format(to_text(exc))
+        git_error_msg = to_text(exc)
+        content = ':broken_heart: **Git error**: {}'.format(git_error_msg)
+        if 'Merge conflict' in git_error_msg:
+            # git merge conflicted
+            conflicted_files = RepositoryCloner.get_conflicted_files(
+                self.context.clone_path
+            )
+            if conflicted_files:
+                conflicted_files = '\n'.join(('* ' + name for name in conflicted_files.split('\n')))
+                content = ':broken_heart: This branch has conflicts that must be resolved\n\n'
+                content += '**Conflicting files**\n\n{}'.format(conflicted_files)
         content = sanitize_sensitive_data(content)
         if self.context.pr_id:
             pr = PullRequest(bitbucket, self.context.repository)
