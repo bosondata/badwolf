@@ -98,7 +98,7 @@ class LintProcessor(object):
             description = 'No code issues found'
             logger.info('No problems found when linting codes')
 
-        # Report error or cleanup lint
+        # Report error and cleanup outdated lint comments
         self._report()
 
         if has_error:
@@ -129,38 +129,31 @@ class LintProcessor(object):
             logger.exception('Error fetching all comments for pull request')
             comments = []
 
-        hash_set = set()
+        existing_comments = set()
+        existing_comments_ids = {}
         for comment in comments:
             inline = comment.get('inline')
             if not inline:
                 continue
 
             raw = comment['content']['raw']
-            if self.context.cleanup_lint and raw.startswith(':broken_heart:'):
-                # Delete comment
-                try:
-                    self.pr.delete_comment(self.context.pr_id, comment['id'])
-                except BitbucketAPIError:
-                    logger.exception('Error deleting pull request comment')
-            else:
-                filename = inline['path']
-                line_to = inline['to']
-                hash_set.add(hash('{}{}{}'.format(filename, line_to, raw)))
+            filename = inline['path']
+            line_to = inline['to']
+            existing_comments.add((filename, line_to, raw))
+            existing_comments_ids[(filename, line_to, raw)] = comment['id']
 
         if len(self.problems) == 0:
             return
 
         revision_before = self.context.target['commit']['hash']
         revision_after = self.context.source['commit']['hash']
+        lint_comments = set()
         problem_count = 0
         for problem in self.problems:
             content = ':broken_heart: **{}**: {}'.format(problem.linter, problem.message)
-            comment_hash = hash('{}{}{}'.format(
-                problem.filename,
-                problem.line,
-                content,
-            ))
-            if comment_hash in hash_set:
+            commnet_tuple = (problem.filename, problem.line, content)
+            lint_comments.add(commnet_tuple)
+            if commnet_tuple in existing_comments:
                 continue
 
             try:
@@ -182,6 +175,15 @@ class LintProcessor(object):
             len(self.problems),
             problem_count
         )
+
+        outdated_comments = existing_comments - lint_comments
+        logger.info('%d outdated lint comments found', len(outdated_comments))
+        for comment in outdated_comments:
+            # Delete comment
+            try:
+                self.pr.delete_comment(self.context.pr_id, existing_comments_ids[comment])
+            except BitbucketAPIError:
+                logger.exception('Error deleting pull request comment')
         return problem_count
 
     def update_build_status(self, state, description=None):

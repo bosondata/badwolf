@@ -220,9 +220,8 @@ def handle_pull_request_comment(payload):
     comment_content = comment['content']['raw'].lower()
     retry = 'ci retry' in comment_content
     rebuild = 'ci rebuild' in comment_content
-    cleanup_lint = 'cleanup lint' in comment_content
     nocache = 'no cache' in comment_content
-    if not (retry or rebuild or cleanup_lint):
+    if not (retry or rebuild):
         return
 
     repo = payload['repository']
@@ -245,7 +244,6 @@ def handle_pull_request_comment(payload):
         target,
         rebuild=rebuild,
         pr_id=pr['id'],
-        cleanup_lint=cleanup_lint,
         nocache=nocache
     )
     start_pipeline.delay(context)

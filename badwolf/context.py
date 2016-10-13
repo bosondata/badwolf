@@ -19,9 +19,8 @@ else:
 
 class Context(object):
     """Badwolf build/lint context"""
-    def __init__(self, repository, actor, type, message, source,
-                 target=None, rebuild=False, pr_id=None, cleanup_lint=False,
-                 nocache=False, clone_depth=50):
+    def __init__(self, repository, actor, type, message, source, target=None,
+                 rebuild=False, pr_id=None, nocache=False, clone_depth=50):
         self.task_id = to_text(uuid.uuid4())
         self.repository = repository
         self.repo_name = repository.split('/')[-1]
@@ -32,7 +31,6 @@ class Context(object):
         self.target = target
         self.rebuild = rebuild
         self.pr_id = pr_id
-        self.cleanup_lint = cleanup_lint
         # Don't use cache when build Docker image
         self.nocache = nocache
         self.clone_depth = clone_depth
