@@ -225,5 +225,4 @@ class Builder(object):
 
         slack_webhooks = notification['slack_webhooks']
         if slack_webhooks:
-            message = render_template('slack_webhook/' + template + '.md', **context)
-            trigger_slack_webhook(slack_webhooks, message)
+            trigger_slack_webhook(slack_webhooks, context)
