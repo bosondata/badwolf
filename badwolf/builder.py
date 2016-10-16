@@ -145,6 +145,8 @@ class Builder(object):
         # TODO: Add more test context related env vars
         environment.update({
             'DEBIAN_FRONTEND': 'noninteractive',
+            'HOME': '/root',
+            'SHELL': '/bin/sh',
             'CI': 'true',
             'CI_NAME': 'badwolf',
             'BADWOLF_BRANCH': self.branch,
