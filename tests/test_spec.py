@@ -203,3 +203,66 @@ def test_parse_privileged():
     f = io.StringIO(s)
     spec = Specification.parse_file(f)
     assert not spec.privileged
+
+
+def test_parse_image():
+    s = """script: ls"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert not spec.image
+
+    s = """image: python"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.image == 'python:latest'
+
+    s = """image: python:2.7"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.image == 'python:2.7'
+
+
+def test_generate_script_full_feature(app):
+    s = """script:
+  - ls
+service:
+  - redis-server
+after_success:
+  - pwd
+after_failure:
+  - exit"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    script = spec.shell_script
+    assert 'echo + pwd\npwd' in script
+    assert 'echo + exit\nexit' in script
+
+
+def test_generate_script_after_success(app):
+    s = """script:
+  - ls
+service:
+  - redis-server
+after_success:
+  - pwd"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    script = spec.shell_script
+    assert 'echo + pwd\npwd' in script
+    assert 'if [ $SCRIPT_EXIT_CODE -eq 0 ]; then' in script
+    assert 'if [ $SCRIPT_EXIT_CODE -ne 0 ]; then' not in script
+
+
+def test_generate_script_after_failure(app):
+    s = """script:
+  - ls
+service:
+  - redis-server
+after_failure:
+  - exit"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    script = spec.shell_script
+    assert 'echo + exit\nexit' in script
+    assert 'if [ $SCRIPT_EXIT_CODE -eq 0 ]; then' not in script
+    assert 'if [ $SCRIPT_EXIT_CODE -ne 0 ]; then' in script

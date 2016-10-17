@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 import io
+import base64
+import logging
 
 import yaml
 try:
     from yaml import CLoader as _Loader
 except ImportError:
     from yaml import Loader as _Loader
+from six.moves import shlex_quote
+from flask import render_template
 
-from badwolf.utils import ObjectDict
+from badwolf.utils import ObjectDict, to_text, to_binary
+
+
+logger = logging.getLogger(__name__)
 
 
 class Specification(object):
     def __init__(self):
+        self.image = None
         self.services = []
         self.scripts = []
         self.dockerfile = 'Dockerfile'
@@ -56,11 +64,16 @@ class Specification(object):
                 key, val = env_str.split('=', 1)
                 env_map[key] = val
             env_map_list.append(env_map)
+        image = conf.get('image')
+        if image and ':' not in image:
+            # Ensure we have tag name in image
+            image = image + ':latest'
 
         linters = cls._parse_linters(cls._get_list(conf.get('linter', [])))
         privileged = conf.get('privileged', False)
 
         spec = cls()
+        spec.image = image
         spec.services = services
         spec.scripts = scripts
         spec.dockerfile = dockerfile.strip()
@@ -109,3 +122,29 @@ class Specification(object):
         if not self.branch:
             return True
         return branch in self.branch
+
+    @property
+    def shell_script(self):
+        def _trace(command):
+            return 'echo + {}\n{} '.format(
+                shlex_quote(command),
+                command
+            )
+
+        commands = []
+        after_success = [_trace(cmd) for cmd in self.after_success]
+        after_failure = [_trace(cmd) for cmd in self.after_failure]
+        for service in self.services:
+            commands.append(_trace('service {} start'.format(service)))
+        for script in self.scripts:
+            commands.append(_trace(script))
+
+        command_encoded = shlex_quote(to_text(base64.b64encode(to_binary('\n'.join(commands)))))
+        context = {
+            'command': command_encoded,
+            'after_success': '    \n'.join(after_success),
+            'after_failure': '    \n'.join(after_failure),
+        }
+        script = render_template('script.sh', **context)
+        logger.debug('Build script: \n%s', script)
+        return script
