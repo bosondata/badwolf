@@ -3,9 +3,11 @@ from __future__ import absolute_import, unicode_literals
 import os
 import io
 import time
+import base64
 import logging
 
 import deansi
+from six.moves import shlex_quote
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import Client
@@ -67,6 +69,7 @@ class Builder(object):
             return
 
         exit_code, output = self.run_in_container(docker_image_name)
+        logger.debug('Docker run output: %s', output)
         if exit_code == 0:
             # Success
             logger.info('Test succeed for repo: %s', self.context.repository)
@@ -92,7 +95,6 @@ class Builder(object):
         output = []
         docker_image = self.docker.images(docker_image_name)
         if not docker_image or self.context.rebuild:
-            dockerfile = os.path.join(self.context.clone_path, self.spec.dockerfile)
             build_options = {
                 'tag': docker_image_name,
                 'rm': True,
@@ -100,17 +102,27 @@ class Builder(object):
                 'decode': True,
                 'nocache': self.context.nocache,
             }
-            if not os.path.exists(dockerfile):
-                logger.warning(
-                    'No Dockerfile: %s found for repo: %s, using simple runner image',
-                    dockerfile,
-                    self.context.repository
-                )
-                dockerfile_content = 'FROM messense/badwolf-test-runner:python\n'
+            if self.spec.image:
+                from_image_name, from_image_tag = self.spec.image.split(':', 2)
+                logger.info('Pulling Docker image %s', self.spec.image)
+                self.docker.pull(from_image_name, tag=from_image_tag)
+                logger.info('Pulled Docker image %s', self.spec.image)
+                dockerfile_content = 'FROM {}\n'.format(self.spec.image)
                 fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
                 build_options['fileobj'] = fileobj
             else:
-                build_options['dockerfile'] = self.spec.dockerfile
+                dockerfile = os.path.join(self.context.clone_path, self.spec.dockerfile)
+                if os.path.exists(dockerfile):
+                    build_options['dockerfile'] = self.spec.dockerfile
+                else:
+                    logger.warning(
+                        'No Dockerfile: %s found for repo: %s, using simple runner image',
+                        dockerfile,
+                        self.context.repository
+                    )
+                    dockerfile_content = 'FROM messense/badwolf-test-runner:python\n'
+                    fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
+                    build_options['fileobj'] = fileobj
 
             build_success = False
             logger.info('Building Docker image %s', docker_image_name)
@@ -136,13 +148,13 @@ class Builder(object):
         return docker_image_name, ''.join(output)
 
     def run_in_container(self, docker_image_name):
-        command = '/bin/sh -c badwolf-run'
         environment = {}
         if self.spec.environments:
             # TODO: Support run in multiple environments
             environment = self.spec.environments[0]
 
         # TODO: Add more test context related env vars
+        script = shlex_quote(to_text(base64.b64encode(to_binary(self.spec.shell_script))))
         environment.update({
             'DEBIAN_FRONTEND': 'noninteractive',
             'HOME': '/root',
@@ -153,14 +165,17 @@ class Builder(object):
             'BADWOLF_COMMIT': self.commit_hash,
             'BADWOLF_BUILD_DIR': '/mnt/src',
             'BADWOLF_REPO_SLUG': self.context.repository,
+            'BADWOLF_SCRIPT': script,
         })
         environment.setdefault('TERM', 'xterm-256color')
         if self.context.pr_id:
             environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
 
+        logger.debug('Docker container environment: \n %r', environment)
         container = self.docker.create_container(
             docker_image_name,
-            command=command,
+            entrypoint=['/bin/sh', '-c'],
+            command=['echo $BADWOLF_SCRIPT | base64 --decode | /bin/sh'],
             environment=environment,
             working_dir='/mnt/src',
             volumes=['/mnt/src'],

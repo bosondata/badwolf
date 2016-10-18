@@ -1,5 +1,4 @@
 FROM ubuntu:16.04
-MAINTAINER Messense Lv "messense@icloud.com"
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8

@@ -14,6 +14,7 @@
 ============================= ===================== ===================================================================
 选项名                        类型                  说明
 ============================= ===================== ===================================================================
+image                         string                用于构建的 Docker 镜像，提供此选项时可不提供 `dockerfile` 选项
 dockerfile                    string                用于构建 Docker 镜像的 dockerfile 文件名称, 默认为 Dockerfile
 branch                        string/list           仅在这些分支上运行构建和测试
 script                        string/list           构建/测试的命令
@@ -27,15 +28,7 @@ notification.slack_webhook    string/list           Slack webhook 地址列表
 privileged                    boolean               使用特权模式启动 Docker 容器
 ============================= ===================== ===================================================================
 
-如果需要自定义 Docker 镜像中安装的软件、库等，需要在根目录中提供上述 `dockerfile` 字段配置的 dockerfile 文件名称，
-默认为 Dockerfile，需要将 Dockerfile 的 `FROM` 设置为以下几个选项：
-
-* `messense/badwolf-test-runner:base` ： 基于 Ubuntu 16.04 LTS 的基础镜像，仅包含 CI 必须的软件包。
-* `messense/badwolf-test-runner:python` ：包含 Python 2.6、2.7、3.4、3.5 和 pypy 的镜像。
-* `messense/badwolf-test-runner:node` ：包含 nodejs 的镜像
-* `messense/badwolf-test-runner:rust` ：包含 Rust 的镜像
-
-比如：`FROM messense/badwolf-test-runner:python`
+请注意，当 `image` 和 `dockerfile` 选项同时提供时， `image` 选项优先使用。
 
 然后，在 BitBucket 项目设置中配置 webhook，假设部署机器的可访问地址为：http://badwolf.example.com:8000，
 则 webhook 地址应配置为：`http://badwolf.example.com:8000/webhook/push`。
