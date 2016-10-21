@@ -28,7 +28,7 @@ class RepositoryCloner(object):
             bitbucket.clone(
                 source_repo,
                 clone_path,
-                depth=50,
+                depth=self.context.clone_depth,
                 branch=self.context.source['branch']['name']
             )
         else:
@@ -40,6 +40,9 @@ class RepositoryCloner(object):
             self._merge_pull_request(gitcmd)
         else:
             # Push to branch or ci retry comment on some commit
+            if not self.is_commit_exists(gitcmd, self.commit_hash):
+                logger.info('Unshallowing a shallow cloned repository')
+                gitcmd.fetch('--unshallow')
             logger.info('Checkout commit %s', self.commit_hash)
             gitcmd.checkout(self.commit_hash)
 
@@ -61,6 +64,11 @@ class RepositoryCloner(object):
         gitcmd.fetch(target_remote, target_branch)
         gitcmd.checkout('FETCH_HEAD')
         gitcmd.merge('origin/{}'.format(self.context.source['branch']['name']))
+
+    @staticmethod
+    def is_commit_exists(gitcmd, sha):
+        output = gitcmd.rev_parse('--quiet', '--verify', '%s^{commit}' % sha, with_exceptions=False)
+        return bool(output.strip())
 
     @staticmethod
     def get_conflicted_files(repo_path):

@@ -209,7 +209,6 @@ def handle_repo_commit_comment(payload):
         },
         rebuild=rebuild,
         nocache=nocache,
-        clone_depth=0,  # Force a full git clone
     )
     start_pipeline.delay(context)
 
