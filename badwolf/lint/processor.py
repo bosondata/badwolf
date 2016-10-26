@@ -129,7 +129,6 @@ class LintProcessor(object):
             logger.exception('Error fetching all comments for pull request')
             comments = []
 
-        existing_comments = set()
         existing_comments_ids = {}
         for comment in comments:
             inline = comment.get('inline')
@@ -137,9 +136,10 @@ class LintProcessor(object):
                 continue
 
             raw = comment['content']['raw']
+            if not raw.startswith(':broken_heart: **'):
+                continue
             filename = inline['path']
             line_to = inline['to']
-            existing_comments.add((filename, line_to, raw))
             existing_comments_ids[(filename, line_to, raw)] = comment['id']
 
         if len(self.problems) == 0:
@@ -151,9 +151,9 @@ class LintProcessor(object):
         problem_count = 0
         for problem in self.problems:
             content = ':broken_heart: **{}**: {}'.format(problem.linter, problem.message)
-            commnet_tuple = (problem.filename, problem.line, content)
-            lint_comments.add(commnet_tuple)
-            if commnet_tuple in existing_comments:
+            comment_tuple = (problem.filename, problem.line, content)
+            lint_comments.add(comment_tuple)
+            if comment_tuple in existing_comments_ids:
                 continue
 
             try:
@@ -176,7 +176,7 @@ class LintProcessor(object):
             problem_count
         )
 
-        outdated_comments = existing_comments - lint_comments
+        outdated_comments = set(existing_comments_ids.keys()) - lint_comments
         logger.info('%d outdated lint comments found', len(outdated_comments))
         for comment in outdated_comments:
             # Delete comment
