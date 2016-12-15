@@ -57,6 +57,9 @@ class Pipeline(object):
             self.clean()
 
     def _report_git_error(self, exc):
+        def _linkify_file(name):
+            return '[{name}](#chg-{name})'.format(name=name)
+
         self.build_status.update('FAILED', description='Git clone repository failed')
         git_error_msg = to_text(exc)
         content = ':broken_heart: **Git error**: {}'.format(git_error_msg)
@@ -66,7 +69,7 @@ class Pipeline(object):
                 self.context.clone_path
             )
             if conflicted_files:
-                conflicted_files = '\n'.join(('* ' + name for name in conflicted_files.split('\n')))
+                conflicted_files = '\n'.join(('* ' + _linkify_file(name) for name in conflicted_files.split('\n')))
                 content = ':broken_heart: This branch has conflicts that must be resolved\n\n'
                 content += '**Conflicting files**\n\n{}'.format(conflicted_files)
         content = sanitize_sensitive_data(content)
