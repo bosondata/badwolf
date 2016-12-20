@@ -14,6 +14,12 @@ class JSCSLinter(Linter):
     def is_usable(self):
         return in_path('jscs') or npm_exists('jscs', self.working_dir)
 
+    def match_file(self, filename):
+        # 过滤掉压缩过的 JavaScript 文件
+        if filename.lower().endswith('.min.js'):
+            return False
+        return super(JSCSLinter, self).match_file(filename)
+
     def lint_files(self, files):
         command = self.create_command(files)
         _, output = run_command(command, cwd=self.working_dir)
