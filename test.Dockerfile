@@ -20,7 +20,9 @@ RUN apt-get update \
     python3-setuptools \
     python3-pip \
     python3-pkg-resources \
+    git \
     libssl-dev \
+    openssh-client \
     && pip3 install -U pip tox
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
