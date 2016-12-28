@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import json
 import logging
 
@@ -59,7 +60,7 @@ def handle_repo_push(payload):
 
     latest_change = changes[0]
     if not latest_change['new'] or latest_change['new']['type'] != 'branch':
-        logger.info('Unsupported push type: %s', latest_change['new']['type'])
+        logger.info('Unsupported push type: %s', latest_change)
         return
     if not latest_change['commits']:
         logger.warning('Can not find any commits')
