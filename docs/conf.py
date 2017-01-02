@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'badwolf'
-copyright = u'2016, BosonData'
+copyright = u'2016 - 2017, BosonData'
 author = u'Messense Lv'
 
 # The version info for the project you're documenting, acts as replacement for
