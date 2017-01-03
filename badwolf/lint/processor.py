@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
+import time
 import logging
 
 from flask import url_for
@@ -55,7 +57,7 @@ class LintProcessor(object):
             context.source['repository']['full_name'],
             commit_hash,
             'badwolf/lint',
-            url_for('log.lint_log', sha=commit_hash, _external=True)
+            url_for('log.lint_log', sha=commit_hash, ts=int(time.time()), _external=True)
         )
 
     def load_changes(self):

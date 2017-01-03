@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
 import io
 import time
@@ -26,12 +27,12 @@ logger = logging.getLogger(__name__)
 class Builder(object):
     """Badwolf build runner"""
 
-    def __init__(self, context, spec, docker_version='auto'):
+    def __init__(self, context, spec, build_status=None, docker_version='auto'):
         self.context = context
         self.spec = spec
         self.repo_name = context.repository.split('/')[-1]
         self.commit_hash = context.source['commit']['hash']
-        self.build_status = BuildStatus(
+        self.build_status = build_status or BuildStatus(
             bitbucket,
             context.source['repository']['full_name'],
             self.commit_hash,
@@ -50,7 +51,7 @@ class Builder(object):
         self.branch = self.context.source['branch']['name']
         context = {
             'context': self.context,
-            'build_log_url': url_for('log.build_log', sha=self.commit_hash, _external=True),
+            'build_log_url': self.build_status.url,
             'branch': self.branch,
             'scripts': self.spec.scripts,
             'ansi_termcolor_style': deansi.styleSheet(),

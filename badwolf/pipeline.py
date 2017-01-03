@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
+import time
 import shutil
 import logging
 
@@ -35,7 +37,7 @@ class Pipeline(object):
             context.source['repository']['full_name'],
             self.commit_hash,
             'badwolf/test',
-            url_for('log.build_log', sha=self.commit_hash, _external=True)
+            url_for('log.build_log', sha=self.commit_hash, ts=int(time.time()), _external=True)
         )
 
     def start(self):
@@ -121,7 +123,7 @@ class Pipeline(object):
         '''Build project'''
         if self.spec.scripts:
             logger.info('Running build for repository %s', self.context.repository)
-            Builder(self.context, self.spec).run()
+            Builder(self.context, self.spec, build_status=self.build_status).run()
 
     def lint(self):
         '''Lint codes'''
