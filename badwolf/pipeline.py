@@ -60,7 +60,7 @@ class Pipeline(object):
 
     def _report_git_error(self, exc):
         def _linkify_file(name):
-            return '[{name}](#chg-{name})'.format(name=name)
+            return '[`{name}`](#chg-{name})'.format(name=name)
 
         self.build_status.update('FAILED', description='Git clone repository failed')
         git_error_msg = to_text(exc)
