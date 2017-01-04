@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
+import time
 import shutil
 import logging
 
@@ -35,7 +37,7 @@ class Pipeline(object):
             context.source['repository']['full_name'],
             self.commit_hash,
             'badwolf/test',
-            url_for('log.build_log', sha=self.commit_hash, _external=True)
+            url_for('log.build_log', sha=self.commit_hash, ts=int(time.time()), _external=True)
         )
 
     def start(self):
@@ -58,7 +60,7 @@ class Pipeline(object):
 
     def _report_git_error(self, exc):
         def _linkify_file(name):
-            return '[{name}](#chg-{name})'.format(name=name)
+            return '[`{name}`](#chg-{name})'.format(name=name)
 
         self.build_status.update('FAILED', description='Git clone repository failed')
         git_error_msg = to_text(exc)
@@ -121,7 +123,7 @@ class Pipeline(object):
         '''Build project'''
         if self.spec.scripts:
             logger.info('Running build for repository %s', self.context.repository)
-            Builder(self.context, self.spec).run()
+            Builder(self.context, self.spec, build_status=self.build_status).run()
 
     def lint(self):
         '''Lint codes'''
