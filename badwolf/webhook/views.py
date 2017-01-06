@@ -59,35 +59,42 @@ def handle_repo_push(payload):
         return
 
     latest_change = changes[0]
-    if not latest_change['new'] or latest_change['new']['type'] != 'branch':
-        logger.info('Unsupported push type: %s', latest_change)
+    if not latest_change['new']:
+        logger.info('No new changes found')
         return
-    if not latest_change['commits']:
-        logger.warning('Can not find any commits')
-        return
-
-    commit_hash = latest_change['commits'][0]['hash']
-    commit_message = latest_change['commits'][0]['message']
-    if 'ci skip' in commit_message.lower():
-        logger.info('ci skip found, ignore tests.')
-        return
-
-    rebuild = False
-    if 'ci rebuild' in commit_message.lower():
-        rebuild = True
 
     repo_name = repo['full_name']
+    push_type = latest_change['new']['type']
+    rebuild = False
+    if push_type == 'tag':
+        commit_hash = latest_change['new']['target']['hash']
+        commit_message = latest_change['new']['target']['message']
+    elif push_type == 'branch':
+        if not latest_change['commits']:
+            logger.warning('Can not find any commits')
+            return
+        commit_hash = latest_change['commits'][0]['hash']
+        commit_message = latest_change['commits'][0]['message']
+        if 'ci skip' in commit_message.lower():
+            logger.info('ci skip found, ignore tests.')
+            return
+        if 'ci rebuild' in commit_message.lower():
+            rebuild = True
+    else:
+        logger.error('Unsupported push type: %s', push_type)
+        return
 
+    source = {
+        'repository': {'full_name': repo_name},
+        'branch': {'name': latest_change['new']['name']},
+        'commit': {'hash': commit_hash}
+    }
     context = Context(
         repo_name,
         payload['actor'],
-        'commit',
+        push_type,
         commit_message,
-        {
-            'repository': {'full_name': repo_name},
-            'branch': {'name': latest_change['new']['name']},
-            'commit': {'hash': commit_hash},
-        },
+        source,
         rebuild=rebuild,
     )
     start_pipeline.delay(context)

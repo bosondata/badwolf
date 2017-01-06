@@ -48,11 +48,11 @@ class Builder(object):
 
     def run(self):
         start_time = time.time()
-        self.branch = self.context.source['branch']['name']
+        branch = self.context.source['branch']
         context = {
             'context': self.context,
             'build_log_url': self.build_status.url,
-            'branch': self.branch,
+            'branch': branch['name'],
             'scripts': self.spec.scripts,
             'ansi_termcolor_style': deansi.styleSheet(),
         }
@@ -164,13 +164,17 @@ class Builder(object):
             'SHELL': '/bin/sh',
             'CI': 'true',
             'CI_NAME': 'badwolf',
-            'BADWOLF_BRANCH': self.branch,
             'BADWOLF_COMMIT': self.commit_hash,
             'BADWOLF_BUILD_DIR': '/mnt/src',
             'BADWOLF_REPO_SLUG': self.context.repository,
             'BADWOLF_SCRIPT': script,
         })
         environment.setdefault('TERM', 'xterm-256color')
+        branch = self.context.source['branch']
+        if self.context.type == 'tag':
+            environment['BADWOLF_TAG'] = branch['name']
+        else:
+            environment['BADWOLF_BRANCH'] = branch['name']
         if self.context.pr_id:
             environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
 

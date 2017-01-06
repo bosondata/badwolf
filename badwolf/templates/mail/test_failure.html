@@ -173,8 +173,11 @@ ol li {
             <h1>Test failed for repository: {{ context.repository }}</h1>
             <h2>Information</h2>
             <p>Repository: <a href="https://bitbucket.org/{{ context.repository }}">{{ context.repository }}</a></p>
-            <p>Branch: <a href="https://bitbucket.org/{{ context.repository }}/src?at={{ branch }}">{{ branch }}</a></p>
-            {% if context.type == 'commit' %}
+            {% if context.type == 'tag' %}
+                <p>Tag: {{ branch }}</p>
+            {% endif %}
+            {% if context.type == 'branch' %}
+                <p>Branch: <a href="https://bitbucket.org/{{ context.repository }}/src?at={{ branch }}">{{ branch }}</a></p>
                 <p>Commit: <a href="https://bitbucket.org/{{ context.repository }}/commits/{{ context.source.commit.hash }}">{{ context.source.commit.hash }}</a></p>
                 <p>{{ context.message }}</p>
             {% endif %}

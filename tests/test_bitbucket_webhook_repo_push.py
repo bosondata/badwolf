@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import json
 try:
     import unittest.mock as mock
@@ -75,7 +76,7 @@ def test_repo_push_unsupported_push_type(test_client):
             'changes': [
                 {
                     'new': {
-                        'type': 'tag',
+                        'type': 'wrong_push_type',
                     }
                 }
             ]
@@ -202,6 +203,41 @@ def test_repo_push_trigger_start_pipeline(mock_start_pipeline, test_client):
                             'message': 'Test [ci rebuild]',
                         }
                     ],
+                }
+            ]
+        }
+    })
+    res = test_client.post(
+        url_for('webhook.webhook_push'),
+        data=payload,
+        headers={
+            'X-Event-Key': 'repo:push',
+        }
+    )
+    assert res.status_code == 200
+    assert mock_start_pipeline.delay.called
+
+
+@mock.patch('badwolf.webhook.views.start_pipeline')
+def test_repo_push_tag_trigger_start_pipeline(mock_start_pipeline, test_client):
+    mock_start_pipeline.delay.return_value = None
+    payload = json.dumps({
+        'repository': {
+            'full_name': 'deepanalyzer/badwolf',
+            'scm': 'git',
+        },
+        'actor': {},
+        'push': {
+            'changes': [
+                {
+                    'new': {
+                        'type': 'tag',
+                        'name': 'v0.1.0',
+                        'target': {
+                            'hash': '2cedc1af762',
+                            'message': 'Test',
+                        }
+                    }
                 }
             ]
         }
