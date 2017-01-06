@@ -107,7 +107,7 @@ class Pipeline(object):
             raise SpecificationNotFound()
 
         branch = self.context.source['branch']['name']
-        if self.context.type == 'commit' and not spec.is_branch_enabled(branch):
+        if self.context.type == 'branch' and not spec.is_branch_enabled(branch):
             logger.info(
                 'Ignore tests since branch %s test is not enabled. Allowed branches: %s',
                 branch,

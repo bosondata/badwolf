@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import time
 import logging
 import smtplib
@@ -45,15 +46,22 @@ def trigger_slack_webhook(webhooks, context):
         'value': '<https://bitbucket.org/{repo}|{repo}>'.format(repo=context['context'].repository),
         'short': True,
     })
-    fields.append({
-        'title': 'Branch',
-        'value': '<https://bitbucket.org/{repo}/src?at={branch}|{branch}>'.format(
-            repo=context['context'].repository,
-            branch=context['branch'],
-        ),
-        'short': True,
-    })
-    if context['context'].type == 'commit':
+    if context['context'].type == 'tag':
+        fields.append({
+            'title': 'Tag',
+            'value': context['branch'],
+            'short': True,
+        })
+    else:
+        fields.append({
+            'title': 'Branch',
+            'value': '<https://bitbucket.org/{repo}/src?at={branch}|{branch}>'.format(
+                repo=context['context'].repository,
+                branch=context['branch'],
+            ),
+            'short': True,
+        })
+    if context['context'].type in {'branch', 'tag'}:
         fields.append({
             'title': 'Commit',
             'value': '<https://bitbucket.org/{repo}/commits/{sha}|{sha}>'.format(
@@ -86,7 +94,7 @@ def trigger_slack_webhook(webhooks, context):
         'author_link': actor['links']['html']['href'],
         'author_icon': actor['links']['avatar']['href'],
     }
-    if context['context'].type == 'commit':
+    if context['context'].type in {'branch', 'tag'}:
         attachment['text'] = context['context'].message
     payload = {'attachments': [attachment]}
     for webhook in webhooks:
