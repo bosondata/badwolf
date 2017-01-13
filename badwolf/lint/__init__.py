@@ -26,6 +26,8 @@ class Problem(object):
 
 class Problems(object):
     """Lint problems"""
+    REPORT_CHANGES_RANGE = 3
+
     def __init__(self):
         self._items = set()
         self._changes = None
@@ -51,11 +53,10 @@ class Problems(object):
                         continue
 
                     for line in hunk.target_lines():
-                        if not line.is_added:
+                        if line.is_context:
                             continue
-                        if item.line == line.target_line_no:
+                        if abs(item.line - line.target_line_no) <= self.REPORT_CHANGES_RANGE:
                             return True
-
             return False
 
         self._items = [item for item in self._items if has_line_changes(item)]
