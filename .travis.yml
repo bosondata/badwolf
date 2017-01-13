@@ -7,6 +7,7 @@ matrix:
   include:
     - env: TOX_ENV=py27
     - env: TOX_ENV=py35
+    - env: TOX_ENV=py36
 
 cache:
   directories:
