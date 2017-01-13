@@ -1,4 +1,4 @@
-language: python
+language: python3.6
 
 sudo: required
 dist: trusty
