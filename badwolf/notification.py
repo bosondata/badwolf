@@ -49,7 +49,10 @@ def trigger_slack_webhook(webhooks, context):
     if context['context'].type == 'tag':
         fields.append({
             'title': 'Tag',
-            'value': context['branch'],
+            'value': '<https://bitbucket.org/{repo}/commits/tag/{tag}|{tag}>'.format(
+                repo=context['context'].repository,
+                tag=context['branch']
+            ),
             'short': True,
         })
     else:

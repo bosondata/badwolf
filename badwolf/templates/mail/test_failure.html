@@ -174,7 +174,7 @@ ol li {
             <h2>Information</h2>
             <p>Repository: <a href="https://bitbucket.org/{{ context.repository }}">{{ context.repository }}</a></p>
             {% if context.type == 'tag' %}
-                <p>Tag: {{ branch }}</p>
+                <p>Tag: <a href="https://bitbucket.org/{{ context.repository }}/commits/tag/{{ branch }}">{{ branch }}</a></p>
             {% endif %}
             {% if context.type == 'branch' %}
                 <p>Branch: <a href="https://bitbucket.org/{{ context.repository }}/src?at={{ branch }}">{{ branch }}</a></p>
