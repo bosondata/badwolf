@@ -4,6 +4,7 @@ import io
 import base64
 import logging
 
+import six
 import yaml
 try:
     from yaml import CLoader as _Loader
@@ -11,11 +12,136 @@ except ImportError:
     from yaml import Loader as _Loader
 from six.moves import shlex_quote
 from flask import render_template
+from marshmallow import Schema, fields, pre_load, post_load, ValidationError
+from marshmallow.utils import is_collection
 
 from badwolf.utils import ObjectDict, to_text, to_binary
+from badwolf.security import SecureToken
+from badwolf.exceptions import InvalidSpecification
 
 
 logger = logging.getLogger(__name__)
+
+
+class ListField(fields.List):
+    def _deserialize(self, value, attr, data):
+        if not is_collection(value):
+            value = [value]
+
+        result = []
+        errors = {}
+        for idx, each in enumerate(value):
+            try:
+                result.append(self.container.deserialize(each))
+            except ValidationError as e:
+                result.append(e.data)
+                errors.update({idx: e.messages})
+
+        if errors:
+            raise ValidationError(errors, data=result)
+
+        return result
+
+
+class SetField(ListField):
+    def _deserialize(self, value, attr, data):
+        return set(super(SetField, self)._deserialize(value, attr, data))
+
+
+class SecureField(fields.String):
+    def _deserialize(self, value, attr, data):
+        if isinstance(value, dict) and 'secure' in value:
+            value = self._decrypt(value['secure'])
+        else:
+            value = super(SecureField, self)._deserialize(value, attr, data)
+        return value
+
+    def _decrypt(self, token):
+        from cryptography.fernet import InvalidToken
+
+        try:
+            return SecureToken.decrypt(token)
+        except InvalidToken:
+            return ''
+
+
+class NotificationSchema(Schema):
+    emails = ListField(fields.Email(), load_from='email', missing=list)
+    slack_webhooks = ListField(SecureField(), load_from='slack_webhook', missing=list)
+
+    @post_load
+    def _postprocess(self, data):
+        return ObjectDict(data)
+
+
+class LinterSchema(Schema):
+    name = fields.String(missing=None)
+    pattern = fields.String(missing=None)
+
+    def __init__(self, *args, **kwargs):
+        super(LinterSchema, self).__init__(*args, **kwargs)
+        self.__additional_values = {}
+
+    @pre_load
+    def _preprocess(self, linter):
+        info = {}
+        if isinstance(linter, dict):
+            name = linter.pop('name', None)
+            pattern = linter.pop('pattern', None)
+            self.__additional_values = linter
+        else:
+            name = linter
+            pattern = None
+
+        info['name'] = name.strip() if name else None
+        info['pattern'] = pattern
+        return info
+
+    @post_load
+    def _postprocess(self, data):
+        data.update(self.__additional_values)
+        return ObjectDict(data)
+
+
+class SpecificationSchema(Schema):
+    image = fields.String(missing=None)
+    dockerfile = fields.String(missing='Dockerfile')
+    privileged = fields.Boolean(missing=False)
+    services = ListField(fields.String(), load_from='service', missing=list)
+    branch = SetField(fields.String(), missing=set)
+    environments = ListField(SecureField(), load_from='env', missing=list)
+    scripts = ListField(SecureField(), load_from='script', missing=list)
+    after_success = ListField(SecureField(), missing=list)
+    after_failure = ListField(SecureField(), missing=list)
+    notification = fields.Nested(NotificationSchema, missing=dict)
+    linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
+
+    @pre_load
+    def _preprocess(self, data):
+        linters = data.get('linter')
+        if linters:
+            if not isinstance(linters, (tuple, list)):
+                data['linter'] = [linters]
+        return data
+
+    @post_load
+    def _postprocess(self, data):
+        image = data['image']
+        if image and ':' not in image:
+            # Ensure we have tag name in image
+            image = image + ':latest'
+        data['image'] = image
+
+        env_map_list = []
+        for _env in data['environments']:
+            envs = _env.split()
+            env_map = {}
+            for env_str in envs:
+                key, val = env_str.split('=', 1)
+                env_map[key] = val
+            env_map_list.append(env_map)
+        data['environments'] = env_map_list
+        return data
 
 
 class Specification(object):
@@ -48,75 +174,17 @@ class Specification(object):
 
     @classmethod
     def parse(cls, conf):
-        services = cls._get_list(conf.get('service', []))
-        scripts = cls._get_list(conf.get('script', []))
-        dockerfile = conf.get('dockerfile', 'Dockerfile')
-        after_success = cls._get_list(conf.get('after_success', []))
-        after_failure = cls._get_list(conf.get('after_failure', []))
-        notification = conf.get('notification', {})
-        branch = set(cls._get_list(conf.get('branch', [])))
-        env = cls._get_list(conf.get('env', []))
-        env_map_list = []
-        for _env in env:
-            envs = _env.split()
-            env_map = {}
-            for env_str in envs:
-                key, val = env_str.split('=', 1)
-                env_map[key] = val
-            env_map_list.append(env_map)
-        image = conf.get('image')
-        if image and ':' not in image:
-            # Ensure we have tag name in image
-            image = image + ':latest'
-
-        linters = cls._parse_linters(cls._get_list(conf.get('linter', [])))
-        privileged = conf.get('privileged', False)
-
+        schema = SpecificationSchema()
+        try:
+            parsed = schema.load(conf)
+        except ValidationError:
+            logger.exception('badwofl specification validation error')
+            raise InvalidSpecification()
+        data = parsed.data
         spec = cls()
-        spec.image = image
-        spec.services = services
-        spec.scripts = scripts
-        spec.dockerfile = dockerfile.strip()
-        spec.after_success = after_success
-        spec.after_failure = after_failure
-        spec.branch = branch
-        spec.environments = env_map_list
-        spec.linters = linters
-        spec.privileged = bool(privileged)
-        if isinstance(notification, dict):
-            if 'email' in notification:
-                spec.notification.emails = cls._get_list(notification['email'])
-            if 'slack_webhook' in notification:
-                spec.notification.slack_webhooks = cls._get_list(notification['slack_webhook'])
+        for key, value in six.iteritems(data):
+            setattr(spec, key, value)
         return spec
-
-    @classmethod
-    def _get_list(cls, value):
-        if isinstance(value, list):
-            return value
-        return [value]
-
-    @classmethod
-    def _parse_linters(cls, linters):
-        ret = []
-        for linter in linters:
-            info = ObjectDict()
-            if isinstance(linter, dict):
-                name = linter.get('name')
-                pattern = linter.get('pattern')
-                if not name:
-                    continue
-
-                info.update(linter)
-            else:
-                name = linter
-                pattern = None
-
-            info['name'] = name.strip()
-            info['pattern'] = pattern
-            ret.append(info)
-
-        return ret
 
     def is_branch_enabled(self, branch):
         if not self.branch:
