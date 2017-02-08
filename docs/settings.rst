@@ -20,7 +20,7 @@ DOCKER_HOST                unix://var/run/docker.sock     Docker host
 DOCKER_API_TIMEOUT         600                            docker-py timeout，单位秒
 DOCKER_RUN_TIMEOUT         1200                           Docker 测试运行时长限制，单位秒
 AUTO_MERGE_ENABLED         True                           自动合并 PR 功能开关
-AUTO_MERGE_APPROVAL_COUNT  3                              自动合并 PR 需要的 Approal 数量
+AUTO_MERGE_APPROVAL_COUNT  3                              自动合并 PR 需要的 Approval 数量
 BITBUCKET_USERNAME         空                             BitBucket 用户名
 BITBUCKET_PASSWORD         空                             BitBucket 用户密码，支持 app passwords
 ========================== ============================== ==================================================
