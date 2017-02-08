@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 import os
 import sys
 
@@ -15,6 +16,9 @@ SERVER_NAME = os.environ.get('SERVER_NAME', 'localhost:8000')
 
 # secret key
 SECRET_KEY = os.environ.get('SECRET_KEY', '')
+
+# secure token key
+SECURE_TOKEN_KEY = os.environ.get('SECURE_TOKEN_KEY', os.urandom(32))
 
 # Sentry
 SENTRY_DSN = os.environ.get('SENTRY_DSN', '')

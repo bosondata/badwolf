@@ -14,6 +14,7 @@
 BADWOLF_DEBUG              False                          debug 模式开关
 SERVER_NAME                localhost:8000                 部署服务器域名
 SECRET_KEY                 空                             Flask SECRET_KEY
+SECURE_TOKEN_KEY           随机生成                       .badwolf.yml 配置文件 secure token key
 SENTRY_DSN                 空                             Sentry DSN URL
 DOCKER_HOST                unix://var/run/docker.sock     Docker host
 DOCKER_API_TIMEOUT         600                            docker-py timeout，单位秒
@@ -23,6 +24,14 @@ AUTO_MERGE_APPROVAL_COUNT  3                              自动合并 PR 需要
 BITBUCKET_USERNAME         空                             BitBucket 用户名
 BITBUCKET_PASSWORD         空                             BitBucket 用户密码，支持 app passwords
 ========================== ============================== ==================================================
+
+其中，`SECURE_TOKEN_KEY` 为 32 bytes 字符串，可以使用 `os.urandom(32)` 生成：
+
+```python
+import os
+
+os.urandom(32)
+```
 
 邮件服务器配置
 -------------------
