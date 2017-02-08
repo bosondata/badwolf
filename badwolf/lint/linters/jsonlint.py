@@ -3,9 +3,10 @@ from __future__ import absolute_import, unicode_literals
 import os
 import re
 
+from badwolf.utils import run_command
 from badwolf.lint import Problem
 from badwolf.lint.linters import Linter
-from badwolf.lint.utils import in_path, npm_exists, run_command
+from badwolf.lint.utils import in_path, npm_exists
 
 
 _LINE_RE = re.compile(r'^(.+)?: line (\d+), col \d+, (.+)$', re.I)

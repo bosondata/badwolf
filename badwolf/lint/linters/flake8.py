@@ -5,9 +5,10 @@ import logging
 
 from six.moves import configparser
 
+from badwolf.utils import run_command
 from badwolf.lint import Problem
 from badwolf.lint.linters import PythonLinter
-from badwolf.lint.utils import in_path, run_command
+from badwolf.lint.utils import in_path
 
 
 logger = logging.getLogger(__name__)

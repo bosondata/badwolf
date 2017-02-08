@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
+import os
+import subprocess
 try:
     import re2 as re
 except ImportError:
@@ -81,3 +84,30 @@ def _sanitize_urls(s):
     for line in s.split('\n'):
         ret.append(BASIC_AUTH_URL_RE.sub(remove_basic_auth, line))
     return '\n'.join(ret)
+
+
+def run_command(command, split=False, include_errors=False, cwd=None, shell=False):
+    """Run command in subprocess and return exit code and output"""
+    env = os.environ.copy()
+    if include_errors:
+        error_pipe = subprocess.STDOUT
+    else:
+        error_pipe = subprocess.PIPE
+
+    process = subprocess.Popen(
+        command,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=error_pipe,
+        shell=shell,
+        universal_newlines=True,
+        cwd=cwd,
+        env=env
+    )
+    if split:
+        output = process.stdout.readlines()
+    else:
+        output = process.stdout.read()
+
+    return_code = process.wait()
+    return return_code, output

@@ -119,3 +119,16 @@ def register_webhook(repo):
             'pullrequest:comment_created',
         ))
         click.echo('Webhook {} registered'.format(webhook_url))
+
+
+@manage.command()
+@click.argument('text', required=True)
+def encrypt(text):
+    '''Generate secure token from text'''
+    from badwolf.wsgi import app
+    from badwolf.security import SecureToken
+
+    with app.app_context():
+        token = SecureToken.encrypt(text)
+
+    click.echo(token)

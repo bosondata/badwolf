@@ -62,6 +62,7 @@ class SecureField(fields.String):
         try:
             return SecureToken.decrypt(token)
         except InvalidToken:
+            logger.warning('Invalid secure token: %s', token)
             return ''
 
 
@@ -103,6 +104,28 @@ class LinterSchema(Schema):
         return ObjectDict(data)
 
 
+class PypiDeploySchema(Schema):
+    username = SecureField()
+    password = SecureField()
+    repository = SecureField(missing='https://pypi.python.org/pypi')
+    distributions = fields.String(missing='dist/*')
+
+    @post_load
+    def _postprocess(self, data):
+        return ObjectDict(data)
+
+
+class DeploySchema(Schema):
+    branch = SetField(fields.String(), missing=set)  # 开启部署的 git 分支，空则不触发部署
+    tag = fields.Boolean(missing=False)  # 是否开启 git tag 的部署
+    script = ListField(SecureField(), required=False)
+    pypi = fields.Nested(PypiDeploySchema, required=False)
+
+    @post_load
+    def _postprocess(self, data):
+        return ObjectDict(data)
+
+
 class SpecificationSchema(Schema):
     image = fields.String(missing=None)
     dockerfile = fields.String(missing='Dockerfile')
@@ -115,6 +138,7 @@ class SpecificationSchema(Schema):
     after_failure = ListField(SecureField(), missing=list)
     notification = fields.Nested(NotificationSchema, missing=dict)
     linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
+    deploy = fields.Nested(DeploySchema, missing=dict)
 
     @pre_load
     def _preprocess(self, data):
@@ -160,6 +184,7 @@ class Specification(object):
         self.environments = []
         self.linters = []
         self.privileged = False
+        self.deploy = {}
 
     @classmethod
     def parse_file(cls, path):
