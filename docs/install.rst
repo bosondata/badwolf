@@ -77,6 +77,7 @@ Docker 模式
 
     SERVER_NAME=badwolf.example.com:8000
     SECRET_KEY=top-secret
+    SECURE_TOKEN_KEY=\x18\xd5\xb5\xd0\xae\x9f\x05\xb3\x7fAO\x89h*\xd9\x8d.u\xa3\xf0U\xa22\xffOc\xe3\x19J\xeaX1
     MAIL_SERVER=smtp.mailgun.org
     MAIL_PORT=587
     MAIL_USERNAME=badwolf@example.com
