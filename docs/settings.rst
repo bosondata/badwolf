@@ -25,12 +25,13 @@ BITBUCKET_USERNAME         空                             BitBucket 用户名
 BITBUCKET_PASSWORD         空                             BitBucket 用户密码，支持 app passwords
 ========================== ============================== ==================================================
 
-其中，`SECURE_TOKEN_KEY` 为 32 bytes 字符串，可以使用 `os.urandom(32)` 生成：
+其中，`SECURE_TOKEN_KEY` 为 base64 URL-safe 编码的 32 bytes 字符串，可以使用 `os.urandom(32)` 生成：
 
 ```python
 import os
+import base64
 
-os.urandom(32)
+print(base64.urlsafe_b64encode(os.urandom(32)))
 ```
 
 邮件服务器配置

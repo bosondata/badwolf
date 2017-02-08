@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-import base64
-
 from flask import current_app, Blueprint, request
 from cryptography.fernet import Fernet
 
@@ -16,14 +14,12 @@ class SecureToken(object):
 
     @staticmethod
     def encrypt(text):
-        key = base64.urlsafe_b64encode(to_binary(current_app.config['SECURE_TOKEN_KEY']))
-        fernet = Fernet(key)
+        fernet = Fernet(to_binary(current_app.config['SECURE_TOKEN_KEY']))
         return fernet.encrypt(to_binary(text))
 
     @staticmethod
     def decrypt(encrypted):
-        key = base64.urlsafe_b64encode(to_binary(current_app.config['SECURE_TOKEN_KEY']))
-        fernet = Fernet(key)
+        fernet = Fernet(to_binary(current_app.config['SECURE_TOKEN_KEY']))
         text = fernet.decrypt(to_binary(encrypted))
         return to_text(text)
 
