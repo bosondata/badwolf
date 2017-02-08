@@ -30,6 +30,6 @@ class SecureToken(object):
 
 @blueprint.route('/', methods=['POST'])
 def generate_secure_token():
-    payload = request.data
+    payload = request.get_data()
     token = SecureToken.encrypt(payload)
     return token + b'\n'

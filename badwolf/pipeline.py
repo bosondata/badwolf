@@ -16,6 +16,7 @@ from badwolf.utils import to_text, sanitize_sensitive_data
 from badwolf.cloner import RepositoryCloner
 from badwolf.builder import Builder
 from badwolf.lint.processor import LintProcessor
+from badwolf.deploy import Deployer
 from badwolf.exceptions import (
     BadwolfException,
     SpecificationNotFound,
@@ -46,8 +47,10 @@ class Pipeline(object):
         try:
             self.clone()
             self.parse_spec()
-            self.build()
+            build_success = self.build()
             self.lint()
+            if build_success:
+                self.deploy()
         except git.GitCommandError as git_err:
             logger.exception('Git command error')
             self._report_git_error(git_err)
@@ -123,13 +126,29 @@ class Pipeline(object):
         '''Build project'''
         if self.spec.scripts:
             logger.info('Running build for repository %s', self.context.repository)
-            Builder(self.context, self.spec, build_status=self.build_status).run()
+            return Builder(self.context, self.spec, build_status=self.build_status).run()
+        return False
 
     def lint(self):
         '''Lint codes'''
         if self.context.pr_id and self.spec.linters:
             logger.info('Running lint for repository %s', self.context.repository)
             LintProcessor(self.context, self.spec).process()
+
+    def deploy(self):
+        '''Deploy'''
+        if not self.spec.deploy:
+            return
+
+        branch = self.context.source['branch']['name']
+        if self.context.type == 'branch' and branch not in self.spec.deploy.branch:
+            return
+
+        if self.context.type == 'tag' and not self.spec.deploy.tag:
+            return
+
+        logger.info('Running deploy for repository %s', self.context.repository)
+        Deployer(self.context, self.spec).deploy()
 
     def clean(self):
         '''Clean local files'''

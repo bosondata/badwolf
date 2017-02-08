@@ -2,10 +2,10 @@
 from __future__ import absolute_import, unicode_literals
 import logging
 
-from badwolf.utils import to_text
+from badwolf.utils import to_text, run_command
 from badwolf.lint import Problem
 from badwolf.lint.linters import PythonLinter
-from badwolf.lint.utils import in_path, run_command
+from badwolf.lint.utils import in_path
 
 
 logger = logging.getLogger(__name__)
