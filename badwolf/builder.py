@@ -12,7 +12,7 @@ from six.moves import shlex_quote
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import DockerClient
-from docker.errors import APIError, DockerException
+from docker.errors import APIError, DockerException, ImageNotFound
 from markupsafe import Markup
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
@@ -95,7 +95,10 @@ class Builder(object):
     def get_docker_image(self):
         docker_image_name = self.context.repository.replace('/', '-')
         output = []
-        docker_image = self.docker.images.get(docker_image_name)
+        try:
+            docker_image = self.docker.images.get(docker_image_name)
+        except ImageNotFound:
+            docker_image = None
         if not docker_image or self.context.rebuild:
             build_options = {
                 'tag': docker_image_name,
