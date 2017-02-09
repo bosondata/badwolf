@@ -22,6 +22,7 @@ User Guide:
    settings
    build
    lint
+   deploy
 
 
 Indices and tables
