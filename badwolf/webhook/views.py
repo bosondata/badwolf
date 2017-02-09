@@ -58,46 +58,46 @@ def handle_repo_push(payload):
         logger.info('Unsupported version system: %s', scm)
         return
 
-    latest_change = changes[0]
-    if not latest_change['new']:
-        logger.info('No new changes found')
-        return
+    for change in changes:
+        if not change['new']:
+            logger.info('No new changes found')
+            continue
 
-    repo_name = repo['full_name']
-    push_type = latest_change['new']['type']
-    rebuild = False
-    if push_type == 'tag':
-        commit_hash = latest_change['new']['target']['hash']
-        commit_message = latest_change['new']['target']['message']
-    elif push_type == 'branch':
-        if not latest_change['commits']:
-            logger.warning('Can not find any commits')
-            return
-        commit_hash = latest_change['commits'][0]['hash']
-        commit_message = latest_change['commits'][0]['message']
-        if 'ci skip' in commit_message.lower():
-            logger.info('ci skip found, ignore tests.')
-            return
-        if 'ci rebuild' in commit_message.lower():
-            rebuild = True
-    else:
-        logger.error('Unsupported push type: %s', push_type)
-        return
+        repo_name = repo['full_name']
+        push_type = change['new']['type']
+        rebuild = False
+        if push_type == 'tag':
+            commit_hash = change['new']['target']['hash']
+            commit_message = change['new']['target']['message']
+        elif push_type == 'branch':
+            if not change['commits']:
+                logger.warning('Can not find any commits')
+                continue
+            commit_hash = change['commits'][0]['hash']
+            commit_message = change['commits'][0]['message']
+            if 'ci skip' in commit_message.lower():
+                logger.info('ci skip found, ignore tests.')
+                continue
+            if 'ci rebuild' in commit_message.lower():
+                rebuild = True
+        else:
+            logger.error('Unsupported push type: %s', push_type)
+            continue
 
-    source = {
-        'repository': {'full_name': repo_name},
-        'branch': {'name': latest_change['new']['name']},
-        'commit': {'hash': commit_hash}
-    }
-    context = Context(
-        repo_name,
-        payload['actor'],
-        push_type,
-        commit_message,
-        source,
-        rebuild=rebuild,
-    )
-    start_pipeline.delay(context)
+        source = {
+            'repository': {'full_name': repo_name},
+            'branch': {'name': change['new']['name']},
+            'commit': {'hash': commit_hash}
+        }
+        context = Context(
+            repo_name,
+            payload['actor'],
+            push_type,
+            commit_message,
+            source,
+            rebuild=rebuild,
+        )
+        start_pipeline.delay(context)
 
 
 @register_event_handler('pullrequest:created')
