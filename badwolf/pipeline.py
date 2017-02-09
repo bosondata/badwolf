@@ -137,7 +137,7 @@ class Pipeline(object):
 
     def deploy(self):
         '''Deploy'''
-        if not self.spec.deploy:
+        if not self.spec.deploy or self.context.type not in {'branch', 'tag'}:
             return
 
         branch = self.context.source['branch']['name']
