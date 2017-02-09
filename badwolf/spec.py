@@ -139,6 +139,7 @@ class SpecificationSchema(Schema):
     notification = fields.Nested(NotificationSchema, missing=dict)
     linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
     deploy = fields.Nested(DeploySchema, missing=dict)
+    after_deploy = ListField(SecureField(), missing=list)
 
     @pre_load
     def _preprocess(self, data):
@@ -185,6 +186,7 @@ class Specification(object):
         self.linters = []
         self.privileged = False
         self.deploy = {}
+        self.after_deploy = []
 
     @classmethod
     def parse_file(cls, path):
