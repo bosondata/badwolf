@@ -11,7 +11,7 @@ import deansi
 from six.moves import shlex_quote
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
-from docker import Client
+from docker import DockerClient
 from docker.errors import APIError, DockerException
 from markupsafe import Markup
 
@@ -40,7 +40,7 @@ class Builder(object):
             url_for('log.build_log', sha=self.commit_hash, _external=True)
         )
 
-        self.docker = Client(
+        self.docker = DockerClient(
             base_url=current_app.config['DOCKER_HOST'],
             timeout=current_app.config['DOCKER_API_TIMEOUT'],
             version=docker_version,
@@ -95,19 +95,20 @@ class Builder(object):
     def get_docker_image(self):
         docker_image_name = self.context.repository.replace('/', '-')
         output = []
-        docker_image = self.docker.images(docker_image_name)
+        docker_image = self.docker.images.get(docker_image_name)
         if not docker_image or self.context.rebuild:
             build_options = {
                 'tag': docker_image_name,
                 'rm': True,
+                'forcerm': True,
                 'stream': True,
                 'decode': True,
-                'nocache': self.context.nocache,
+                'nocache': self.context.nocache
             }
             if self.spec.image:
                 from_image_name, from_image_tag = self.spec.image.split(':', 2)
                 logger.info('Pulling Docker image %s', self.spec.image)
-                self.docker.pull(from_image_name, tag=from_image_tag)
+                self.docker.images.pull(from_image_name, tag=from_image_tag)
                 logger.info('Pulled Docker image %s', self.spec.image)
                 dockerfile_content = 'FROM {}\n'.format(self.spec.image)
                 fileobj = io.BytesIO(dockerfile_content.encode('utf-8'))
@@ -129,7 +130,9 @@ class Builder(object):
             build_success = False
             logger.info('Building Docker image %s', docker_image_name)
             self.update_build_status('INPROGRESS', 'Building Docker image')
-            res = self.docker.build(self.context.clone_path, **build_options)
+
+            # Use low level API instead of high level API to get raw output
+            res = self.docker.api.build(self.context.clone_path, **build_options)
             for log in res:
                 if 'errorDetail' in log:
                     msg = log['errorDetail']['message']
@@ -180,41 +183,38 @@ class Builder(object):
             environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
 
         logger.debug('Docker container environment: \n %r', environment)
-        container = self.docker.create_container(
+        container = self.docker.containers.create(
             docker_image_name,
             entrypoint=['/bin/sh', '-c'],
             command=['echo $BADWOLF_SCRIPT | base64 --decode | /bin/sh'],
             environment=environment,
             working_dir='/mnt/src',
-            volumes=['/mnt/src'],
-            host_config=self.docker.create_host_config(
-                privileged=self.spec.privileged,
-                binds={
-                    self.context.clone_path: {
-                        'bind': '/mnt/src',
-                        'mode': 'rw',
-                    },
-                }
-            ),
+            volumes={
+                self.context.clone_path: {
+                    'bind': '/mnt/src',
+                    'mode': 'rw',
+                },
+            },
+            privileged=self.spec.privileged,
             stdin_open=False,
             tty=True
         )
-        container_id = container['Id']
+        container_id = container.id
         logger.info('Created container %s from image %s', container_id, docker_image_name)
 
         output = []
         try:
-            self.docker.start(container_id)
+            container.start()
             self.update_build_status('INPROGRESS', 'Running tests in Docker container')
-            exit_code = self.docker.wait(container_id, current_app.config['DOCKER_RUN_TIMEOUT'])
+            exit_code = container.wait(timeout=current_app.config['DOCKER_RUN_TIMEOUT'])
         except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
             output.append(to_text(e))
             logger.exception('Docker error')
         finally:
             try:
-                output.append(to_text(self.docker.logs(container_id)))
-                self.docker.remove_container(container_id, force=True)
+                output.append(to_text(container.logs()))
+                container.remove(force=True)
             except (APIError, DockerException, ReadTimeout):
                 logger.exception('Error removing docker container')
 
