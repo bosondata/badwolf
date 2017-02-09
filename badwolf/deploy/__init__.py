@@ -8,6 +8,7 @@ import six
 from flask import url_for
 
 from badwolf.extensions import bitbucket
+from badwolf.utils import run_command
 from badwolf.bitbucket import BitbucketAPIError, BuildStatus
 from badwolf.deploy.providers.script import ScriptProvider
 from badwolf.deploy.providers.pypi import PypiProvider
@@ -38,6 +39,7 @@ class Deployer(object):
             return
 
         commit_hash = self.context.source['commit']['hash']
+        run_after_deploy = False
         for provider_name, provider_config in six.iteritems(self.config):
             provider_class = self.PROVIDERS.get(provider_name)
             if not provider_class:
@@ -63,6 +65,16 @@ class Deployer(object):
 
             state = 'SUCCESSFUL' if succeed else 'FAILED'
             self._update_build_status(build_status, state, '{} deploy {}'.format(provider_name, state.lower()))
+            if succeed:
+                run_after_deploy = True
+
+        # after deploy
+        if not run_after_deploy or not self.spec.after_deploy:
+            return
+
+        for script in self.spec.after_deploy:
+            exit_code, output = run_command(script, shell=True)
+            logger.info('After deploy command `%s` exit code: %s, output: \n %s', script, exit_code, output)
 
     def _update_build_status(self, build_status, state, description=None):
         try:
