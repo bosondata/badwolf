@@ -158,14 +158,20 @@ class LintProcessor(object):
             if comment_tuple in existing_comments_ids:
                 continue
 
+            comment_kwargs = {
+                'filename': problem.filename,
+                'anchor': revision_after,
+                'dest_rev': revision_before,
+            }
+            if problem.has_line_change:
+                comment_kwargs['line_to'] = problem.line
+            else:
+                comment_kwargs['line_from'] = problem.line
             try:
                 self.pr.comment(
                     self.context.pr_id,
                     content,
-                    line_to=problem.line,
-                    filename=problem.filename,
-                    anchor=revision_after,
-                    dest_rev=revision_before,
+                    **comment_kwargs
                 )
             except BitbucketAPIError:
                 logger.exception('Error creating inline comment for pull request')

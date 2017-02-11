@@ -3,12 +3,14 @@ from __future__ import absolute_import, unicode_literals
 
 
 class Problem(object):
-    def __init__(self, filename, line, message, linter, is_error=True):
+    def __init__(self, filename, line, message, linter,
+                 is_error=True, has_line_change=False):
         self.filename = filename
         self.line = line
         self.message = message
         self.linter = linter
         self.is_error = is_error
+        self.has_line_change = has_line_change
 
     def __hash__(self):
         return hash(self.__str__())
@@ -43,7 +45,8 @@ class Problems(object):
         if not changes:
             return
 
-        def has_line_changes(item):
+        def should_keep(item):
+            keep = False
             for patched_file in changes:
                 if patched_file.path != item.filename:
                     continue
@@ -56,10 +59,16 @@ class Problems(object):
                         if line.is_context:
                             continue
                         if abs(item.line - line.target_line_no) <= self.REPORT_CHANGES_RANGE:
-                            return True
-            return False
+                            if item.line == line.target_line_no:
+                                item.has_line_change = True
+                            keep = True
+                    if keep:
+                        break
+                if keep:
+                    break
+            return keep
 
-        self._items = [item for item in self._items if has_line_changes(item)]
+        self._items = [item for item in self._items if should_keep(item)]
 
     def __len__(self):
         return len(self._items)
