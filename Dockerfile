@@ -28,7 +28,9 @@ RUN apt-get update \
     && pip3 install -U pip setuptools wheel cython \
     && pip3 install https://github.com/andreasvc/pyre2/archive/master.zip \
     && git config --global user.email "badwolf@localhost" \
-    && git config --global user.name "badwolf"
+    && git config --global user.name "badwolf" \
+    && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+    && apt-get install git-lfs
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
