@@ -131,10 +131,9 @@ index 0000000..fdeea15
 
         assert load_changes.called
 
-    assert len(lint.problems) == 1
+    assert len(lint.problems) == 3
     problem = lint.problems[0]
     assert problem.filename == 'a.py'
-    assert problem.line == 6
 
 
 def test_jscs_lint_a_js(app, caplog):
@@ -281,7 +280,6 @@ index 0000000..fdeea15
     assert len(lint.problems) == 1
     problem = lint.problems[0]
     assert problem.filename == 'a.py'
-    assert problem.line == 6
 
 
 def test_jsonlint_a_json(app, caplog):
@@ -526,10 +524,9 @@ index 0000000..fdeea15
 
         assert load_changes.called
 
-    assert len(lint.problems) == 1
+    assert len(lint.problems) == 3
     problem = lint.problems[0]
     assert problem.filename == 'b.pyx'
-    assert problem.line == 6
 
 
 def test_flake8_lint_a_py_with_custom_regex_pattern(app, caplog):
@@ -571,10 +568,9 @@ index 0000000..fdeea15
 
         assert load_changes.called
 
-    assert len(lint.problems) == 1
+    assert len(lint.problems) == 3
     problem = lint.problems[0]
     assert problem.filename == 'b.pyx'
-    assert problem.line == 6
 
 
 def test_yamllint_a_yml(app, caplog):
@@ -658,10 +654,9 @@ index 0000000..fdeea15
 
         assert load_changes.called
 
-    assert len(lint.problems) == 1
+    assert len(lint.problems) == 3
     problem = lint.problems[0]
     assert problem.filename == 'b.pyx'
-    assert problem.line == 6
 
 
 def test_bandit_lint_a_py(app, caplog):
