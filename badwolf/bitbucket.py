@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import logging
+from urllib.parse import quote
 
 import git
 import requests
 from requests.auth import HTTPBasicAuth
 from optionaldict import optionaldict
-from six.moves.urllib.parse import quote
 
 
 logger = logging.getLogger(__name__)

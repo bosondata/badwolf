@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import io
 import base64
 import logging
+import shlex
 
-import six
 import yaml
 try:
     from yaml import CLoader as _Loader
 except ImportError:
     from yaml import Loader as _Loader
-from six.moves import shlex_quote
 from flask import render_template
 from marshmallow import Schema, fields, pre_load, post_load, ValidationError
 from marshmallow.utils import is_collection
@@ -209,7 +209,7 @@ class Specification(object):
             raise InvalidSpecification()
         data = parsed.data
         spec = cls()
-        for key, value in six.iteritems(data):
+        for key, value in data.items():
             setattr(spec, key, value)
         return spec
 
@@ -222,7 +222,7 @@ class Specification(object):
     def shell_script(self):
         def _trace(command):
             return 'echo + {}\n{} '.format(
-                shlex_quote(command),
+                shlex.quote(command),
                 command
             )
 
@@ -234,7 +234,7 @@ class Specification(object):
         for script in self.scripts:
             commands.append(_trace(script))
 
-        command_encoded = shlex_quote(to_text(base64.b64encode(to_binary('\n'.join(commands)))))
+        command_encoded = shlex.quote(to_text(base64.b64encode(to_binary('\n'.join(commands)))))
         context = {
             'command': command_encoded,
             'after_success': '    \n'.join(after_success),

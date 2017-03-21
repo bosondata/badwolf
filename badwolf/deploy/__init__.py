@@ -4,7 +4,6 @@ from __future__ import absolute_import, unicode_literals
 import time
 import logging
 
-import six
 from flask import url_for
 
 from badwolf.extensions import bitbucket
@@ -40,7 +39,7 @@ class Deployer(object):
 
         commit_hash = self.context.source['commit']['hash']
         run_after_deploy = False
-        for provider_name, provider_config in six.iteritems(self.config):
+        for provider_name, provider_config in self.config.items():
             provider_class = self.PROVIDERS.get(provider_name)
             if not provider_class:
                 logger.warning('Provider %s not found', provider_name)

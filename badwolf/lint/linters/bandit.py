@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
+import io
 import csv
 import logging
-
-import six
 
 from badwolf.utils import run_command
 from badwolf.lint import Problem
@@ -32,7 +32,7 @@ class BanditLinter(Linter):
         if not output:
             raise StopIteration()
 
-        reader = csv.DictReader(six.StringIO(output))
+        reader = csv.DictReader(io.StringIO(output))
         for row in reader:
             msg = '[{}] {}'.format(row['test_name'], row['issue_text'])
             is_error = row['issue_severity'] != 'LOW'

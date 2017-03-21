@@ -6,9 +6,9 @@ import io
 import time
 import base64
 import logging
+import shlex
 
 import deansi
-from six.moves import shlex_quote
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import DockerClient
@@ -164,7 +164,7 @@ class Builder(object):
             environment = self.spec.environments[0]
 
         # TODO: Add more test context related env vars
-        script = shlex_quote(to_text(base64.b64encode(to_binary(self.spec.shell_script))))
+        script = shlex.quote(to_text(base64.b64encode(to_binary(self.spec.shell_script))))
         environment.update({
             'DEBIAN_FRONTEND': 'noninteractive',
             'HOME': '/root',

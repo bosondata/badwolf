@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
 import logging
-
-from six.moves import configparser
+import configparser
 
 from badwolf.utils import run_command
 from badwolf.lint import Problem
