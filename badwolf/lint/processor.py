@@ -141,8 +141,10 @@ class LintProcessor(object):
             if not raw.startswith(':broken_heart: **'):
                 continue
             filename = inline['path']
-            line_to = inline['to']
-            existing_comments_ids[(filename, line_to, raw)] = comment['id']
+            line = inline['to'] or inline['from']
+            if line is None:
+                continue
+            existing_comments_ids[(filename, line, raw)] = comment['id']
 
         if len(self.problems) == 0:
             return
