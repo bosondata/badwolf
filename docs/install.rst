@@ -108,10 +108,10 @@ Docker 镜像和容器日常清理
 
 .. code-block:: bash
 
-    docker ps -a | grep Exited | awk '{print $1}' | xargs docker rm
+    docker rm $(docker ps -a -q)
 
 批量删除无用的镜像：
 
 .. code-block:: bash
 
-    docker images | grep none | awk '{print $3}' | xargs docker rmi
+    docker rmi $(docker images -q -f dangling=true)
