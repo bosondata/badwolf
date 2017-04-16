@@ -34,7 +34,6 @@ RUN apt-get update \
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
-    && npm config set color false -g \
     && npm install -g \
     jscs eslint csslint sass-lint jsonlint stylelint \
     eslint-plugin-react eslint-plugin-react-native \
