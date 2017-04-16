@@ -185,6 +185,18 @@ class Builder(object):
         if self.context.pr_id:
             environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
 
+        volumes = {
+            self.context.clone_path: {
+                'bind': '/mnt/src',
+                'mode': 'rw',
+            },
+        }
+        if self.spec.docker:
+            volumes['/var/run/docker.sock'] = {
+                'bind': '/var/run/docker.sock',
+                'mode': 'ro',
+            }
+            environment.setdefault('DOCKER_HOST', 'unix:///var/run/docker.sock')
         logger.debug('Docker container environment: \n %r', environment)
         container = self.docker.containers.create(
             docker_image_name,
@@ -192,12 +204,7 @@ class Builder(object):
             command=['echo $BADWOLF_SCRIPT | base64 --decode | /bin/sh'],
             environment=environment,
             working_dir='/mnt/src',
-            volumes={
-                self.context.clone_path: {
-                    'bind': '/mnt/src',
-                    'mode': 'rw',
-                },
-            },
+            volumes=volumes,
             privileged=self.spec.privileged,
             stdin_open=False,
             tty=True

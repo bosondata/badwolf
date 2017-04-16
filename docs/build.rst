@@ -45,4 +45,4 @@ Tips
 * 在 commit 的 message 中包含 `ci skip` 跳过测试
 * 在评论中包含 `ci retry` 重跑测试
 * 在评论或 commit message 或 Pull Request 的标题/描述中包含 `ci rebuild` 重新构建 Docker 镜像，同时包含 `no cache` 禁用 Docker 构建缓存
-* 在 Pull Request 的标题/描述中包含 `merge skip` 禁用自动合并 Pull Request 功能
+* 在 Pull Request 的标题/描述中包含 `merge skip` 或者 `wip` 或者 `working in progress` 禁用自动合并 Pull Request 功能

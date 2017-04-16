@@ -223,6 +223,23 @@ def test_parse_privileged(app):
     assert not spec.privileged
 
 
+def test_parse_docker(app):
+    s = """docker: True"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.docker
+
+    s = """docker: no"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert not spec.docker
+
+    s = """linter: flake8"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert not spec.docker
+
+
 def test_parse_image(app):
     s = """script: ls"""
     f = io.StringIO(s)

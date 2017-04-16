@@ -25,7 +25,7 @@ SECURE_TOKEN_KEY = os.environ.get('SECURE_TOKEN_KEY', base64.urlsafe_b64encode(o
 SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
 
 # Docker
-DOCKER_HOST = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
+DOCKER_HOST = os.environ.get('DOCKER_HOST', 'unix:///var/run/docker.sock')
 DOCKER_API_TIMEOUT = int(os.environ.get('DOCKER_API_TIMEOUT', 600))
 DOCKER_RUN_TIMEOUT = int(os.environ.get('DOCKER_RUN_TIMEOUT', 1200))
 

@@ -129,6 +129,7 @@ class DeploySchema(Schema):
 class SpecificationSchema(Schema):
     image = fields.String(missing=None)
     dockerfile = fields.String(missing='Dockerfile')
+    docker = fields.Boolean(missing=False)
     privileged = fields.Boolean(missing=False)
     services = ListField(fields.String(), load_from='service', missing=list)
     branch = SetField(fields.String(), missing=set)
@@ -175,6 +176,7 @@ class Specification(object):
         self.services = []
         self.scripts = []
         self.dockerfile = 'Dockerfile'
+        self.docker = False  # Bind Docker sock to container or not
         self.after_success = []
         self.after_failure = []
         self.notification = ObjectDict(
