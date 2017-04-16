@@ -24,4 +24,3 @@ cryptography>=1.7.1
 marshmallow>=2.12.2
 twine
 flake8-bugbear
-flake8-docstrings
