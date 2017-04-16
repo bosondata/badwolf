@@ -8,7 +8,7 @@ from flask import Blueprint, request, current_app, url_for
 
 from badwolf.context import Context
 from badwolf.tasks import start_pipeline
-from badwolf.extensions import bitbucket
+from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus
 
 
@@ -164,6 +164,7 @@ def handle_pull_request_approved(payload):
         pr_info = pull_request.get(pr_id)
     except BitbucketAPIError:
         logger.exception('Error calling Bitbucket API')
+        sentry.captureException()
         return
 
     if pr_info['state'] != 'OPEN':
@@ -190,6 +191,7 @@ def handle_pull_request_approved(payload):
             pull_request.merge(pr_id, message)
     except BitbucketAPIError:
         logger.exception('Error calling Bitbucket API')
+        sentry.captureException()
 
 
 @register_event_handler('repo:commit_comment_created')

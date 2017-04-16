@@ -6,7 +6,7 @@ import logging
 
 from flask import url_for
 
-from badwolf.extensions import bitbucket
+from badwolf.extensions import bitbucket, sentry
 from badwolf.utils import run_command
 from badwolf.bitbucket import BitbucketAPIError, BuildStatus
 from badwolf.deploy.providers.script import ScriptProvider
@@ -80,3 +80,4 @@ class Deployer(object):
             build_status.update(state, description=description)
         except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
+            sentry.captureException()

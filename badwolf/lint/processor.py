@@ -7,7 +7,7 @@ import logging
 from flask import url_for
 from unidiff import UnidiffParseError
 
-from badwolf.extensions import bitbucket
+from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import PullRequest, BitbucketAPIError, BuildStatus
 from badwolf.lint import Problems
 from badwolf.lint.linters.eslint import ESLinter
@@ -65,6 +65,7 @@ class LintProcessor(object):
             changes = self.pr.diff(self.context.pr_id)
         except (BitbucketAPIError, UnidiffParseError):
             logger.exception('Error getting pull request diff from API')
+            sentry.captureException()
             return
 
         self.problems.set_changes(changes)
@@ -129,6 +130,7 @@ class LintProcessor(object):
             comments = self.pr.all_comments(self.context.pr_id)
         except BitbucketAPIError:
             logger.exception('Error fetching all comments for pull request')
+            sentry.captureException()
             comments = []
 
         existing_comments_ids = {}
@@ -177,6 +179,7 @@ class LintProcessor(object):
                 )
             except BitbucketAPIError:
                 logger.exception('Error creating inline comment for pull request')
+                sentry.captureException()
             else:
                 problem_count += 1
 
@@ -194,6 +197,7 @@ class LintProcessor(object):
                 self.pr.delete_comment(self.context.pr_id, existing_comments_ids[comment])
             except BitbucketAPIError:
                 logger.exception('Error deleting pull request comment')
+                sentry.captureException()
         return problem_count
 
     def update_build_status(self, state, description=None):
@@ -201,3 +205,4 @@ class LintProcessor(object):
             self.build_status.update(state, description=description)
         except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
+            sentry.captureException()

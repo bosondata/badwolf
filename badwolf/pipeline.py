@@ -10,7 +10,7 @@ import git
 from flask import current_app, url_for
 
 from badwolf.spec import Specification
-from badwolf.extensions import bitbucket
+from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest, Changesets
 from badwolf.utils import to_text, sanitize_sensitive_data
 from badwolf.cloner import RepositoryCloner
@@ -56,6 +56,7 @@ class Pipeline(object):
             self._report_git_error(git_err)
         except BitbucketAPIError:
             logger.exception('Error calling BitBucket API')
+            sentry.captureException()
         except BadwolfException:
             pass
         finally:

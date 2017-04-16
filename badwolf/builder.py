@@ -16,7 +16,7 @@ from docker.errors import APIError, DockerException, ImageNotFound
 from markupsafe import Markup
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
-from badwolf.extensions import bitbucket
+from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError
 from badwolf.notification import send_mail, trigger_slack_webhook
 
@@ -235,6 +235,7 @@ class Builder(object):
             self.build_status.update(state, description=description)
         except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
+            sentry.captureException()
 
     def send_notifications(self, context):
         exit_code = context['exit_code']
