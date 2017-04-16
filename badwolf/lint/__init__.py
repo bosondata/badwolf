@@ -56,12 +56,14 @@ class Problems(object):
                         continue
 
                     for line in hunk.target_lines():
-                        if line.is_context:
-                            continue
                         if abs(item.line - line.target_line_no) <= self.REPORT_CHANGES_RANGE:
                             if item.line == line.target_line_no:
-                                item.has_line_change = True
-                            keep = True
+                                item.has_line_change = line.is_added
+                                if line.is_context:
+                                    item.line = line.source_line_no
+                                keep = True
+                            if keep:
+                                break
                     if keep:
                         break
                 if keep:
