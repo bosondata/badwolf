@@ -15,6 +15,7 @@
 选项名                        类型                  说明
 ============================= ===================== ===================================================================
 image                         string                用于构建的 Docker 镜像，提供此选项时可不提供 `dockerfile` 选项
+docker                        boolean               挂载外部的 Docker sock 到容器中以便使用 Docker, 默认为 false
 dockerfile                    string                用于构建 Docker 镜像的 dockerfile 文件名称, 默认为 Dockerfile
 branch                        string/list           仅在这些分支上运行构建和测试
 script                        string/list           构建/测试的命令
