@@ -59,7 +59,7 @@ def test_auto_merge_failure_pr_get_error(app, test_client):
             status_get.assert_not_called()
 
 
-def test_auto_merge_skip_title(test_client):
+def test_auto_merge_skip_merge_skip_in_title(test_client):
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -81,7 +81,7 @@ def test_auto_merge_skip_title(test_client):
         pr_get.assert_not_called()
 
 
-def test_auto_merge_skip_description(test_client):
+def test_auto_merge_skip_merge_skip_in_description(test_client):
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',
@@ -90,6 +90,50 @@ def test_auto_merge_skip_description(test_client):
             'id': 1,
             'title': 'PR 1',
             'description': 'This is PR1. merge skip',
+        },
+    })
+    with mock.patch.object(bitbucket.PullRequest, 'get') as pr_get:
+        test_client.post(
+            url_for('webhook.webhook_push'),
+            data=payload,
+            headers={
+                'X-Event-Key': 'pullrequest:approved',
+            }
+        )
+        pr_get.assert_not_called()
+
+
+def test_auto_merge_skip_wip_in_title(test_client):
+    payload = json.dumps({
+        'repository': {
+            'full_name': 'deepanalyzer/badwolf',
+        },
+        'pullrequest': {
+            'id': 1,
+            'title': '[wip] PR 1',
+            'description': 'PR 1',
+        },
+    })
+    with mock.patch.object(bitbucket.PullRequest, 'get') as pr_get:
+        test_client.post(
+            url_for('webhook.webhook_push'),
+            data=payload,
+            headers={
+                'X-Event-Key': 'pullrequest:approved',
+            }
+        )
+        pr_get.assert_not_called()
+
+
+def test_auto_merge_skip_wip_in_description(test_client):
+    payload = json.dumps({
+        'repository': {
+            'full_name': 'deepanalyzer/badwolf',
+        },
+        'pullrequest': {
+            'id': 1,
+            'title': 'PR 1',
+            'description': 'This is PR1. WIP',
         },
     })
     with mock.patch.object(bitbucket.PullRequest, 'get') as pr_get:

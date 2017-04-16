@@ -148,11 +148,13 @@ def handle_pull_request_approved(payload):
     repo = payload['repository']
     pr = payload['pullrequest']
     pr_id = pr['id']
-    title = pr['title']
-    description = pr['description'] or ''
-    if 'merge skip' in title.lower() or 'merge skip' in description.lower():
-        logger.info('merge skip found, ignore auto merge.')
-        return
+    title = pr['title'].lower()
+    description = (pr['description'] or '').lower()
+
+    for keyword in ('wip', 'merge skip', 'working in progress'):
+        if keyword in title.lower() or keyword in description.lower():
+            logger.info('%s found, ignore auto merge.', keyword)
+            return
 
     pull_request = PullRequest(
         bitbucket,
