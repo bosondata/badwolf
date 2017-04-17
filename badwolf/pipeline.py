@@ -155,6 +155,6 @@ class Pipeline(object):
         '''Clean local files'''
         logger.info('Cleaning local files for repository %s', self.context.repository)
         try:
-            shutil.rmtree(os.path.dirname(self.context.clone_path), ignore_errors=True)
+            shutil.rmtree(self.context.clone_path, ignore_errors=True)
         except OSError:
             logger.exception('Error clean local files')
