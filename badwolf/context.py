@@ -1,20 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
 import uuid
-import tempfile
-import platform
+
+from flask import current_app
 
 from badwolf.utils import to_text
-
-
-if platform.system() == 'Darwin':
-    # On macOS, tempfile.gettempdir function doesn't return '/tmp'
-    # But Docker for Mac can not mount the path returned by tempfile.gettempdir
-    # by default, so let's hardcode it to '/tmp'
-    TMP_PATH = '/tmp'  # nosec
-else:
-    TMP_PATH = tempfile.gettempdir()
 
 
 class Context(object):
@@ -39,8 +31,7 @@ class Context(object):
             self.source['repository'] = {'full_name': repository}
 
         self.clone_path = os.path.join(
-            TMP_PATH,
-            'badwolf',
-            self.task_id,
+            current_app.config['BADWOLF_REPO_DIR'],
             self.repo_name,
+            self.task_id,
         )

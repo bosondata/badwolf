@@ -172,7 +172,7 @@ class Builder(object):
             'CI': 'true',
             'CI_NAME': 'badwolf',
             'BADWOLF_COMMIT': self.commit_hash,
-            'BADWOLF_BUILD_DIR': '/mnt/src',
+            'BADWOLF_BUILD_DIR': self.context.clone_path,
             'BADWOLF_REPO_SLUG': self.context.repository,
             'BADWOLF_SCRIPT': script,
         })
@@ -187,7 +187,7 @@ class Builder(object):
 
         volumes = {
             self.context.clone_path: {
-                'bind': '/mnt/src',
+                'bind': self.context.clone_path,
                 'mode': 'rw',
             },
         }
@@ -203,7 +203,7 @@ class Builder(object):
             entrypoint=['/bin/sh', '-c'],
             command=['echo $BADWOLF_SCRIPT | base64 --decode | /bin/sh'],
             environment=environment,
-            working_dir='/mnt/src',
+            working_dir=self.context.clone_path,
             volumes=volumes,
             privileged=self.spec.privileged,
             stdin_open=False,

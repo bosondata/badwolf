@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 import os
 import sys
 import base64
+import tempfile
+import platform
 
 import raven
 
@@ -81,7 +83,17 @@ BITBUCKET_OAUTH_SECRET = os.environ.get('BITBUCKET_OAUTH_SECRET', '')
 BITBUCKET_USERNAME = os.environ.get('BITBUCKET_USERNAME', '')
 BITBUCKET_PASSWORD = os.environ.get('BITBUCKET_PASSWORD', '')
 
-BADWOLF_LOG_DIR = os.environ.get('BADWOLF_LOG_DIR', '/var/lib/badwolf/log')
+BADWOLF_DATA_DIR = os.environ.get('BADWOLF_DATA_DIR', '/var/lib/badwolf')
+BADWOLF_LOG_DIR = os.environ.get('BADWOLF_LOG_DIR', os.path.join(BADWOLF_DATA_DIR, 'log'))
+BADWOLF_REPO_DIR = os.environ.get('BADWOLF_REPO_DIR', os.path.join(BADWOLF_DATA_DIR, 'repos'))
+if DEBUG:
+    if platform.system() == 'Darwin':
+        # On macOS, tempfile.gettempdir function doesn't return '/tmp'
+        # But Docker for Mac can not mount the path returned by tempfile.gettempdir
+        # by default, so let's hardcode it to '/tmp'
+        BADWOLF_REPO_DIR = '/tmp/badwolf'  # nosec
+    else:
+        BADWOLF_REPO_DIR = os.path.join(tempfile.gettempdir(), 'badwolf')
 
 # Sentry Release
 try:
