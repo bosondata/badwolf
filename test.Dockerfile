@@ -4,7 +4,10 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV NPM_CONFIG_LOGLEVEL warn
 
-RUN apt-get update \
+RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /etc/apt/sources.list.d/fkrull-ubuntu-deadsnakes-xenial.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DB82666C \
+    && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+    && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -20,7 +23,10 @@ RUN apt-get update \
     python3-setuptools \
     python3-pip \
     python3-pkg-resources \
+    python3.6 \
+    python3.6-dev \
     git \
+    git-lfs \
     libssl-dev \
     openssh-client \
     && pip3 install -U pip tox
