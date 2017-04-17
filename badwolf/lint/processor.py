@@ -103,8 +103,8 @@ class LintProcessor(object):
             else:
                 description = 'Found {} issues'.format(total_problems)
                 description += ', {} issues in diff'.format(in_diff_problems)
-            if submitted_problems > 0:
-                description += ', {} new issues'.format(submitted_problems)
+                if submitted_problems > 0:
+                    description += ', {} new issues'.format(submitted_problems)
             if fixed_problems > 0:
                 description += ' {} issues fixed'.format(fixed_problems)
         else:
@@ -112,8 +112,10 @@ class LintProcessor(object):
 
         has_error = any(p for p in self.problems if p.is_error)
         if has_error:
+            logger.info('Lint failed: %s', description)
             self.update_build_status('FAILED', description)
         else:
+            logger.info('Lint successful: %s', description)
             self.update_build_status('SUCCESSFUL', description)
 
     def _execute_linters(self, files):

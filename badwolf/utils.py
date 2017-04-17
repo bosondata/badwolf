@@ -2,12 +2,14 @@
 from __future__ import absolute_import, unicode_literals
 
 import os
+import logging
 import subprocess
 try:
     import re2 as re
 except ImportError:
     import re
 
+logger = logging.getLogger(__name__)
 BASIC_AUTH_URL_RE = re.compile(
     r'(?P<protocol>\S+?//)(?P<username>[^:\s]+?):(?P<password>[^@\s]+?)@(?P<address>\S+?)',
     re.I | re.U
@@ -108,4 +110,5 @@ def run_command(command, split=False, include_errors=False, cwd=None, shell=Fals
         output = process.stdout.read()
 
     return_code = process.wait()
+    logger.debug('subprocess %s returned %d, output: %s', command, return_code, output)
     return return_code, output
