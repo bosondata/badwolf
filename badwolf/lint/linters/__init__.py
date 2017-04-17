@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 import os
 import re
 import sys
@@ -76,8 +77,6 @@ class PythonLinter(Linter):
 
     @property
     def python_name(self):
-        python_version = int(self.options.get('python_version', sys.version_info.major))
-        if python_version not in (2, 3):
-            python_version = sys.version_info.major
-
+        current_python = '{}.{}'.format(sys.version_info.major, sys.version_info.minor)
+        python_version = self.options.get('python_version', current_python)
         return 'python{}'.format(python_version)

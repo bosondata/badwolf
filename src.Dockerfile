@@ -47,7 +47,7 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     babel-eslint
 
 RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
-    python3 -m pip install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
+    pip3 install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
     pip3 install -Ur requirements.txt \
     && python3.6 -m pip install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
