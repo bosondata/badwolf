@@ -40,6 +40,27 @@ privileged                    boolean               使用特权模式启动 Doc
 
     badwolf register_webhook deepanalyzer/badwolf
 
+构建运行时环境变量
+----------------------
+
+============================= ===================================================================
+变量名                        值
+============================= ===================================================================
+DEBIAN_FRONTEND               noninteractive
+HOME                          /root
+SHELL                         /bin/sh
+TERM                          xterm-256color
+CI                            true
+CI_NAME                       badwolf
+DOCKER_HOST                   unix:///var/run/docker.sock（开启 Docker 功能时存在）
+BADWOLF_COMMIT                构建仓库的 git commit sha
+BADWOLF_BUILD_DIR             构建目录路径（仓库克隆路径）
+BADWOLF_REPO_SLUG             仓库 slug
+BADWOLF_TAG                   git tag 名称（如果有）
+BADWOLF_BRANCH                git 分支名称
+BADWOLF_PULL_REQUEST          Bitbucket Pull Request ID（如果有）
+============================= ===================================================================
+
 Tips
 -----------
 
