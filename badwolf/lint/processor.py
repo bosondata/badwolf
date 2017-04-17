@@ -90,20 +90,27 @@ class LintProcessor(object):
         self.update_build_status('INPROGRESS', 'Lint in progress')
         files = [f.path for f in lint_files]
         self._execute_linters(files)
-        logger.info('%d problems found before limit to changes', len(self.problems))
 
+        total_problems = len(self.problems)
         self.problems.limit_to_changes()
-
-        has_error = any(p for p in self.problems if p.is_error)
-        if len(self.problems):
-            description = 'Found {} code issues'.format(len(self.problems))
-        else:
-            description = 'No code issues found'
-            logger.info('No problems found when linting codes')
+        in_diff_problems = len(self.problems)
 
         # Report error and cleanup outdated lint comments
-        self._report()
+        submitted_problems, fixed_problems = self._report()
+        if total_problems > 0:
+            if in_diff_problems == total_problems:
+                description = 'Found {} new issues'.format(total_problems)
+            else:
+                description = 'Found {} issues'.format(total_problems)
+                description += ', {} issues in diff'.format(in_diff_problems)
+            if submitted_problems > 0:
+                description += ', {} new issues'.format(submitted_problems)
+            if fixed_problems > 0:
+                description += ' {} issues fixed'.format(fixed_problems)
+        else:
+            description = 'No code issues found'
 
+        has_error = any(p for p in self.problems if p.is_error)
         if has_error:
             self.update_build_status('FAILED', description)
         else:
@@ -184,21 +191,23 @@ class LintProcessor(object):
                 problem_count += 1
 
         logger.info(
-            'Code lint result: %d problems found, %d submited',
+            'Code lint result: %d problems found, %d submitted',
             len(self.problems),
             problem_count
         )
 
+        outdated_cleaned = 0
         outdated_comments = set(existing_comments_ids.keys()) - lint_comments
         logger.info('%d outdated lint comments found', len(outdated_comments))
         for comment in outdated_comments:
             # Delete comment
             try:
                 self.pr.delete_comment(self.context.pr_id, existing_comments_ids[comment])
+                outdated_cleaned += 1
             except BitbucketAPIError:
                 logger.exception('Error deleting pull request comment')
                 sentry.captureException()
-        return problem_count
+        return problem_count, outdated_cleaned
 
     def update_build_status(self, state, description=None):
         try:
