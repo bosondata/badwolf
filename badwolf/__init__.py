@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-__version__ = u'0.7.8'
+__version__ = u'0.7.9'
 
 
 def create_app(config=None):
