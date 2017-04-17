@@ -156,7 +156,7 @@ class LintProcessor(object):
             existing_comments_ids[(filename, line, raw)] = comment['id']
 
         if len(self.problems) == 0:
-            return
+            return 0, 0
 
         revision_before = self.context.target['commit']['hash']
         revision_after = self.context.source['commit']['hash']
