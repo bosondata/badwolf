@@ -19,13 +19,13 @@ RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /
     python-pkg-resources \
     python3 \
     python3-dev \
-    python3-pip \
     python3.6 \
     python3.6-dev \
     git \
     libssl-dev \
     openssh-client \
     libre2-dev \
+    && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3.5 \
     && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3.6 \
     && pip2 install -U pip setuptools wheel \
     && python3.6 -m pip install -U pip setuptools wheel cython \
@@ -42,9 +42,9 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     eslint-plugin-react eslint-plugin-react-native \
     babel-eslint
 
-RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
-    pip3 install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
-    python3.6 -m pip install -U badwolf \
+RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order \
+    && python3.5 -m pip install -U flake8 pep8 pep8-naming pylint flake8-import-order \
+    && python3.6 -m pip install -U badwolf \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
 EXPOSE 8000
