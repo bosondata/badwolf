@@ -21,6 +21,9 @@ RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /
     python-dev \
     python-pip \
     python-pkg-resources \
+    python3 \
+    python3-dev \
+    python3-pip \
     python3.6 \
     python3.6-dev \
     git \
@@ -44,6 +47,7 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     babel-eslint
 
 RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
+    python3 -m pip install -U flake8 pep8 pep8-naming pylint flake8-import-order && \
     pip3 install -Ur requirements.txt \
     && python3.6 -m pip install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
