@@ -6,7 +6,6 @@ ENV NPM_CONFIG_LOGLEVEL warn
 
 RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /etc/apt/sources.list.d/fkrull-ubuntu-deadsnakes-xenial.list \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DB82666C \
-    && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
@@ -26,9 +25,10 @@ RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /
     python3.6 \
     python3.6-dev \
     git \
-    git-lfs \
     libssl-dev \
     openssh-client \
+    && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+    && apt-get install git-lfs \
     && pip3 install -U pip tox
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
