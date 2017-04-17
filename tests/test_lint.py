@@ -125,7 +125,7 @@ index 0000000..fdeea15
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -176,7 +176,7 @@ index 0000000..66f319a
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -227,7 +227,7 @@ index 0000000..f119a7f
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -272,7 +272,7 @@ index 0000000..fdeea15
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -312,7 +312,7 @@ index 0000000..266e19f
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -354,7 +354,7 @@ index 6ebebfe..6be8d74 100644
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -397,7 +397,7 @@ index 9b90002..c36a2a4 100644
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -435,7 +435,7 @@ index 0000000..9fb9840
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -475,7 +475,7 @@ index 0000000..5512dae
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -520,7 +520,7 @@ index 0000000..fdeea15
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -565,7 +565,7 @@ index 0000000..fdeea15
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -607,7 +607,7 @@ index 0000000..1eccee8
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -652,7 +652,7 @@ index 0000000..fdeea15
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -695,7 +695,7 @@ index 0000000..719cd56
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -737,7 +737,7 @@ index 0000000..4e46cf9
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -782,7 +782,7 @@ index 0000000..fdeea15
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -823,7 +823,7 @@ index 0000000..48b3ebe
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
@@ -862,7 +862,7 @@ index 0000000..e545209
             mock.patch.object(lint, '_report') as report:
         load_changes.return_value = patch
         build_status.return_value = None
-        report.return_value = None
+        report.return_value = (1, 2)
         lint.problems.set_changes(patch)
         lint.process()
 
