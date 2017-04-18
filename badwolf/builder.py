@@ -207,7 +207,12 @@ class Builder(object):
             volumes=volumes,
             privileged=self.spec.privileged,
             stdin_open=False,
-            tty=True
+            tty=True,
+            labels={
+                'repo': self.context.repository,
+                'commit': self.commit_hash,
+                'task_id': self.context.task_id,
+            }
         )
         container_id = container.id
         logger.info('Created container %s from image %s', container_id, docker_image_name)
