@@ -249,7 +249,7 @@ class Builder(object):
         html = sanitize_sensitive_data(html)
 
         # Save log html
-        log_dir = os.path.join(current_app.config['BADWOLF_LOG_DIR'], self.commit_hash)
+        log_dir = os.path.join(current_app.config['BADWOLF_LOG_DIR'], self.commit_hash, self.context.task_id)
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, 'build.html')
         with open(log_file, 'wb') as f:
