@@ -2,7 +2,6 @@
 from __future__ import absolute_import, unicode_literals
 
 import os
-import time
 import shutil
 import logging
 
@@ -38,7 +37,7 @@ class Pipeline(object):
             context.source['repository']['full_name'],
             self.commit_hash,
             'badwolf/test',
-            url_for('log.build_log', sha=self.commit_hash, ts=int(time.time()), _external=True)
+            url_for('log.build_log', sha=self.commit_hash, task_id=context.task_id, _external=True)
         )
 
     def start(self):
