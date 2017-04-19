@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 import time
 import logging
 
+import requests
 from flask import url_for
 
 from badwolf.extensions import bitbucket, sentry
@@ -39,6 +40,9 @@ class Deployer(object):
 
         commit_hash = self.context.source['commit']['hash']
         run_after_deploy = False
+        notification = self.spec.notification
+        slack_webhook = notification.slack_webhook
+
         for provider_name, provider_config in self.config.items():
             provider_class = self.PROVIDERS.get(provider_name)
             if not provider_class:
@@ -55,7 +59,7 @@ class Deployer(object):
                 self.context.source['repository']['full_name'],
                 commit_hash,
                 'badwolf/deploy/{}'.format(provider_name),
-                url_for('log.build_log', sha=commit_hash, ts=int(time.time()), _external=True)
+                url_for('log.build_log', sha=commit_hash, task_id=self.context.task_id, _external=True)
             )
             self._update_build_status(build_status, 'INPROGRESS', '{} deploy in progress'.format(provider_name))
             succeed, output = provider.deploy()
@@ -66,6 +70,11 @@ class Deployer(object):
             self._update_build_status(build_status, state, '{} deploy {}'.format(provider_name, state.lower()))
             if succeed:
                 run_after_deploy = True
+                if slack_webhook and slack_webhook.on_success == 'always':
+                    trigger_slack_webhook(slack_webhook.webhooks, self.context, provider, True)
+            else:
+                if slack_webhook and slack_webhook.on_failure == 'always':
+                    trigger_slack_webhook(slack_webhook.webhooks, self.context, provider, False)
 
         # after deploy
         if not run_after_deploy or not self.spec.after_deploy:
@@ -80,4 +89,70 @@ class Deployer(object):
             build_status.update(state, description=description)
         except BitbucketAPIError:
             logger.exception('Error calling Bitbucket API')
+            sentry.captureException()
+
+
+def trigger_slack_webhook(webhooks, context, provider, succeed):
+    actor = context.actor
+    if succeed:
+        title = '{} deploy succeed'.format(provider.name)
+        color = 'good'
+    else:
+        title = '{} deploy failed'.format(provider.name)
+        color = 'warning'
+    fields = []
+    fields.append({
+        'title': 'Repository',
+        'value': '<https://bitbucket.org/{repo}|{repo}>'.format(repo=context.repository),
+        'short': True,
+    })
+    if context.type == 'tag':
+        fields.append({
+            'title': 'Tag',
+            'value': '<https://bitbucket.org/{repo}/commits/tag/{tag}|{tag}>'.format(
+                repo=context.repository,
+                tag=context.source['branch']['name']
+            ),
+            'short': True,
+        })
+    else:
+        fields.append({
+            'title': 'Branch',
+            'value': '<https://bitbucket.org/{repo}/src?at={branch}|{branch}>'.format(
+                repo=context.repository,
+                branch=context.source['branch']['name']
+            ),
+            'short': True,
+        })
+    if context.type in {'branch', 'tag'}:
+        fields.append({
+            'title': 'Commit',
+            'value': '<https://bitbucket.org/{repo}/commits/{sha}|{sha}>'.format(
+                repo=context.repository,
+                sha=context.source['commit']['hash'],
+            ),
+            'short': False
+        })
+    attachment = {
+        'fallback': title,
+        'title': title,
+        'color': color,
+        'fields': fields,
+        'footer': context.repo_name,
+        'ts': int(time.time()),
+        'author_name': actor['display_name'],
+        'author_link': actor['links']['html']['href'],
+        'author_icon': actor['links']['avatar']['href'],
+    }
+    if context.type in {'branch', 'tag'}:
+        attachment['text'] = context.message
+    payload = {'attachments': [attachment]}
+    session = requests.Session()
+    for webhook in webhooks:
+        logger.info('Triggering Slack webhook %s', webhook)
+        res = session.post(webhook, json=payload, timeout=10)
+        try:
+            res.raise_for_status()
+        except requests.RequestException:
+            logger.exception('Error triggering Slack webhook %s', webhook)
             sentry.captureException()

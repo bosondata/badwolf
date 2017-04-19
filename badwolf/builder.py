@@ -9,6 +9,7 @@ import logging
 import shlex
 
 import deansi
+import requests
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import DockerClient
@@ -18,7 +19,7 @@ from markupsafe import Markup
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
 from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError
-from badwolf.notification import send_mail, trigger_slack_webhook
+from badwolf.notification import send_mail
 
 
 logger = logging.getLogger(__name__)
@@ -260,10 +261,100 @@ class Builder(object):
         else:
             subject = 'Test failed for repository {}'.format(self.context.repository)
         notification = self.spec.notification
-        emails = notification['emails']
-        if emails:
-            send_mail(emails, subject, html)
+        email = notification.email
+        if email and email.recipients:
+            if exit_code == 0 and email.on_success == 'always':
+                send_mail(email.recipients, subject, html)
+            if exit_code != 0 and email.on_failure == 'always':
+                send_mail(email.recipients, subject, html)
 
-        slack_webhooks = notification['slack_webhooks']
-        if slack_webhooks:
-            trigger_slack_webhook(slack_webhooks, context)
+        slack_webhook = notification.slack_webhook
+        if slack_webhook and slack_webhook.webhooks:
+            if exit_code == 0 and slack_webhook.on_success == 'always':
+                trigger_slack_webhook(slack_webhook.webhooks, context)
+            if exit_code != 0 and slack_webhook.on_failure == 'always':
+                trigger_slack_webhook(slack_webhook.webhooks, context)
+
+
+def trigger_slack_webhook(webhooks, context):
+    if context['exit_code'] == 0:
+        color = 'good'
+        title = ':sparkles: <{}|Test succeed for repository {}>'.format(
+            context['build_log_url'],
+            context['context'].repository,
+        )
+    else:
+        color = 'warning'
+        title = ':broken_heart: <{}|Test failed for repository {}>'.format(
+            context['build_log_url'],
+            context['context'].repository,
+        )
+    fields = []
+    fields.append({
+        'title': 'Repository',
+        'value': '<https://bitbucket.org/{repo}|{repo}>'.format(repo=context['context'].repository),
+        'short': True,
+    })
+    if context['context'].type == 'tag':
+        fields.append({
+            'title': 'Tag',
+            'value': '<https://bitbucket.org/{repo}/commits/tag/{tag}|{tag}>'.format(
+                repo=context['context'].repository,
+                tag=context['branch']
+            ),
+            'short': True,
+        })
+    else:
+        fields.append({
+            'title': 'Branch',
+            'value': '<https://bitbucket.org/{repo}/src?at={branch}|{branch}>'.format(
+                repo=context['context'].repository,
+                branch=context['branch'],
+            ),
+            'short': True,
+        })
+    if context['context'].type in {'branch', 'tag'}:
+        fields.append({
+            'title': 'Commit',
+            'value': '<https://bitbucket.org/{repo}/commits/{sha}|{sha}>'.format(
+                repo=context['context'].repository,
+                sha=context['context'].source['commit']['hash'],
+            ),
+            'short': False
+        })
+    elif context['context'].type == 'pullrequest':
+        fields.append({
+            'title': 'Pull Request',
+            'value': '<https://bitbucket.org/{repo}/pull-requests/{pr_id}|{title}>'.format(
+                repo=context['context'].repository,
+                pr_id=context['context'].pr_id,
+                title=context['context'].message,
+            ),
+            'short': False
+        })
+
+    actor = context['context'].actor
+    attachment = {
+        'fallback': title,
+        'title': title,
+        'color': color,
+        'title_link': context['build_log_url'],
+        'fields': fields,
+        'footer': context['context'].repo_name,
+        'ts': int(time.time()),
+        'author_name': actor['display_name'],
+        'author_link': actor['links']['html']['href'],
+        'author_icon': actor['links']['avatar']['href'],
+    }
+    if context['context'].type in {'branch', 'tag'}:
+        attachment['text'] = context['context'].message
+    payload = {'attachments': [attachment]}
+    session = requests.Session()
+    for webhook in webhooks:
+        logger.info('Triggering Slack webhook %s', webhook)
+        res = session.post(webhook, json=payload, timeout=10)
+        try:
+            res.raise_for_status()
+        except requests.RequestException:
+            logger.exception('Error triggering Slack webhook %s', webhook)
+            sentry.captureException()
