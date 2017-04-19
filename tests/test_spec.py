@@ -19,7 +19,8 @@ def test_parse_empty_conf(app):
     assert len(spec.after_failure) == 0
     assert len(spec.branch) == 0
     assert spec.dockerfile == 'Dockerfile'
-    assert len(spec.notification.emails) == 0
+    assert not spec.notification.email
+    assert not spec.notification.slack_webhook
 
 
 def test_parse_single_string_conf(app):
@@ -29,14 +30,26 @@ def test_parse_single_string_conf(app):
         'after_success': 'pwd',
         'after_failure': 'exit',
         'notification': {
-            'email': 'messense@icloud.com',
+            'email': {
+                'recipients': 'messense@icloud.com',
+                'on_success': 'always',
+            },
+            'slack_webhook': {
+                'webhooks': ['https://1', 'https://2'],
+                'on_failure': 'never',
+            }
         }
     })
     assert spec.services == ['redis-server']
     assert spec.scripts == ['ls']
     assert spec.after_success == ['pwd']
     assert spec.after_failure == ['exit']
-    assert spec.notification.emails == ['messense@icloud.com']
+    assert spec.notification.email.recipients == ['messense@icloud.com']
+    assert spec.notification.email.on_success == 'always'
+    assert spec.notification.email.on_failure == 'always'
+    assert len(spec.notification.slack_webhook.webhooks) == 2
+    assert spec.notification.slack_webhook.on_success == 'always'
+    assert spec.notification.slack_webhook.on_failure == 'never'
 
 
 def test_parse_file_single_string(app):
@@ -46,7 +59,8 @@ service: redis-server
 after_success: pwd
 after_failure: exit
 notification:
-  email: messense@icloud.com"""
+  email: messense@icloud.com
+  slack_webhook: https://1"""
     f = io.StringIO(s)
     spec = Specification.parse_file(f)
     assert spec.dockerfile == 'MyDockerfile'
@@ -54,7 +68,12 @@ notification:
     assert spec.scripts == ['ls']
     assert spec.after_success == ['pwd']
     assert spec.after_failure == ['exit']
-    assert spec.notification.emails == ['messense@icloud.com']
+    assert spec.notification.email.recipients == ['messense@icloud.com']
+    assert spec.notification.email.on_success == 'never'
+    assert spec.notification.email.on_failure == 'always'
+    assert spec.notification.slack_webhook.webhooks == ['https://1']
+    assert spec.notification.slack_webhook.on_success == 'always'
+    assert spec.notification.slack_webhook.on_failure == 'always'
 
 
 def test_parse_file_single_list(app):
@@ -69,7 +88,9 @@ after_failure:
   - exit
 notification:
   email:
-    - messense@icloud.com"""
+    - messense@icloud.com
+  slack_webhook:
+    - https://1"""
     f = io.StringIO(s)
     spec = Specification.parse_file(f)
     assert spec.dockerfile == 'MyDockerfile'
@@ -77,7 +98,12 @@ notification:
     assert spec.scripts == ['ls']
     assert spec.after_success == ['pwd']
     assert spec.after_failure == ['exit']
-    assert spec.notification.emails == ['messense@icloud.com']
+    assert spec.notification.email.recipients == ['messense@icloud.com']
+    assert spec.notification.email.on_success == 'never'
+    assert spec.notification.email.on_failure == 'always'
+    assert spec.notification.slack_webhook.webhooks == ['https://1']
+    assert spec.notification.slack_webhook.on_success == 'always'
+    assert spec.notification.slack_webhook.on_failure == 'always'
 
 
 def test_parse_file_multi_list(app):
@@ -97,7 +123,10 @@ after_failure:
 notification:
   email:
     - tech@bosondata.com.cn
-    - messense@icloud.com"""
+    - messense@icloud.com
+  slack_webhook:
+    - https://1
+    - https://2"""
     f = io.StringIO(s)
     spec = Specification.parse_file(f)
     assert spec.dockerfile == 'MyDockerfile'
@@ -105,7 +134,58 @@ notification:
     assert spec.scripts == ['ls', 'ps']
     assert spec.after_success == ['pwd', 'rm']
     assert spec.after_failure == ['echo', 'exit']
-    assert spec.notification.emails == ['tech@bosondata.com.cn', 'messense@icloud.com']
+    assert spec.notification.email.recipients == ['tech@bosondata.com.cn', 'messense@icloud.com']
+    assert spec.notification.email.on_success == 'never'
+    assert spec.notification.email.on_failure == 'always'
+    assert len(spec.notification.slack_webhook.webhooks) == 2
+    assert spec.notification.slack_webhook.on_success == 'always'
+    assert spec.notification.slack_webhook.on_failure == 'always'
+
+
+def test_parse_notification_object_no_option(app):
+    s = """script:
+  - ls
+notification:
+  email:
+    recipients:
+      - tech@bosondata.com.cn
+      - messense@icloud.com
+  slack_webhook:
+    webhooks:
+      - https://1
+      - https://2"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.notification.email.recipients == ['tech@bosondata.com.cn', 'messense@icloud.com']
+    assert spec.notification.email.on_success == 'never'
+    assert spec.notification.email.on_failure == 'always'
+    assert len(spec.notification.slack_webhook.webhooks) == 2
+    assert spec.notification.slack_webhook.on_success == 'always'
+    assert spec.notification.slack_webhook.on_failure == 'always'
+
+
+def test_parse_notification_object_with_option(app):
+    s = """script:
+  - ls
+notification:
+  email:
+    recipients:
+      - tech@bosondata.com.cn
+      - messense@icloud.com
+    on_success: always
+  slack_webhook:
+    webhooks:
+      - https://1
+      - https://2
+    on_success: never"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.notification.email.recipients == ['tech@bosondata.com.cn', 'messense@icloud.com']
+    assert spec.notification.email.on_success == 'always'
+    assert spec.notification.email.on_failure == 'always'
+    assert len(spec.notification.slack_webhook.webhooks) == 2
+    assert spec.notification.slack_webhook.on_success == 'never'
+    assert spec.notification.slack_webhook.on_failure == 'always'
 
 
 def test_parse_env_single_string(app):

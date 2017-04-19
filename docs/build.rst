@@ -24,8 +24,8 @@ after_failure                 string/list           构建/测试失败后运行
 service                       string/list           构建/测试前启动的服务，需要在 Dockerfile 中配置安装对应的软件包
 env                           string                环境变量，如: `env: X=1 Y=2 Z=3`
 linter                        string/list           启用的代码检查工具
-notification.email            string/list           邮件通知地址列表
-notification.slack_webhook    string/list           Slack webhook 地址列表
+notification.email            string/list/object    邮件通知地址列表
+notification.slack_webhook    string/list/object    Slack webhook 地址列表
 privileged                    boolean               使用特权模式启动 Docker 容器
 ============================= ===================== ===================================================================
 

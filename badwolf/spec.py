@@ -12,7 +12,7 @@ try:
 except ImportError:
     from yaml import Loader as _Loader
 from flask import render_template
-from marshmallow import Schema, fields, pre_load, post_load, ValidationError
+from marshmallow import Schema, fields, pre_load, post_load, ValidationError, validate
 from marshmallow.utils import is_collection
 
 from badwolf.utils import ObjectDict, to_text, to_binary
@@ -66,13 +66,49 @@ class SecureField(fields.String):
             return ''
 
 
-class NotificationSchema(Schema):
-    emails = ListField(fields.Email(), load_from='email', missing=list)
-    slack_webhooks = ListField(SecureField(), load_from='slack_webhook', missing=list)
-
+class ObjectDictSchema(Schema):
     @post_load
     def _postprocess(self, data):
         return ObjectDict(data)
+
+
+class EmailNotificationSchema(ObjectDictSchema):
+    recipients = ListField(fields.Email(), load_from='recipients', missing=list)
+    on_success = fields.String(missing='never', validate=validate.OneOf(('always', 'never')))
+    on_failure = fields.String(missing='always', validate=validate.OneOf(('always', 'never')))
+
+    @pre_load
+    def _preprocess(self, data):
+        email = {}
+        if isinstance(data, dict):
+            email = data
+        elif isinstance(data, (tuple, list)):
+            email['recipients'] = data
+        else:
+            email['recipients'] = [data]
+        return email
+
+
+class SlackWebHookSchema(ObjectDictSchema):
+    webhooks = ListField(SecureField(), load_from='webhooks', missing=list)
+    on_success = fields.String(missing='always', validate=validate.OneOf(('always', 'never')))
+    on_failure = fields.String(missing='always', validate=validate.OneOf(('always', 'never')))
+
+    @pre_load
+    def _preprocess(self, slack):
+        webhook = {}
+        if isinstance(slack, dict):
+            webhook = slack
+        elif isinstance(slack, (tuple, list)):
+            webhook['webhooks'] = slack
+        else:
+            webhook['webhooks'] = [slack]
+        return webhook
+
+
+class NotificationSchema(ObjectDictSchema):
+    email = fields.Nested(EmailNotificationSchema, load_from='email')
+    slack_webhook = fields.Nested(SlackWebHookSchema, load_from='slack_webhook')
 
 
 class LinterSchema(Schema):
@@ -104,26 +140,18 @@ class LinterSchema(Schema):
         return ObjectDict(data)
 
 
-class PypiDeploySchema(Schema):
+class PypiDeploySchema(ObjectDictSchema):
     username = SecureField()
     password = SecureField()
     repository = SecureField(missing='https://pypi.python.org/pypi')
     distributions = fields.String(missing='dist/*')
 
-    @post_load
-    def _postprocess(self, data):
-        return ObjectDict(data)
 
-
-class DeploySchema(Schema):
+class DeploySchema(ObjectDictSchema):
     branch = SetField(fields.String(), missing=set)  # 开启部署的 git 分支，空则不触发部署
     tag = fields.Boolean(missing=False)  # 是否开启 git tag 的部署
     script = ListField(SecureField(), required=False)
     pypi = fields.Nested(PypiDeploySchema, required=False)
-
-    @post_load
-    def _postprocess(self, data):
-        return ObjectDict(data)
 
 
 class SpecificationSchema(Schema):
@@ -137,7 +165,7 @@ class SpecificationSchema(Schema):
     scripts = ListField(SecureField(), load_from='script', missing=list)
     after_success = ListField(SecureField(), missing=list)
     after_failure = ListField(SecureField(), missing=list)
-    notification = fields.Nested(NotificationSchema, missing=dict)
+    notification = fields.Nested(NotificationSchema)
     linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
     deploy = fields.Nested(DeploySchema, missing=dict)
     after_deploy = ListField(SecureField(), missing=list)
@@ -180,8 +208,8 @@ class Specification(object):
         self.after_success = []
         self.after_failure = []
         self.notification = ObjectDict(
-            emails=[],
-            slack_webhooks=[],
+            email=None,
+            slack_webhook=None,
         )
         self.branch = set()
         self.environments = []
@@ -207,7 +235,7 @@ class Specification(object):
         try:
             parsed = schema.load(conf)
         except ValidationError:
-            logger.exception('badwofl specification validation error')
+            logger.exception('badwolf specification validation error')
             raise InvalidSpecification()
         data = parsed.data
         spec = cls()
