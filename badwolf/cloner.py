@@ -24,11 +24,17 @@ class RepositoryCloner(object):
         source_repo = self.context.source['repository']['full_name']
         if self.context.clone_depth > 0:
             # Use shallow clone to speed up
+            clone_kwargs = dict(
+                depth=self.context.clone_depth,
+                branch=self.context.source['branch']['name']
+            )
+            if self.context.type == 'commit':
+                # ci retry on commit
+                clone_kwargs['no_single_branch'] = True
             bitbucket.clone(
                 source_repo,
                 clone_path,
-                depth=self.context.clone_depth,
-                branch=self.context.source['branch']['name']
+                **clone_kwargs
             )
         else:
             # Full clone for ci retry in single commit
