@@ -7,7 +7,7 @@ import logging
 from flask import Blueprint, request, current_app, url_for
 
 from badwolf.context import Context
-from badwolf.tasks import start_pipeline
+from badwolf.tasks import start_pipeline, check_pr_mergeable
 from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus
 
@@ -98,6 +98,8 @@ def handle_repo_push(payload):
             rebuild=rebuild,
         )
         start_pipeline.delay(context)
+        if push_type == 'branch':
+            check_pr_mergeable.delay(context)
 
 
 @register_event_handler('pullrequest:created')

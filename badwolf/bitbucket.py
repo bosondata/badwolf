@@ -263,6 +263,19 @@ class PullRequest(object):
         )
         return self.client.get(endpoint)
 
+    def list(self, state=None, page=1, size=50):
+        endpoint = '2.0/repositories/{repo}/pullrequests'.format(
+            repo=self.repo,
+            id=id
+        )
+        params = {
+            'page': page,
+            'pagelen': size,
+        }
+        if state:
+            params['state'] = state
+        return self.client.get(endpoint, params=params)
+
     def merge(self, id, message):
         endpoint = '2.0/repositories/{repo}/pullrequests/{id}/merge'.format(
             repo=self.repo,
@@ -320,7 +333,7 @@ class PullRequest(object):
         )
         return self.client.delete(endpoint)
 
-    def diff(self, id):
+    def diff(self, id, raw=False):
         from unidiff import PatchSet
 
         endpoint = '2.0/repositories/{repo}/pullrequests/{id}/diff'.format(
@@ -329,6 +342,8 @@ class PullRequest(object):
         )
         res = self.client.get(endpoint, raw=True)
         res.encoding = 'utf-8'
+        if raw:
+            return res.text
         patch = PatchSet(res.text.split('\n'))
         return patch
 
