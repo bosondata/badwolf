@@ -43,6 +43,13 @@ def start_pipeline(context):
 
 @async_task
 def check_pr_mergeable(context):
+    repo = bitbucket.get('2.0/repositories/{}'.format(context.repository))
+    main_branch = repo['mainbranch']['name']
+    current_branch = context.source['branch']['name']
+    if current_branch != 'master' and current_branch != main_branch:
+        logger.info('Current branch %s is not main branch %s', current_branch, main_branch)
+        return
+
     time.sleep(5)  # wait for Bitbucket merge process ready
     pr = PullRequest(bitbucket, context.repository)
     open_prs = pr.list(state='OPEN')['values']
