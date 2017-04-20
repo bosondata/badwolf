@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 
 from flask import current_app, Blueprint, request
 from cryptography.fernet import Fernet

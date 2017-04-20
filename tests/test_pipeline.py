@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-try:
-    import unittest.mock as mock
-except ImportError:
-    import mock
+import unittest.mock as mock
 
 import git
 import pytest

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 
 from badwolf.utils import run_command
 from badwolf.deploy.providers import Provider

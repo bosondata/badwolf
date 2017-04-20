@@ -3,5 +3,4 @@ pytest
 pytest-cov
 pytest-capturelog
 coverage
-mock
 Sphinx
