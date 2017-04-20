@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import with_statement
 import os
 import sys
+
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 

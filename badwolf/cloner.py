@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
 import os
 import logging
 
@@ -42,13 +41,15 @@ class RepositoryCloner(object):
             # Push to branch or ci retry comment on some commit
             if not self.is_commit_exists(gitcmd, self.commit_hash):
                 logger.info('Unshallowing a shallow cloned repository')
-                gitcmd.fetch('--unshallow')
+                output = gitcmd.fetch('--unshallow')
+                logger.info('%s', output)
             logger.info('Checkout commit %s', self.commit_hash)
             gitcmd.checkout(self.commit_hash)
 
         gitmodules = os.path.join(clone_path, '.gitmodules')
         if os.path.exists(gitmodules):
-            gitcmd.submodule('update', '--init', '--recursive')
+            output = gitcmd.submodule('update', '--init', '--recursive')
+            logger.info('%s', output)
 
     def _merge_pull_request(self, gitcmd):
         # Pull Request
