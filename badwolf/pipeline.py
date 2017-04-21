@@ -5,11 +5,12 @@ import logging
 
 import git
 from flask import current_app, url_for
+from docker.errors import APIError as DockerAPIError
 
 from badwolf.spec import Specification
 from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError, PullRequest, Changesets
-from badwolf.utils import to_text, sanitize_sensitive_data
+from badwolf.utils import sanitize_sensitive_data
 from badwolf.cloner import RepositoryCloner
 from badwolf.builder import Builder
 from badwolf.lint.processor import LintProcessor
@@ -59,22 +60,7 @@ class Pipeline(object):
         finally:
             self.clean()
 
-    def _report_git_error(self, exc):
-        def _linkify_file(name):
-            return '[`{name}`](#chg-{name})'.format(name=name)
-
-        self.build_status.update('FAILED', description='Git clone repository failed')
-        git_error_msg = to_text(exc)
-        content = ':broken_heart: **Git error**: {}'.format(git_error_msg)
-        if 'Merge conflict' in git_error_msg:
-            # git merge conflicted
-            conflicted_files = RepositoryCloner.get_conflicted_files(
-                self.context.clone_path
-            )
-            if conflicted_files:
-                conflicted_files = '\n'.join(('* ' + _linkify_file(name) for name in conflicted_files.split('\n')))
-                content = ':broken_heart: This branch has conflicts that must be resolved\n\n'
-                content += '**Conflicting files**\n\n{}'.format(conflicted_files)
+    def _report_error(self, content):
         content = sanitize_sensitive_data(content)
         if self.context.pr_id:
             pr = PullRequest(bitbucket, self.context.repository)
@@ -88,6 +74,30 @@ class Pipeline(object):
                 self.commit_hash,
                 content
             )
+
+    def _report_git_error(self, exc):
+        def _linkify_file(name):
+            return '[`{name}`](#chg-{name})'.format(name=name)
+
+        self.build_status.update('FAILED', description='Git clone repository failed')
+        git_error_msg = str(exc)
+        content = ':broken_heart: **Git error**: {}'.format(git_error_msg)
+        if 'Merge conflict' in git_error_msg:
+            # git merge conflicted
+            conflicted_files = RepositoryCloner.get_conflicted_files(
+                self.context.clone_path
+            )
+            if conflicted_files:
+                conflicted_files = '\n'.join(('* ' + _linkify_file(name) for name in conflicted_files.split('\n')))
+                content = ':broken_heart: This branch has conflicts that must be resolved\n\n'
+                content += '**Conflicting files**\n\n{}'.format(conflicted_files)
+
+        self._report_error(content)
+
+    def _report_docker_error(self, exc):
+        self.build_status.update('FAILED', description='Docker error occurred')
+        content = ':broken_heart: **Docker error**: {}'.format(exc.explanation)
+        self._report_error(content)
 
     def clone(self):
         '''Clone Git repository to local'''
@@ -124,7 +134,11 @@ class Pipeline(object):
         '''Build project'''
         if self.spec.scripts:
             logger.info('Running build for repository %s', self.context.repository)
-            return Builder(self.context, self.spec, build_status=self.build_status).run()
+            try:
+                return Builder(self.context, self.spec, build_status=self.build_status).run()
+            except DockerAPIError as e:
+                logger.exception('Docker API error')
+                self._report_docker_error(e)
         return False
 
     def lint(self):

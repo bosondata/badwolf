@@ -182,7 +182,7 @@ class Builder(object):
         else:
             environment['BADWOLF_BRANCH'] = branch['name']
         if self.context.pr_id:
-            environment['BADWOLF_PULL_REQUEST'] = to_text(self.context.pr_id)
+            environment['BADWOLF_PULL_REQUEST'] = str(self.context.pr_id)
 
         volumes = {
             self.context.clone_path: {
@@ -223,7 +223,7 @@ class Builder(object):
             exit_code = container.wait(timeout=current_app.config['DOCKER_RUN_TIMEOUT'])
         except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
-            output.append(to_text(e))
+            output.append(str(e) + '\n')
             logger.exception('Docker error')
         finally:
             try:
