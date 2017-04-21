@@ -66,7 +66,7 @@ LOGGING = {
     },
     'formatters': {
         'default': {
-            'format': '%(asctime)s %(levelname)-2s Process-%(process)d %(name)s.%(funcName)s:%(lineno)-5d %(message)s',  # NOQA
+            'format': '%(asctime)s %(levelname)-2s %(threadName)s %(name)s.%(funcName)s:%(lineno)-5d %(message)s',  # NOQA
         },
     },
 }
