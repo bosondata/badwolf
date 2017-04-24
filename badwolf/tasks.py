@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import time
 import logging
-from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 try:
     import re2 as re
 except ImportError:
@@ -13,14 +14,17 @@ from badwolf.pipeline import Pipeline
 
 
 logger = logging.getLogger(__name__)
-executor = ProcessPoolExecutor(max_workers=10)
+executor = ThreadPoolExecutor(max_workers=5 * multiprocessing.cpu_count())
 _MERGE_COMMIT_RE = re.compile(r'[mM]erged?.*?pull request #(\d+)')
 
 
 def _run_task(_task_func, *args, **kwargs):
+    from badwolf.wsgi import app
+
     logger.debug('Running task func %r', _task_func.__name__)
     try:
-        _task_func(*args, **kwargs)
+        with app.app_context():
+            _task_func(*args, **kwargs)
     except Exception:
         logger.exception('Error running task func: %s', _task_func)
         sentry.captureException()
