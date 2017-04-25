@@ -44,9 +44,9 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
 
 RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order \
     && python3.5 -m pip install -U flake8 pep8 pep8-naming pylint flake8-import-order \
-    && python3.6 -m pip install -U badwolf \
+    && python3.6 -m pip install -U badwolf gunicorn \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
 EXPOSE 8000
 
-ENTRYPOINT /usr/local/bin/badwolf runserver --port 8000
+ENTRYPOINT /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --threads 20 --access-logfile - badwolf.wsgi:app
