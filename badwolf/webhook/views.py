@@ -162,9 +162,10 @@ def handle_pull_request_approved(payload):
     )
     try:
         pr_info = pull_request.get(pr_id)
-    except BitbucketAPIError:
+    except BitbucketAPIError as exc:
         logger.exception('Error calling Bitbucket API')
-        sentry.captureException()
+        if exc.code != 404:
+            sentry.captureException()
         return
 
     if pr_info['state'] != 'OPEN':
