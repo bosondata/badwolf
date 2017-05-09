@@ -6,6 +6,7 @@ import tempfile
 import platform
 
 import raven
+import deansi
 
 from badwolf.utils import yesish
 
@@ -98,3 +99,7 @@ try:
     SENTRY_RELEASE = raven.fetch_package_version('badwolf')
 except Exception:  # pragma: no cover
     pass
+
+
+# deansi color override
+deansi.variations[0] = ('black', '#333', 'gray')
