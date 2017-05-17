@@ -2,12 +2,12 @@
 import json
 import logging
 
-from flask import Blueprint, request, current_app, url_for
+from flask import Blueprint, request, current_app, url_for, jsonify
 
 from badwolf.context import Context
 from badwolf.tasks import start_pipeline, check_pr_mergeable
 from badwolf.extensions import bitbucket, sentry
-from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus
+from badwolf.bitbucket import BitbucketAPIError, PullRequest, BuildStatus, Hooks
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,27 @@ def register_event_handler(event_key):
         _EVENT_HANDLERS[event_key] = func
         return func
     return register
+
+
+@blueprint.route('/register/<user>/<repo>', methods=['POST'])
+def register_webhook(user, repo):
+    full_name = '{}/{}'.format(user, repo)
+    webhook_url = url_for('.webhook_push', _external=True)
+    hooks = Hooks(bitbucket, full_name)
+    existing_hooks = hooks.list()
+    existing_urls = [hook['url'] for hook in existing_hooks['values']]
+    if webhook_url in existing_urls:
+        return jsonify({'message': 'already registered'})
+
+    hooks.add('badwolf', webhook_url, events=(
+        'repo:push',
+        'repo:commit_comment_created',
+        'pullrequest:created',
+        'pullrequest:updated',
+        'pullrequest:approved',
+        'pullrequest:comment_created',
+    ))
+    return jsonify({'message': 'success'}), 201
 
 
 @blueprint.route('/push', methods=['POST'])
