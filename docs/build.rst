@@ -34,11 +34,11 @@ privileged                    boolean               使用特权模式启动 Doc
 然后，在 BitBucket 项目设置中配置 webhook，假设部署机器的可访问地址为：http://badwolf.example.com:8000，
 则 webhook 地址应配置为：`http://badwolf.example.com:8000/webhook/push`。
 
-也可以使用 `badwolf register_webhook REPO` 命令自动配置 webhook，如：
+也可以使用 HTTP API 自动配置 webhook，如：
 
 .. code-block:: bash
 
-    badwolf register_webhook deepanalyzer/badwolf
+    curl -XPOST http://badwolf.example.com:8000/webhook/register/user1/repo1
 
 构建运行时环境变量
 ----------------------
