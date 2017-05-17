@@ -55,4 +55,4 @@ RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order \
 
 EXPOSE 8000
 
-ENTRYPOINT /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --threads 20 badwolf.wsgi:app
+ENTRYPOINT /usr/local/bin/gunicorn --bind 0.0.0.0:8000 --threads 20 --access-logfile - badwolf.wsgi:app
