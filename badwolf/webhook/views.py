@@ -169,8 +169,8 @@ def handle_pull_request_approved(payload):
     repo = payload['repository']
     pr = payload['pullrequest']
     pr_id = pr['id']
-    title = pr['title'].lower()
-    description = (pr['description'] or '').lower()
+    title = pr['title']
+    description = pr['description'] or ''
 
     for keyword in ('wip', 'merge skip', 'working in progress'):
         if keyword in title.lower() or keyword in description.lower():
@@ -207,6 +207,8 @@ def handle_pull_request_approved(payload):
         url_for('log.build_log', sha=commit_hash, _external=True)
     )
     message = 'Auto merge pull request #{}: {}'.format(pr_id, title)
+    if description:
+        message += '\n{}'.format(description)
     try:
         status = build_status.get()
         if status['state'] == 'SUCCESSFUL':
