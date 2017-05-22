@@ -32,7 +32,7 @@ RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /
     && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3.5 \
     && curl -sSL https://bootstrap.pypa.io/get-pip.py | python3.6 \
     && pip2 install -U pip setuptools wheel \
-    && python3.6 -m pip install -U pip setuptools wheel cython \
+    && python3.6 -m pip install -U pip setuptools wheel cython gunicorn \
     && python3.6 -m pip install https://github.com/andreasvc/pyre2/archive/master.zip \
     && git config --global user.email "badwolf@localhost" \
     && git config --global user.name "badwolf" \
@@ -49,7 +49,6 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
 RUN pip2 install -U flake8 pep8 pep8-naming pylint flake8-import-order \
     && python3.5 -m pip install -U flake8 pep8 pep8-naming pylint flake8-import-order \
     && python3.6 -m pip install -Ur requirements.txt \
-    && python3.6 -m pip install gunicorn \
     && python3.6 -m pip install . \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
