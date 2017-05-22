@@ -302,7 +302,7 @@ def trigger_slack_webhook(webhooks, context):
             ),
             'short': True,
         })
-    else:
+    elif context['context'].type != 'commit':
         fields.append({
             'title': 'Branch',
             'value': '<https://bitbucket.org/{repo}/src?at={branch}|{branch}>'.format(
@@ -311,7 +311,7 @@ def trigger_slack_webhook(webhooks, context):
             ),
             'short': True,
         })
-    if context['context'].type in {'branch', 'tag'}:
+    if context['context'].type in {'branch', 'tag', 'commit'}:
         fields.append({
             'title': 'Commit',
             'value': '<https://bitbucket.org/{repo}/commits/{sha}|{sha}>'.format(

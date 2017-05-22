@@ -169,11 +169,11 @@ def handle_pull_request_approved(payload):
     repo = payload['repository']
     pr = payload['pullrequest']
     pr_id = pr['id']
-    title = pr['title']
-    description = pr['description'] or ''
+    title = pr['title'].lower()
+    description = (pr['description'] or '').lower()
 
     for keyword in ('wip', 'merge skip', 'working in progress'):
-        if keyword in title.lower() or keyword in description.lower():
+        if keyword in title or keyword in description:
             logger.info('%s found, ignore auto merge.', keyword)
             return
 
@@ -206,9 +206,9 @@ def handle_pull_request_approved(payload):
         'badwolf/test',
         url_for('log.build_log', sha=commit_hash, _external=True)
     )
-    message = 'Auto merge pull request #{}: {}'.format(pr_id, title)
+    message = 'Auto merge pull request #{}: {}'.format(pr_id, pr['title'])
     if description:
-        message += '\n{}'.format(description)
+        message += '\n{}'.format(pr['description'])
     try:
         status = build_status.get()
         if status['state'] == 'SUCCESSFUL':
@@ -221,7 +221,7 @@ def handle_pull_request_approved(payload):
 @register_event_handler('repo:commit_comment_created')
 def handle_repo_commit_comment(payload):
     comment = payload['comment']
-    comment_content = comment['content']['raw']
+    comment_content = comment['content']['raw'].lower()
 
     retry = 'ci retry' in comment_content
     rebuild = 'ci rebuild' in comment_content
@@ -236,7 +236,7 @@ def handle_repo_commit_comment(payload):
     context = Context(
         repo_name,
         payload['actor'],
-        'commit',
+        'commit',  # set to commit for ci retry on commit
         payload['commit']['message'],
         {
             'repository': {'full_name': repo_name},
