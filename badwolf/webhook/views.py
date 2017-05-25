@@ -208,7 +208,7 @@ def handle_pull_request_approved(payload):
     )
     message = 'Auto merge pull request #{}: {}'.format(pr_id, pr['title'])
     if description:
-        message += '\n{}'.format(pr['description'])
+        message += '\n\n{}'.format(pr['description'])
     try:
         status = build_status.get()
         if status['state'] == 'SUCCESSFUL':
