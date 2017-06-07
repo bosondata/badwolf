@@ -55,6 +55,8 @@ class Pipeline(object):
         except BitbucketAPIError:
             logger.exception('Error calling BitBucket API')
             sentry.captureException()
+        except InvalidSpecification as err:
+            self._report_error('Invalid badwolf configuration: ' + str(err))
         except BadwolfException:
             pass
         finally:
@@ -127,7 +129,7 @@ class Pipeline(object):
             raise BuildDisabled()
         if not spec.scripts and not spec.linters:
             logger.warning('No script(s) or linter(s) to run')
-            raise InvalidSpecification()
+            raise InvalidSpecification('No script or linter to run')
         self.spec = spec
 
     def build(self):

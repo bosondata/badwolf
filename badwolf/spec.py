@@ -231,12 +231,15 @@ class Specification(object):
 
     @classmethod
     def parse_file(cls, path):
-        if hasattr(path, 'read') and callable(path.read):
-            # File-like obj
-            conf = yaml.load(path.read(), Loader=_Loader)
-        else:
-            with io.open(path) as f:
-                conf = yaml.load(f.read(), Loader=_Loader)
+        try:
+            if hasattr(path, 'read') and callable(path.read):
+                # File-like obj
+                conf = yaml.load(path.read(), Loader=_Loader)
+            else:
+                with io.open(path) as f:
+                    conf = yaml.load(f.read(), Loader=_Loader)
+        except yaml.error.MarkedYAMLError as e:
+            raise InvalidSpecification(str(e))
 
         return cls.parse(conf)
 
@@ -245,9 +248,9 @@ class Specification(object):
         schema = SpecificationSchema()
         try:
             parsed = schema.load(conf)
-        except ValidationError:
+        except ValidationError as e:
             logger.exception('badwolf specification validation error')
-            raise InvalidSpecification()
+            raise InvalidSpecification(str(e))
         data = parsed.data
         spec = cls()
         for key, value in data.items():
