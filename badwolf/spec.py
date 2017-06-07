@@ -12,6 +12,7 @@ except ImportError:
 from flask import render_template
 from marshmallow import Schema, fields, pre_load, post_load, ValidationError, validate
 from marshmallow.utils import is_collection
+from marshmallow_oneofschema import OneOfSchema
 
 from badwolf.utils import ObjectDict, to_text, to_binary
 from badwolf.security import SecureToken
@@ -138,18 +139,30 @@ class LinterSchema(Schema):
         return ObjectDict(data)
 
 
-class PypiDeploySchema(ObjectDictSchema):
+class DeployProviderSchema(ObjectDictSchema):
+    provider = fields.String()
+    branch = SetField(fields.String(), missing=set)  # 开启部署的 git 分支，空则不触发部署
+    tag = fields.Boolean(missing=False)  # 是否开启 git tag 的部署
+
+
+class ScriptDeploySchema(DeployProviderSchema):
+    script = ListField(SecureField())
+
+
+class PypiDeploySchema(DeployProviderSchema):
     username = SecureField()
     password = SecureField()
     repository = SecureField(missing='https://pypi.python.org/pypi')
     distributions = fields.String(missing='dist/*')
 
 
-class DeploySchema(ObjectDictSchema):
-    branch = SetField(fields.String(), missing=set)  # 开启部署的 git 分支，空则不触发部署
-    tag = fields.Boolean(missing=False)  # 是否开启 git tag 的部署
-    script = ListField(SecureField(), required=False)
-    pypi = fields.Nested(PypiDeploySchema, required=False)
+class AnyDeploySchema(OneOfSchema):
+    type_field = 'provider'
+    type_field_remove = False
+    type_schemas = {
+        'script': ScriptDeploySchema,
+        'pypi': PypiDeploySchema,
+    }
 
 
 class SpecificationSchema(Schema):
@@ -165,7 +178,7 @@ class SpecificationSchema(Schema):
     after_failure = ListField(SecureField(), missing=list)
     notification = fields.Nested(NotificationSchema)
     linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
-    deploy = fields.Nested(DeploySchema, missing=dict)
+    deploy = ListField(fields.Nested(AnyDeploySchema), missing=list)
     after_deploy = ListField(SecureField(), missing=list)
 
     @pre_load
@@ -213,7 +226,7 @@ class Specification(object):
         self.environments = []
         self.linters = []
         self.privileged = False
-        self.deploy = {}
+        self.deploy = []
         self.after_deploy = []
 
     @classmethod

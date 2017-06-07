@@ -418,3 +418,58 @@ def test_list_field(app):
     data = {'services': ['redis-server']}
     result = schema.load(data)
     assert result.data['services'] == ['redis-server']
+
+
+def test_deploy_single_provider_object(app):
+    s = """deploy:
+  provider: script
+  script: echo test
+  tag: true"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.deploy) == 1
+    deploy = spec.deploy[0]
+    assert deploy.tag
+    assert not deploy.branch
+    assert deploy.provider == 'script'
+    assert deploy.script == ['echo test']
+
+
+def test_deploy_single_provider_list(app):
+    s = """deploy:
+  - provider: script
+    script: echo test"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.deploy) == 1
+    deploy = spec.deploy[0]
+    assert not deploy.tag
+    assert not deploy.branch
+    assert deploy.provider == 'script'
+    assert deploy.script == ['echo test']
+
+
+def test_deploy_multiple_provider(app):
+    s = """deploy:
+  - provider: script
+    script: echo test
+  - provider: pypi
+    username: test
+    password: test
+    tag: true"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.deploy) == 2
+
+    script = spec.deploy[0]
+    assert not script.tag
+    assert not script.branch
+    assert script.provider == 'script'
+    assert script.script == ['echo test']
+
+    pypi = spec.deploy[1]
+    assert pypi.tag
+    assert not pypi.branch
+    assert pypi.provider == 'pypi'
+    assert pypi.username == 'test'
+    assert pypi.password == 'test'

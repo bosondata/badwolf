@@ -21,19 +21,15 @@ class Deployer(object):
         'pypi': PypiProvider,
     }
 
-    def __init__(self, context, spec, working_dir=None):
+    def __init__(self, context, spec, providers, working_dir=None):
         self.context = context
         self.spec = spec
         self.working_dir = working_dir or context.clone_path
-
-        deploy_config = spec.deploy.copy()
-        deploy_config.pop('branch', None)
-        deploy_config.pop('tag', None)
-        self.config = deploy_config
+        self.providers = providers
 
     def deploy(self):
-        if not self.config:
-            logger.info('No deploy provider configured')
+        if not self.providers:
+            logger.info('No deploy provider active')
             return
 
         commit_hash = self.context.source['commit']['hash']
@@ -41,7 +37,8 @@ class Deployer(object):
         notification = self.spec.notification
         slack_webhook = notification.slack_webhook
 
-        for provider_name, provider_config in self.config.items():
+        for provider_config in self.providers:
+            provider_name = provider_config.provider
             provider_class = self.PROVIDERS.get(provider_name)
             if not provider_class:
                 logger.warning('Provider %s not found', provider_name)
