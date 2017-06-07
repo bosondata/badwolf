@@ -24,7 +24,7 @@ class ESLinter(Linter):
         # 过滤掉压缩过的 JavaScript 文件
         if filename.lower().endswith('.min.js'):
             return False
-        if is_likely_minified(filename):
+        if is_likely_minified(os.path.join(self.working_dir, filename)):
             return False
         return super(ESLinter, self).match_file(filename)
 
