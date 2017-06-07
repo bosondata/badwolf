@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 
+try:
+    from is_minified_js import is_likely_minified
+except ImportError:
+    def is_likely_minified(_path):
+        return False
+
 from badwolf.utils import run_command
 from badwolf.lint import Problem
 from badwolf.lint.linters import Linter
@@ -17,6 +23,8 @@ class ESLinter(Linter):
     def match_file(self, filename):
         # 过滤掉压缩过的 JavaScript 文件
         if filename.lower().endswith('.min.js'):
+            return False
+        if is_likely_minified(filename):
             return False
         return super(ESLinter, self).match_file(filename)
 
