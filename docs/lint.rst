@@ -41,8 +41,8 @@
 名称                编程语言            官网/文档地址
 =================== =================== =======================================================
 flake8              Python              http://flake8.readthedocs.org/en/latest/
-pep8                Python              http://pep8.readthedocs.org/en/latest/
-pylint              Python              http://pep8.readthedocs.org/en/latest/
+pycodestyle         Python              http://pycodestyle.readthedocs.org/en/latest/
+pylint              Python              http://pylint.readthedocs.org/en/latest/
 bandit              Python              https://github.com/openstack/bandit
 eslint              JavaScript          http://eslint.org/
 csslint             CSS                 http://csslint.net/

@@ -183,7 +183,7 @@ index 0000000..f119a7f
     assert problem.line == 1
 
 
-def test_pep8_lint_a_py(app, caplog):
+def test_pycodestyle_lint_a_py(app, caplog):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -208,8 +208,8 @@ index 0000000..fdeea15
         pr_id=1
     )
     spec = Specification()
-    spec.linters.append(ObjectDict(name='pep8', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'pep8'))
+    spec.linters.append(ObjectDict(name='pycodestyle', pattern=None))
+    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'pycodestyle'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\

@@ -10,7 +10,7 @@ from badwolf.bitbucket import PullRequest, BitbucketAPIError, BuildStatus
 from badwolf.lint import Problems
 from badwolf.lint.linters.eslint import ESLinter
 from badwolf.lint.linters.flake8 import Flake8Linter
-from badwolf.lint.linters.pep8 import PEP8Linter
+from badwolf.lint.linters.pycodestyle import PyCodeStyleLinter
 from badwolf.lint.linters.csslint import CSSLinter
 from badwolf.lint.linters.shellcheck import ShellCheckLinter
 from badwolf.lint.linters.jsonlint import JSONLinter
@@ -29,7 +29,8 @@ class LintProcessor(object):
     LINTERS = {
         'eslint': ESLinter,
         'flake8': Flake8Linter,
-        'pep8': PEP8Linter,
+        'pep8': PyCodeStyleLinter,
+        'pycodestyle': PyCodeStyleLinter,
         'csslint': CSSLinter,
         'shellcheck': ShellCheckLinter,
         'jsonlint': JSONLinter,

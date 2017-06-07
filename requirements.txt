@@ -10,7 +10,7 @@ unidiff>=0.5.2
 optionaldict>=0.1.1
 flake8>=2.5.2
 pep8-naming>=0.3.3
-pep8>=1.7.0
+pycodestyle
 yamllint>=1.0.0
 bandit>=0.17.3
 restructuredtext-lint>=0.14.2
