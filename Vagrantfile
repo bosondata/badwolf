@@ -77,7 +77,7 @@ Vagrant.configure(2) do |config|
     sudo apt-get install -y shellcheck
     sudo pip install ipython ipdb virtualenv
     sudo pip install -U -r /vagrant/dev-requirements.txt
-    sudo npm install -g jscs eslint csslint sass-lint jsonlint eslint-plugin-react eslint-plugin-react-native stylelint
+    sudo npm install -g eslint csslint sass-lint jsonlint eslint-plugin-react eslint-plugin-react-native stylelint
     cd /vagrant && sudo python setup.py develop && cd -
   SHELL
 end

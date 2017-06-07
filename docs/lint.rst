@@ -44,7 +44,6 @@ flake8              Python              http://flake8.readthedocs.org/en/latest/
 pep8                Python              http://pep8.readthedocs.org/en/latest/
 pylint              Python              http://pep8.readthedocs.org/en/latest/
 bandit              Python              https://github.com/openstack/bandit
-jscs                JavaScript          http://jscs.info/
 eslint              JavaScript          http://eslint.org/
 csslint             CSS                 http://csslint.net/
 stylelint           CSS/SASS/SCSS       http://stylelint.io/

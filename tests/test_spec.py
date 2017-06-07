@@ -262,7 +262,7 @@ def test_parse_linter_with_pattern(app):
 def test_parse_multi_linters_with_pattern(app):
     s = """linter:
   - {name: "flake8", pattern: "*.py"}
-  - jscs"""
+  - eslint"""
     f = io.StringIO(s)
     spec = Specification.parse_file(f)
     assert len(spec.linters) == 2
@@ -270,7 +270,7 @@ def test_parse_multi_linters_with_pattern(app):
     assert linter0.name == 'flake8'
     assert linter0.pattern == '*.py'
     linter1 = spec.linters[1]
-    assert linter1.name == 'jscs'
+    assert linter1.name == 'eslint'
     assert linter1.pattern is None
 
 

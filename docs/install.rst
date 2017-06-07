@@ -23,7 +23,7 @@ Standalone 模式
 
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
     sudo apt-get install -y software-properties-common python-dev python-software-properties python-setuptools python-pip git nodejs shellcheck
-    sudo npm install -g jscs eslint csslint sass-lint jsonlint eslint-plugin-react eslint-plugin-react-native
+    sudo npm install -g eslint csslint sass-lint jsonlint eslint-plugin-react eslint-plugin-react-native
 
 然后使用 pip 安装 badwolf：
 

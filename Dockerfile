@@ -38,7 +38,7 @@ RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g \
-    jscs eslint csslint sass-lint jsonlint stylelint \
+    eslint csslint sass-lint jsonlint stylelint \
     eslint-plugin-react eslint-plugin-react-native \
     babel-eslint
 
