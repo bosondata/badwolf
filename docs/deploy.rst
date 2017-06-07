@@ -17,10 +17,9 @@
 ============================= ===================== ===================================================================
 选项名                        类型                  说明
 ============================= ===================== ===================================================================
+deploy.provider               string                部署服务提供方，如 script, pypi 等
 deploy.branch                 string/list           开启部署的分支，默认为空
 deploy.tag                    boolean               是否开启 tag 部署
-deploy.script                 string/list           script deploy 参数
-deploy.pypi                   object                参考下面的文档
 after_deploy                  string/list           部署成功后运行的命令
 ============================= ===================== ===================================================================
 
@@ -31,6 +30,7 @@ script
 
     deploy:
       tag: true
+      provider: script
       script:
         - echo 'Deploying'
         - etc.
@@ -61,8 +61,29 @@ repository                    string                Pypi 仓库，默认为官�
     after_success: python setup.py sdist bdist_wheel > /dev/null
     deploy:
       tag: true
+      provider: pypi
       username: pypi
       password:
         secure: my_secure_token
       repository: https://pypi.example.com
 
+
+配置多个 provider
+-------------------
+
+.. code-block:: yaml
+
+    after_success: python setup.py sdist bdist_wheel > /dev/null
+    deploy:
+      - tag: true
+        provider: script
+        script:
+          - echo 'Deploying'
+          - etc.
+      - branch: master
+        provider: pypi
+        username: pypi
+        password:
+          secure: my_secure_token
+
+以上多个 deploy provider 将有序执行。

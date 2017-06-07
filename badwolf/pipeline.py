@@ -152,15 +152,16 @@ class Pipeline(object):
         if not self.spec.deploy or self.context.type not in {'branch', 'tag'}:
             return
 
+        providers = []
         branch = self.context.source['branch']['name']
-        if self.context.type == 'branch' and branch not in self.spec.deploy.branch:
+        for provider in self.spec.deploy:
+            if (self.context.type == 'branch' and branch in provider.branch) or \
+                    (self.context.type == 'tag' and provider.tag):
+                providers.append(provider)
+        if not providers:
             return
-
-        if self.context.type == 'tag' and not self.spec.deploy.tag:
-            return
-
-        logger.info('Running deploy for repository %s', self.context.repository)
-        Deployer(self.context, self.spec).deploy()
+        logger.info('Running %d deploy(s) for repository %s', len(providers), self.context.repository)
+        Deployer(self.context, self.spec, providers).deploy()
 
     def clean(self):
         '''Clean local files'''
