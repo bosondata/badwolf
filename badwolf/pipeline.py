@@ -56,7 +56,7 @@ class Pipeline(object):
             logger.exception('Error calling BitBucket API')
             sentry.captureException()
         except InvalidSpecification as err:
-            self._report_error('Invalid badwolf configuration: ' + str(err))
+            self._report_error(':umbrella: Invalid badwolf configuration: ' + str(err))
         except BadwolfException:
             pass
         finally:
