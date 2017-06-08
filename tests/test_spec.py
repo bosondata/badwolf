@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import io
 
+import pytest
 from marshmallow import Schema, fields
 
 from badwolf.spec import Specification
@@ -473,3 +474,14 @@ def test_deploy_multiple_provider(app):
     assert pypi.provider == 'pypi'
     assert pypi.username == 'test'
     assert pypi.password == 'test'
+
+
+def test_deploy_single_provider_object_should_fail(app):
+    from badwolf.exceptions import InvalidSpecification
+
+    s = """deploy:
+  script: echo test
+  tag: true"""
+    f = io.StringIO(s)
+    with pytest.raises(InvalidSpecification):
+        Specification.parse_file(f)

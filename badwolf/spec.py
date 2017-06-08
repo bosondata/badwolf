@@ -33,7 +33,8 @@ class ListField(fields.List):
             try:
                 result.append(self.container.deserialize(each))
             except ValidationError as e:
-                result.append(e.data)
+                if e.data is not None:
+                    result.append(e.data)
                 errors.update({idx: e.messages})
 
         if errors:
@@ -166,6 +167,9 @@ class AnyDeploySchema(OneOfSchema):
 
 
 class SpecificationSchema(Schema):
+    class Meta:
+        strict = True
+
     image = fields.String(missing=None)
     dockerfile = fields.String(missing='Dockerfile')
     docker = fields.Boolean(missing=False)
