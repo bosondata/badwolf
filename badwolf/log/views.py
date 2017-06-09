@@ -10,6 +10,44 @@ from docker import DockerClient
 logger = logging.getLogger(__name__)
 blueprint = Blueprint('log', __name__)
 
+FOLLOW_LOG_JS = '''<script type="text/javscript">
+var observeDOM = (function(){
+  var MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
+    eventListenerSupported = window.addEventListener;
+
+  return function(obj, callback){
+    if( MutationObserver ){
+      // define a new observer
+      var obs = new MutationObserver(function(mutations, observer){
+        if( mutations[0].addedNodes.length || mutations[0].removedNodes.length )
+            callback();
+      });
+      // have the observer observe foo for changes in children
+      obs.observe( obj, { childList:true, subtree:true });
+    }
+    else if( eventListenerSupported ){
+      obj.addEventListener('DOMNodeInserted', callback, false);
+      obj.addEventListener('DOMNodeRemoved', callback, false);
+    }
+  };
+})();
+
+window.autoFollow = true;
+window.onscroll = function() {
+  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 10) {
+    window.autoFollow = true;
+  } else {
+    window.autoFollow = false;
+  }
+};
+
+observeDOM(document.body, function() {
+  if (window.autoFollow) {
+    window.scrollTo(window.pageXOffset, document.body.scrollHeight);
+  }
+})
+</script>'''
+
 
 @blueprint.route('/build/<sha>', methods=['GET'])
 def build_log(sha):
@@ -45,6 +83,7 @@ def build_log(sha):
 
     def _streaming_gen():
         yield '<style>{}</style>'.format(deansi.styleSheet())
+        yield FOLLOW_LOG_JS
         yield '<div class="ansi_terminal">'
         buffer = []
         for log in container.logs(stdout=True, stderr=True, stream=True, follow=True):
