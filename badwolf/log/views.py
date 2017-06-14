@@ -10,7 +10,7 @@ from docker import DockerClient
 logger = logging.getLogger(__name__)
 blueprint = Blueprint('log', __name__)
 
-FOLLOW_LOG_JS = '''<script type="text/javscript">
+FOLLOW_LOG_JS = '''<script type="text/javascript">
 var observeDOM = (function(){
   var MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
     eventListenerSupported = window.addEventListener;
@@ -32,20 +32,22 @@ var observeDOM = (function(){
   };
 })();
 
-window.autoFollow = true;
-window.onscroll = function() {
-  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 10) {
-    window.autoFollow = true;
-  } else {
-    window.autoFollow = false;
-  }
-};
+window.onload = function() {
+  window.autoFollow = true;
+  window.onscroll = function() {
+    if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 10) {
+      window.autoFollow = true;
+    } else {
+      window.autoFollow = false;
+    }
+  };
 
-observeDOM(document.body, function() {
-  if (window.autoFollow) {
-    window.scrollTo(window.pageXOffset, document.body.scrollHeight);
-  }
-})
+  observeDOM(document.body, function() {
+    if (window.autoFollow) {
+      window.scrollTo(window.pageXOffset, document.body.scrollHeight);
+    }
+  });
+}
 </script>'''
 
 
