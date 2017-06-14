@@ -41,7 +41,7 @@ window.onscroll = function() {
   }
 };
 
-observeDOM(document.body, function() {
+observeDOM(document, function() {
   if (window.autoFollow) {
     window.scrollTo(window.pageXOffset, document.body.scrollHeight);
   }
