@@ -32,22 +32,20 @@ var observeDOM = (function(){
   };
 })();
 
-window.onload = function() {
-  window.autoFollow = true;
-  window.onscroll = function() {
-    if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 10) {
-      window.autoFollow = true;
-    } else {
-      window.autoFollow = false;
-    }
-  };
+window.autoFollow = true;
+window.onscroll = function() {
+  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 10) {
+    window.autoFollow = true;
+  } else {
+    window.autoFollow = false;
+  }
+};
 
-  observeDOM(document.body, function() {
-    if (window.autoFollow) {
-      window.scrollTo(window.pageXOffset, document.body.scrollHeight);
-    }
-  });
-}
+observeDOM(document.body, function() {
+  if (window.autoFollow) {
+    window.scrollTo(window.pageXOffset, document.body.scrollHeight);
+  }
+});
 </script>'''
 
 
