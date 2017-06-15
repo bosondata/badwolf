@@ -15,8 +15,7 @@ cache:
     - $HOME/.cache/pip
 
 before_install:
-  - curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-  - sudo apt-get install -y libffi-dev libssl-dev nodejs shellcheck
+  - sudo apt-get install -y libffi-dev libssl-dev shellcheck
 
 install:
   - npm install -g eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native babel-eslint
