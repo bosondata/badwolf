@@ -25,3 +25,4 @@ marshmallow-oneofschema
 twine
 flake8-bugbear
 is-minified-js
+mypy
