@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 
 from badwolf.utils import run_command
@@ -33,6 +34,8 @@ class MypyLinter(PythonLinter):
             '--follow-imports',
             'silent',
         ]
+        if not self._is_ignore_missing_imports_configured():
+            command.append('--ignore-missing-imports')
         command += files
         _, output = run_command(command, split=True, include_errors=True, cwd=self.working_dir)
         if not output:
@@ -50,3 +53,18 @@ class MypyLinter(PythonLinter):
         Parse the output for real data."""
         parts = line.split(':', 3)
         return parts[0], int(parts[1]), parts[2].strip(), parts[3].strip()
+
+    def _is_ignore_missing_imports_configured(self):
+        files = [
+            os.path.join(self.working_dir, 'mypy.ini'),
+            os.path.join(self.working_dir, 'setup.cfg'),
+        ]
+        for path in files:
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    config = f.read()
+            except OSError:
+                continue
+            if 'ignore_missing_imports' in config:
+                return True
+        return False
