@@ -30,6 +30,8 @@ class MypyLinter(PythonLinter):
             self.python_name,
             '-m',
             'mypy',
+            '--follow-imports',
+            'silent',
         ]
         command += files
         _, output = run_command(command, split=True, include_errors=True, cwd=self.working_dir)
@@ -38,6 +40,8 @@ class MypyLinter(PythonLinter):
 
         for line in output:
             filename, line, level, message = self._parse_line(line)
+            if level == 'note':
+                continue
             is_error = level == 'error'
             yield Problem(filename, line, message, self.name, is_error=is_error)
 
