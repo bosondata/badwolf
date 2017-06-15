@@ -20,6 +20,7 @@ from badwolf.lint.linters.rstlint import RestructuredTextLinter
 from badwolf.lint.linters.pylint import PylintLinter
 from badwolf.lint.linters.sasslint import SassLinter
 from badwolf.lint.linters.stylelint import StyleLinter
+from badwolf.lint.linters.mypy import MypyLinter
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ class LintProcessor(object):
         'pylint': PylintLinter,
         'sasslint': SassLinter,
         'stylelint': StyleLinter,
+        'mypy': MypyLinter,
     }
 
     def __init__(self, context, spec, working_dir=None):
