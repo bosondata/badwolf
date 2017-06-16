@@ -97,9 +97,3 @@ def build_log(sha):
         yield '</div>'
 
     return Response(_streaming_gen(), mimetype='text/html;charset=utf-8')
-
-
-@blueprint.route('/lint/<sha>', methods=['GET'])
-def lint_log(sha):
-    log_dir = os.path.join(current_app.config['BADWOLF_LOG_DIR'], sha)
-    return send_from_directory(log_dir, 'lint.html')
