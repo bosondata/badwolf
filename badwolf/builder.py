@@ -238,7 +238,12 @@ class Builder(object):
                 container.remove(force=True)
             except NotFound:
                 pass
-            except (APIError, DockerException, ReadTimeout):
+            except APIError as api_e:
+                if 'can not get logs from container which is dead or marked for removal' in str(api_e):
+                    output.append('Build cancelled')
+                else:
+                    logger.exception('Error removing docker container')
+            except (DockerException, ReadTimeout):
                 logger.exception('Error removing docker container')
 
         return exit_code, ''.join(output)
