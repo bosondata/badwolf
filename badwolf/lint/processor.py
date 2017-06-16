@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import time
 import logging
 
-from flask import url_for
 from unidiff import UnidiffParseError
 
 from badwolf.extensions import bitbucket, sentry
@@ -56,7 +54,7 @@ class LintProcessor(object):
             context.source['repository']['full_name'],
             commit_hash,
             'badwolf/lint',
-            url_for('log.lint_log', sha=commit_hash, ts=int(time.time()), _external=True)
+            'https://bitbucket.org/{}/pull-requests/{}'.format(context.repository, context.pr_id)
         )
 
     def load_changes(self):
