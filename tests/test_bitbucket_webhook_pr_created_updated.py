@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import unittest.mock as mock
+from concurrent.futures import Future
 
 from flask import url_for
 
@@ -70,9 +71,10 @@ def test_pr_updated_state_not_open(test_client):
     assert to_text(res.data) == ''
 
 
+@mock.patch('badwolf.webhook.views._cancel_outdated_pipelines')
 @mock.patch('badwolf.webhook.views.start_pipeline')
-def test_pr_created_trigger_start_pipeline(mock_start_pipeline, test_client):
-    mock_start_pipeline.delay.return_value = None
+def test_pr_created_trigger_start_pipeline(mock_start_pipeline, mock_cancel_pipelines, test_client):
+    mock_start_pipeline.delay.return_value = Future()
     payload = json.dumps({
         'repository': {
             'full_name': 'deepanalyzer/badwolf',

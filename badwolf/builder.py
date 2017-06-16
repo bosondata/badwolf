@@ -11,7 +11,7 @@ import requests
 from flask import current_app, render_template, url_for
 from requests.exceptions import ReadTimeout
 from docker import DockerClient
-from docker.errors import APIError, DockerException, ImageNotFound
+from docker.errors import APIError, DockerException, ImageNotFound, NotFound
 from markupsafe import Markup
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
@@ -81,7 +81,10 @@ class Builder(object):
                 self.context.repository,
                 exit_code
             )
-            self.update_build_status('FAILED', '1 of 1 test failed')
+            if exit_code == 137:
+                self.update_build_status('FAILED', 'build cancelled')
+            else:
+                self.update_build_status('FAILED', '1 of 1 test failed')
 
         context.update({
             'logs': Markup(deansi.deansi(output)),
@@ -177,12 +180,20 @@ class Builder(object):
         })
         environment.setdefault('TERM', 'xterm-256color')
         branch = self.context.source['branch']
+        labels = {
+            'repo': self.context.repository,
+            'commit': self.commit_hash,
+            'task_id': self.context.task_id,
+        }
         if self.context.type == 'tag':
             environment['BADWOLF_TAG'] = branch['name']
+            labels['tag'] = branch['name']
         else:
             environment['BADWOLF_BRANCH'] = branch['name']
+            labels['branch'] = branch['name']
         if self.context.pr_id:
             environment['BADWOLF_PULL_REQUEST'] = str(self.context.pr_id)
+            labels['pull_request'] = str(self.context.pr_id)
 
         volumes = {
             self.context.clone_path: {
@@ -207,11 +218,7 @@ class Builder(object):
             privileged=self.spec.privileged,
             stdin_open=False,
             tty=True,
-            labels={
-                'repo': self.context.repository,
-                'commit': self.commit_hash,
-                'task_id': self.context.task_id,
-            }
+            labels=labels,
         )
         container_id = container.id
         logger.info('Created container %s from image %s', container_id, docker_image_name)
@@ -229,6 +236,8 @@ class Builder(object):
             try:
                 output.append(to_text(container.logs()))
                 container.remove(force=True)
+            except NotFound:
+                pass
             except (APIError, DockerException, ReadTimeout):
                 logger.exception('Error removing docker container')
 
@@ -253,6 +262,10 @@ class Builder(object):
         log_file = os.path.join(log_dir, 'build.html')
         with open(log_file, 'wb') as f:
             f.write(to_binary(html))
+
+        if exit_code == 137:
+            logger.info('Build cancelled, will not sending notification')
+            return
 
         if exit_code == 0:
             subject = 'Test succeed for repository {}'.format(self.context.repository)

@@ -2,6 +2,7 @@
 import json
 import logging
 
+from docker import DockerClient
 from flask import Blueprint, request, current_app, url_for, jsonify
 
 from badwolf.context import Context
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 blueprint = Blueprint('webhook', __name__)
 
 _EVENT_HANDLERS = {}
+_RUNNING_PIPELINES = {}
 
 
 def register_event_handler(event_key):
@@ -21,6 +23,46 @@ def register_event_handler(event_key):
         _EVENT_HANDLERS[event_key] = func
         return func
     return register
+
+
+def _cancel_outdated_pipelines(context):
+    from docker.errors import NotFound
+    docker = DockerClient(
+        base_url=current_app.config['DOCKER_HOST'],
+        timeout=current_app.config['DOCKER_API_TIMEOUT'],
+        version='auto',
+    )
+    containers = docker.containers.list(filters=dict(
+        status='running',
+        label='repo={}'.format(context.repository),
+    ))
+    if not containers:
+        return
+
+    for container in containers:
+        labels = container.labels
+        if context.type == 'tag':
+            continue
+        if context.pr_id and labels.get('pull_request') != context.pr_id:
+            continue
+        if context.type == 'branch' and labels.get('branch') != context.source['branch']['name']:
+            continue
+
+        task_id = labels.get('task_id')
+        if not task_id:
+            continue
+
+        future = _RUNNING_PIPELINES.get(task_id)
+        if not future or future.cancelled():
+            continue
+
+        logger.info('Cancelling outdated pipeline for %s with task_id %s', context.repository, task_id)
+        # cancel the future and remove the container
+        try:
+            container.remove(force=True)
+        except NotFound:
+            pass
+        future.cancel()
 
 
 @blueprint.route('/register/<user>/<repo>', methods=['POST'])
@@ -116,7 +158,10 @@ def handle_repo_push(payload):
             source,
             rebuild=rebuild,
         )
-        start_pipeline.delay(context)
+        _cancel_outdated_pipelines(context)
+        future = start_pipeline.delay(context)
+        future.add_done_callback(lambda fut: _RUNNING_PIPELINES.pop(context.task_id, None))
+        _RUNNING_PIPELINES[context.task_id] = future
         if push_type == 'branch':
             check_pr_mergeable.delay(context)
 
@@ -158,7 +203,10 @@ def handle_pull_request(payload):
         rebuild=rebuild,
         pr_id=pr['id']
     )
-    start_pipeline.delay(context)
+    _cancel_outdated_pipelines(context)
+    future = start_pipeline.delay(context)
+    future.add_done_callback(lambda fut: _RUNNING_PIPELINES.pop(context.task_id, None))
+    _RUNNING_PIPELINES[context.task_id] = future
 
 
 @register_event_handler('pullrequest:approved')
@@ -281,4 +329,7 @@ def handle_pull_request_comment(payload):
         pr_id=pr['id'],
         nocache=nocache
     )
-    start_pipeline.delay(context)
+    _cancel_outdated_pipelines(context)
+    future = start_pipeline.delay(context)
+    future.add_done_callback(lambda fut: _RUNNING_PIPELINES.pop(context.task_id, None))
+    _RUNNING_PIPELINES[context.task_id] = future
