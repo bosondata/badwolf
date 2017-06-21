@@ -21,7 +21,7 @@ flake8-import-order>=0.9.2
 deansi>=1.2
 cryptography>=1.7.1
 marshmallow>=2.12.2
-marshmallow-oneofschema
+marshmallow-oneofschema>=1.0.5
 twine
 flake8-bugbear
 is-minified-js
