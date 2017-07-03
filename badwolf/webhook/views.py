@@ -43,7 +43,7 @@ def _cancel_outdated_pipelines(context):
         labels = container.labels
         if context.type == 'tag':
             continue
-        if context.pr_id and labels.get('pull_request') != context.pr_id:
+        if context.pr_id and labels.get('pull_request') != str(context.pr_id):
             continue
         if context.type == 'branch' and labels.get('branch') != context.source['branch']['name']:
             continue
