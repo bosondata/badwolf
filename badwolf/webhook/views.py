@@ -56,7 +56,14 @@ def _cancel_outdated_pipelines(context):
         if not future or future.cancelled():
             continue
 
-        logger.info('Cancelling outdated pipeline for %s with task_id %s', context.repository, task_id)
+        commit = labels['commit']
+        if context.pr_id:
+            logger.info('Cancelling outdated pipeline for %s pull request #%s @%s',
+                        context.repository,
+                        context.pr_id,
+                        commit)
+        else:
+            logger.info('Cancelling outdated pipeline for %s @%s', context.repository, commit)
         # cancel the future and remove the container
         try:
             container.remove(force=True)
