@@ -168,7 +168,10 @@ def handle_repo_push(payload):
             source,
             rebuild=rebuild,
         )
-        _cancel_outdated_pipelines(context)
+        try:
+            _cancel_outdated_pipelines(context)
+        except Exception:
+            sentry.captureException()
         future = start_pipeline.delay(context)
         future.add_done_callback(lambda fut: _RUNNING_PIPELINES.pop(context.task_id, None))
         _RUNNING_PIPELINES[context.task_id] = future
@@ -213,7 +216,10 @@ def handle_pull_request(payload):
         rebuild=rebuild,
         pr_id=pr['id']
     )
-    _cancel_outdated_pipelines(context)
+    try:
+        _cancel_outdated_pipelines(context)
+    except Exception:
+        sentry.captureException()
     future = start_pipeline.delay(context)
     future.add_done_callback(lambda fut: _RUNNING_PIPELINES.pop(context.task_id, None))
     _RUNNING_PIPELINES[context.task_id] = future
@@ -339,7 +345,10 @@ def handle_pull_request_comment(payload):
         pr_id=pr['id'],
         nocache=nocache
     )
-    _cancel_outdated_pipelines(context)
+    try:
+        _cancel_outdated_pipelines(context)
+    except Exception:
+        sentry.captureException()
     future = start_pipeline.delay(context)
     future.add_done_callback(lambda fut: _RUNNING_PIPELINES.pop(context.task_id, None))
     _RUNNING_PIPELINES[context.task_id] = future
