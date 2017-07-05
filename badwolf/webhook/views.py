@@ -26,7 +26,7 @@ def register_event_handler(event_key):
 
 
 def _cancel_outdated_pipelines(context):
-    from docker.errors import NotFound
+    from docker.errors import NotFound, APIError
     docker = DockerClient(
         base_url=current_app.config['DOCKER_HOST'],
         timeout=current_app.config['DOCKER_API_TIMEOUT'],
@@ -62,6 +62,9 @@ def _cancel_outdated_pipelines(context):
             container.remove(force=True)
         except NotFound:
             pass
+        except APIError as exc:
+            if 'already in progress' not in exc.explanation:
+                raise
         future.cancel()
 
 
