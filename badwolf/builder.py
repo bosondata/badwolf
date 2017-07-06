@@ -143,12 +143,14 @@ class Builder(object):
                     msg = log['errorDetail']['message']
                 elif 'error' in log:
                     # Deprecated
-                    # https://github.com/docker/docker/blob/master/pkg/jsonmessage/jsonmessage.go#L104
+                    # https://github.com/docker/docker/blob/master/pkg/jsonmessage/jsonmessage.go
                     msg = log['error']
                 elif 'status' in log:
                     msg = log['status']
                 else:
-                    msg = log['stream']
+                    msg = log.get('stream')
+                if not msg:
+                    continue
                 if 'Successfully built' in msg:
                     build_success = True
 
