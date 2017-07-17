@@ -151,7 +151,7 @@ class Builder(object):
                     msg = log.get('stream')
                 if not msg:
                     continue
-                if 'Successfully built' in msg:
+                if 'Successfully tagged' in msg:
                     build_success = True
 
                 output.append(deansi.deansi(msg))
