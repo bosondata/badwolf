@@ -27,6 +27,9 @@ linter                        string/list           启用的代码检查工具
 notification.email            string/list/object    邮件通知地址列表
 notification.slack_webhook    string/list/object    Slack webhook 地址列表
 privileged                    boolean               使用特权模式启动 Docker 容器
+artifacts                     boolean/object        保存构建中产生的 artifacts
+artifacts.paths               string/list           artifacts 路径
+artifacts.excludes            string/list           应该忽略的 artifacts (glob pattern)
 ============================= ===================== ===================================================================
 
 请注意，当 `image` 和 `dockerfile` 选项同时提供时， `image` 选项优先使用。

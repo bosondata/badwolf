@@ -488,3 +488,23 @@ def test_deploy_single_provider_object_should_fail(app):
     f = io.StringIO(s)
     with pytest.raises(InvalidSpecification):
         Specification.parse_file(f)
+
+
+def test_parse_simple_artifacts(app):
+    s = 'artifacts: true'
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.artifacts.paths == ['$(git ls-files -o | tr "\\n" ":")']
+    assert spec.artifacts.excludes == []
+
+
+def test_parse_artifacts_paths(app):
+    s = '''artifacts:
+  paths:
+    - dist
+  excludes: __pycache__
+'''
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.artifacts.paths == ['dist']
+    assert spec.artifacts.excludes == ['__pycache__']

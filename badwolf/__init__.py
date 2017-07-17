@@ -23,11 +23,13 @@ def register_blueprints(app):
     import badwolf.oauth.views
     import badwolf.log.views
     import badwolf.security
+    import badwolf.artifacts
 
     register(badwolf.webhook.views.blueprint)
     register(badwolf.oauth.views.blueprint)
     register(badwolf.log.views.blueprint)
     register(badwolf.security.blueprint)
+    register(badwolf.artifacts.blueprint)
 
 
 def register_error_handlers(app):
