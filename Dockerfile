@@ -42,6 +42,11 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     eslint-plugin-react eslint-plugin-react-native \
     babel-eslint
 
+# Install Docker
+RUN curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.05.0-ce.tgz && \
+    tar --strip-components=1 -xvzf docker-17.05.0-ce.tgz -C /usr/local/bin && \
+    rm docker-17.05.0-ce.tgz
+
 RUN pip2 install -U flake8 pycodestyle pep8-naming pylint flake8-import-order \
     && python3.5 -m pip install -U flake8 pycodestyle pep8-naming pylint flake8-import-order flake8-network-timeout \
     && python3.6 -m pip install -U badwolf \
