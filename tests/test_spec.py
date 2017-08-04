@@ -250,10 +250,13 @@ def test_parse_simple_linter(app):
 
 
 def test_parse_linter_with_pattern(app):
-    s = """linter: {name: "flake8", pattern: "*.py", whatever: 123}"""
+    s = """linter:
+  - {name: "flake8", pattern: "*.py", whatever: 123}
+  - {name: "jsonlint", pattern: "*.mapping"}
+  - yamllint"""
     f = io.StringIO(s)
     spec = Specification.parse_file(f)
-    assert len(spec.linters) == 1
+    assert len(spec.linters) == 3
     linter0 = spec.linters[0]
     assert linter0.name == 'flake8'
     assert linter0.pattern == '*.py'

@@ -125,7 +125,7 @@ class LinterSchema(Schema):
         if isinstance(linter, dict):
             name = linter.pop('name', None)
             pattern = linter.pop('pattern', None)
-            self.__additional_values = linter
+            self.__additional_values[name] = linter
         else:
             name = linter
             pattern = None
@@ -136,7 +136,7 @@ class LinterSchema(Schema):
 
     @post_load
     def _postprocess(self, data):
-        data.update(self.__additional_values)
+        data.update(self.__additional_values.pop(data['name'], {}))
         return ObjectDict(data)
 
 
