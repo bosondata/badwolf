@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.10.12'
+__version__ = '0.10.13'
 
 
 def create_app(config=None):
