@@ -166,6 +166,20 @@ class AnyDeploySchema(OneOfSchema):
     }
 
 
+class ArtifactsSchema(ObjectDictSchema):
+    paths = ListField(SecureField(), missing=list)
+    excludes = ListField(SecureField(), missing=list)
+
+    @pre_load
+    def _preprocess(self, data):
+        if isinstance(data, bool):
+            if data:
+                return {'paths': ['$(git ls-files -o | tr "\\n" ":")']}
+            else:
+                return {'paths': []}
+        return data
+
+
 class SpecificationSchema(Schema):
     class Meta:
         strict = True
@@ -184,6 +198,7 @@ class SpecificationSchema(Schema):
     linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
     deploy = ListField(fields.Nested(AnyDeploySchema), missing=list)
     after_deploy = ListField(SecureField(), missing=list)
+    artifacts = fields.Nested(ArtifactsSchema)
 
     @pre_load
     def _preprocess(self, data):
@@ -232,6 +247,10 @@ class Specification(object):
         self.privileged = False
         self.deploy = []
         self.after_deploy = []
+        self.artifacts = ObjectDict(
+            paths=[],
+            excludes=[]
+        )
 
     @classmethod
     def parse_file(cls, path):
