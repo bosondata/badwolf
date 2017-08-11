@@ -13,7 +13,7 @@ class Context(object):
                  rebuild=False, pr_id=None, nocache=False, clone_depth=50):
         self.task_id = to_text(uuid.uuid4())
         self.repository = repository
-        self.repo_name = repository.split('/')[-1]
+        self.repo_owner, self.repo_name = repository.split('/')
         self.actor = actor
         self.type = type
         self.message = message

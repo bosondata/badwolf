@@ -35,7 +35,7 @@ class Pipeline(object):
         self.commit_hash = context.source['commit']['hash']
         self.build_status = BuildStatus(
             bitbucket,
-            context.source['repository']['full_name'],
+            context.repository,
             self.commit_hash,
             'badwolf/test',
             url_for('log.build_log', sha=self.commit_hash, task_id=context.task_id, _external=True)
@@ -187,7 +187,7 @@ class Pipeline(object):
         )
         artifacts_commit_path = os.path.join(
             artifacts_repo_path,
-            self.context.source['commit']['hash']
+            self.commit_hash
         )
         os.makedirs(artifacts_commit_path, exist_ok=True)
         artifacts_file = os.path.join(artifacts_commit_path, 'artifacts.tar.gz')
@@ -213,6 +213,20 @@ class Pipeline(object):
                     pass
                 os.symlink(commit_path, branch_path)
             logger.info('Saved artifacts to %s', artifacts_branch_path)
+
+        build_status = BuildStatus(
+            bitbucket,
+            self.context.repository,
+            self.commit_hash,
+            'badwolf/artifacts',
+            url_for('artifacts.download_artifacts',
+                    user=self.context.repo_owner,
+                    repo=self.context.repo_name,
+                    sha=self.commit_hash,
+                    filename='artifacts.tar.gz',
+                    _external=True)
+        )
+        build_status.update('SUCCESSFUL', description='Build artifacts saved')
 
     def lint(self):
         '''Lint codes'''
