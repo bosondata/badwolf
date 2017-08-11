@@ -48,7 +48,7 @@ class Pipeline(object):
             self.clone()
             self.parse_spec()
             build_success = self.build()
-            self.save_artifacts()
+            self.save_artifacts(build_success)
             self.lint()
             if build_success:
                 self.deploy()
@@ -146,17 +146,17 @@ class Pipeline(object):
                 self._report_docker_error(e)
         return False
 
-    def save_artifacts(self):
+    def save_artifacts(self, build_success):
         '''Save artifacts produced during build'''
-        if not self.spec.artifacts.paths or self.context.pr_id:
+        if not self.spec.artifacts.paths:
             return
         try:
-            self._save_artifacts()
+            self._save_artifacts(build_success)
         except Exception:
             logger.exception('Error saving artifacts for repository %s', self.context.repository)
             sentry.captureException()
 
-    def _save_artifacts(self):
+    def _save_artifacts(self, build_success):
         def _should_exclude(path):
             excluded = self.spec.artifacts.excludes
             if not excluded:
@@ -181,19 +181,38 @@ class Pipeline(object):
             logger.info('No artifacts paths found for repository %s', self.context.repository)
             return
 
-        artifacts_path = os.path.join(
+        artifacts_repo_path = os.path.join(
             current_app.config['BADWOLF_ARTIFACTS_DIR'],
             self.context.repository,
-            self.context.source['branch']['name'],
         )
-        os.makedirs(artifacts_path, exist_ok=True)
-        artifacts_file = os.path.join(artifacts_path, 'artifacts.tar.gz')
+        artifacts_commit_path = os.path.join(
+            artifacts_repo_path,
+            self.context.source['commit']['hash']
+        )
+        os.makedirs(artifacts_commit_path, exist_ok=True)
+        artifacts_file = os.path.join(artifacts_commit_path, 'artifacts.tar.gz')
         with tarfile.open(artifacts_file, 'w:gz') as tar:
             for path in paths:
                 tar.add(os.path.join(self.context.clone_path, path), path)
 
-        run_command('shasum artifacts.tar.gz > SHASUM', cwd=artifacts_path, shell=True)
-        logger.info('Saved artifacts to %s', artifacts_path)
+        run_command('shasum artifacts.tar.gz > SHASUM', cwd=artifacts_commit_path, shell=True)
+        logger.info('Saved artifacts to %s', artifacts_commit_path)
+
+        if build_success and self.context.type in ('tag', 'branch'):
+            artifacts_branch_path = os.path.join(
+                artifacts_repo_path,
+                self.context.source['branch']['name']
+            )
+            os.makedirs(artifacts_branch_path, exist_ok=True)
+            for name in ('artifacts.tar.gz', 'SHASUM'):
+                commit_path = os.path.join(artifacts_commit_path, name)
+                branch_path = os.path.join(artifacts_branch_path, name)
+                try:
+                    os.remove(branch_path)
+                except OSError:
+                    pass
+                os.symlink(commit_path, branch_path)
+            logger.info('Saved artifacts to %s', artifacts_branch_path)
 
     def lint(self):
         '''Lint codes'''
