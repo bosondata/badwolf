@@ -42,7 +42,10 @@ class MypyLinter(PythonLinter):
             raise StopIteration()
 
         for line in output:
-            filename, line, level, message = self._parse_line(line)
+            try:
+                filename, line, level, message = self._parse_line(line)
+            except ValueError:
+                continue
             if level == 'note':
                 continue
             is_error = level == 'error'
