@@ -193,7 +193,11 @@ class Pipeline(object):
         artifacts_file = os.path.join(artifacts_commit_path, 'artifacts.tar.gz')
         with tarfile.open(artifacts_file, 'w:gz') as tar:
             for path in paths:
-                tar.add(os.path.join(self.context.clone_path, path), path)
+                file_path = os.path.join(self.context.clone_path, path)
+                try:
+                    tar.add(file_path, path)
+                except FileNotFoundError as exc:
+                    logger.error(str(exc))
 
         run_command('shasum artifacts.tar.gz > SHASUM', cwd=artifacts_commit_path, shell=True)
         logger.info('Saved artifacts to %s', artifacts_commit_path)
