@@ -4,8 +4,8 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV NPM_CONFIG_LOGLEVEL warn
 
-RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu xenial main' > /etc/apt/sources.list.d/fkrull-ubuntu-deadsnakes-xenial.list \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DB82666C \
+RUN echo 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu xenial main' > /etc/apt/sources.list.d/deadsnakes-ubuntu-ppa-xenial.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6A755776 \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
