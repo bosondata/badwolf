@@ -6,6 +6,7 @@ import base64
 import logging
 import shlex
 
+import hvac
 import deansi
 import requests
 from flask import current_app, render_template, url_for
@@ -44,6 +45,12 @@ class Builder(object):
             timeout=current_app.config['DOCKER_API_TIMEOUT'],
             version=docker_version,
         )
+        vault_url = spec.vault.url or current_app.config['VAULT_URL']
+        vault_token = spec.vault.token or current_app.config['VAULT_TOKEN']
+        if vault_url and vault_token:
+            self.vault = hvac.Client(url=vault_url, token=vault_token)
+        else:
+            self.vault = None
 
     def run(self):
         start_time = time.time()
@@ -209,6 +216,7 @@ class Builder(object):
                 'mode': 'ro',
             }
             environment.setdefault('DOCKER_HOST', 'unix:///var/run/docker.sock')
+        self._populate_more_envvars(environment)
         logger.debug('Docker container environment: \n %r', environment)
         container = self.docker.containers.create(
             docker_image_name,
@@ -249,6 +257,21 @@ class Builder(object):
                 logger.exception('Error removing docker container')
 
         return exit_code, ''.join(output)
+
+    def _populate_more_envvars(self, environment):
+        if self.vault is None or not self.spec.vault.env:
+            return
+
+        paths = [v[0] for v in self.spec.vault.env.values()]
+        secrets = {}
+        for path in paths:
+            res = self.vault.read(path)
+            secrets[path] = res['data']
+
+        for name, (path, key) in self.spec.vault.env.items():
+            val = secrets.get(path, {}).get(key)
+            if val is not None:
+                environment.setdefault(name, val)
 
     def update_build_status(self, state, description=None):
         try:

@@ -180,6 +180,27 @@ class ArtifactsSchema(ObjectDictSchema):
         return data
 
 
+class VaultSchema(ObjectDictSchema):
+    url = SecureField(missing=None)
+    token = SecureField(missing=None)
+    env = ListField(SecureField(), missing=list)
+
+    @post_load
+    def _postprocess(self, data):
+        # vault.envs format should be:
+        # ENV_NAME secret/path:key
+        env_map = ObjectDict()
+        for env in data['env']:
+            try:
+                name, path_key = env.strip().split(' ', 1)
+                path, key = path_key.strip().split(':', 1)
+            except ValueError:
+                raise ValidationError('Invalid vault env {}'.format(name), 'env')
+            env_map[name] = (path, key)
+        data['env'] = env_map
+        return super()._postprocess(data)
+
+
 class SpecificationSchema(Schema):
     class Meta:
         strict = True
@@ -199,6 +220,7 @@ class SpecificationSchema(Schema):
     deploy = ListField(fields.Nested(AnyDeploySchema), missing=list)
     after_deploy = ListField(SecureField(), missing=list)
     artifacts = fields.Nested(ArtifactsSchema)
+    vault = fields.Nested(VaultSchema)
 
     @pre_load
     def _preprocess(self, data):
@@ -250,6 +272,11 @@ class Specification(object):
         self.artifacts = ObjectDict(
             paths=[],
             excludes=[]
+        )
+        self.vault = ObjectDict(
+            url=None,
+            token=None,
+            env=ObjectDict()
         )
 
     @classmethod

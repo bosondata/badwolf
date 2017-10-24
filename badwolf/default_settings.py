@@ -95,6 +95,10 @@ BADWOLF_LOG_DIR = os.getenv('BADWOLF_LOG_DIR', os.path.join(BADWOLF_DATA_DIR, 'l
 BADWOLF_REPO_DIR = os.getenv('BADWOLF_REPO_DIR', os.path.join(BADWOLF_DATA_DIR, 'repos'))
 BADWOLF_ARTIFACTS_DIR = os.getenv('BADWOLF_REPO_DIR', os.path.join(BADWOLF_DATA_DIR, 'artifacts'))
 
+# Vault
+VAULT_URL = os.getenv('VAULT_URL', os.getenv('VAULT_ADDR'))
+VAULT_TOKEN = os.getenv('VAULT_TOKEN')
+
 # Sentry Release
 try:
     SENTRY_RELEASE = raven.fetch_package_version('badwolf')

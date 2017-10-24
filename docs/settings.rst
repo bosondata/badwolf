@@ -26,16 +26,19 @@ BITBUCKET_PASSWORD         空                             BitBucket 用户密�
 BADWOLF_DATA_DIR           /var/lib/badwolf               badwolf 数据目录
 BADWOLF_REPO_DIR           /var/lib/badwolf/repos         badwolf 克隆仓库目录
 BADWOLF_LOG_DIR            /var/lib/badwolf/log           badwolf 构建日志目录
+VAULT_URL                  空                             Vault URL 全局配置
+VAULT_ADDR                 空                             Vault URL 的别名
+VAULT_TOKEN                空                             Vault Token 全局配置
 ========================== ============================== ==================================================
 
 其中，`SECURE_TOKEN_KEY` 为 base64 URL-safe 编码的 32 bytes 字符串，可以使用 `os.urandom(32)` 生成：
 
-```python
-import os
-import base64
+.. code-block:: python
 
-print(base64.urlsafe_b64encode(os.urandom(32)))
-```
+    import os
+    import base64
+
+    print(base64.urlsafe_b64encode(os.urandom(32)))
 
 邮件服务器配置
 -------------------
