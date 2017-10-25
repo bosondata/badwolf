@@ -121,6 +121,9 @@ class Pipeline(object):
                 self.context.repository
             )
             raise SpecificationNotFound()
+        secretfile = os.path.join(self.context.clone_path, 'Secretfile')
+        if os.path.exists(secretfile):
+            spec.parse_secretfile(secretfile)
 
         branch = self.context.source['branch']['name']
         if self.context.type == 'branch' and not spec.is_branch_enabled(branch):

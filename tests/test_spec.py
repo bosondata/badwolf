@@ -564,3 +564,28 @@ def test_parse_vault_with_env_error(app):
     f = io.StringIO(s)
     with pytest.raises(InvalidSpecification):
         Specification.parse_file(f)
+
+
+def test_parse_vault_with_secretfile(app):
+    s = '''vault:
+  url: http://localhost:8200
+  token: abc123
+  env: API_TOKEN secret/api:token
+'''
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.vault.url == 'http://localhost:8200'
+    assert spec.vault.token == 'abc123'
+    env = spec.vault.env['API_TOKEN']
+    assert env == ('secret/api', 'token')
+
+    s = '''API_TOKEN secret/API:token
+# comment
+API_KEY secret/API:key
+'''
+    f = io.StringIO(s)
+    spec.parse_secretfile(f)
+    env = spec.vault.env['API_TOKEN']
+    assert env == ('secret/API', 'token')
+    env = spec.vault.env['API_KEY']
+    assert env == ('secret/API', 'key')
