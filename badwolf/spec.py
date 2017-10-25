@@ -15,7 +15,7 @@ from marshmallow.utils import is_collection
 from marshmallow_oneofschema import OneOfSchema
 
 from badwolf.utils import ObjectDict, to_text, to_binary
-from badwolf.security import SecureToken
+from badwolf.security import SecureToken, parse_secretfile
 from badwolf.exceptions import InvalidSpecification
 
 
@@ -306,6 +306,22 @@ class Specification(object):
         for key, value in data.items():
             setattr(spec, key, value)
         return spec
+
+    def parse_secretfile(self, path):
+        if hasattr(path, 'read') and callable(path.read):
+            envs = parse_secretfile(path)
+        else:
+            with open(path) as fd:
+                envs = parse_secretfile(fd)
+        env_map = {}
+        for env in envs:
+            try:
+                name, path_key = env.strip().split(' ', 1)
+                path, key = path_key.strip().split(':', 1)
+            except ValueError:
+                raise ValidationError('Invalid Secretfile env {}'.format(name))
+            env_map[name] = (path, key)
+        self.vault.env.update(env_map)
 
     def is_branch_enabled(self, branch):
         if not self.branch:
