@@ -8,6 +8,7 @@ from badwolf.spec import Specification
 from badwolf.spec import SecureField, ListField
 from badwolf.security import SecureToken
 from badwolf.utils import to_text
+from badwolf.exceptions import InvalidSpecification
 
 
 def test_parse_empty_conf(app):
@@ -508,3 +509,58 @@ def test_parse_artifacts_paths(app):
     spec = Specification.parse_file(f)
     assert spec.artifacts.paths == ['dist']
     assert spec.artifacts.excludes == ['__pycache__']
+
+
+def test_parse_vault_no_env(app):
+    s = '''vault:
+  url: http://localhost:8200
+  token: abc123
+'''
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.vault.url == 'http://localhost:8200'
+    assert spec.vault.token == 'abc123'
+    assert not spec.vault.env
+
+
+def test_parse_vault_with_single_env(app):
+    s = '''vault:
+  url: http://localhost:8200
+  token: abc123
+  env: API_TOKEN secret/api:token
+'''
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.vault.url == 'http://localhost:8200'
+    assert spec.vault.token == 'abc123'
+    env = spec.vault.env['API_TOKEN']
+    assert env == ('secret/api', 'token')
+
+
+def test_parse_vault_with_multi_env(app):
+    s = '''vault:
+  url: http://localhost:8200
+  token: abc123
+  env:
+    - API_TOKEN secret/api:token
+    - API_KEY secret/api:key
+'''
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert spec.vault.url == 'http://localhost:8200'
+    assert spec.vault.token == 'abc123'
+    env = spec.vault.env['API_TOKEN']
+    assert env == ('secret/api', 'token')
+    env = spec.vault.env['API_KEY']
+    assert env == ('secret/api', 'key')
+
+
+def test_parse_vault_with_env_error(app):
+    s = '''vault:
+  url: http://localhost:8200
+  token: abc123
+  env: API_TOKEN secret/api token
+'''
+    f = io.StringIO(s)
+    with pytest.raises(InvalidSpecification):
+        Specification.parse_file(f)

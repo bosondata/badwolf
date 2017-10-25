@@ -27,3 +27,4 @@ flake8-bugbear
 is-minified-js
 mypy
 flake8-network-timeout
+hvac[parser]

@@ -30,6 +30,9 @@ privileged                    boolean               使用特权模式启动 Doc
 artifacts                     boolean/object        保存构建中产生的 artifacts
 artifacts.paths               string/list           artifacts 路径
 artifacts.excludes            string/list           应该忽略的 artifacts (glob pattern)
+vault.url                     string                Vault URL
+vault.token                   string                Vault Token
+vault.env                     string/list           从 Vault 读取的环境变量，格式为：`ENV_NAME secret/path:key`
 ============================= ===================== ===================================================================
 
 请注意，当 `image` 和 `dockerfile` 选项同时提供时， `image` 选项优先使用。
