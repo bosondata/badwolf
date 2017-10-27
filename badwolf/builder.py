@@ -14,11 +14,13 @@ from requests.exceptions import ReadTimeout
 from docker import DockerClient
 from docker.errors import APIError, DockerException, ImageNotFound, NotFound
 from markupsafe import Markup
+from hvac.exceptions import VaultError
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
 from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError
 from badwolf.notification import send_mail
+from badwolf.exceptions import InvalidSpecification
 
 
 logger = logging.getLogger(__name__)
@@ -265,7 +267,12 @@ class Builder(object):
         paths = [v[0] for v in self.spec.vault.env.values()]
         secrets = {}
         for path in paths:
-            res = self.vault.read(path)
+            try:
+                res = self.vault.read(path)
+            except VaultError as exc:
+                raise InvalidSpecification('Error reading {} from Vault: {}'.format(path, str(exc)))
+            if not res:
+                raise InvalidSpecification('Error reading {} from Vault: not found'.format(path))
             secrets[path] = res['data']
 
         for name, (path, key) in self.spec.vault.env.items():
