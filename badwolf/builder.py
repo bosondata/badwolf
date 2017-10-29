@@ -305,7 +305,10 @@ class Builder(object):
             return
 
         test_status = 'Succeed' if exit_code == 0 else 'Failed'
-        subject = '{}: {}'.format(test_status, self.context.repository)
+        build_name = self.context.pr_id if self.context.type == 'pullrequest' else self.context.source.commit.hash
+        subject = '{}: {}#{}'.format(test_status,
+                                     self.context.repository,
+                                     build_name)
         notification = self.spec.notification
         email = notification.email
         should_send_mail = email and email.recipients and (
