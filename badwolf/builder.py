@@ -304,11 +304,8 @@ class Builder(object):
             logger.info('Build cancelled, will not sending notification')
             return
 
-        test_status = 'Succeed' if exit_code == 0 else 'Failed'
-        build_name = self.context.pr_id if self.context.type == 'pullrequest' else self.context.source.commit.hash
-        subject = '{}: {}#{}'.format(test_status,
-                                     self.context.repository,
-                                     build_name)
+        test_status = 'succeed' if exit_code == 0 else 'failed'
+        subject = 'Test {} for repository {}'.format(test_status, self.context.repository)
         notification = self.spec.notification
         email = notification.email
         should_send_mail = email and email.recipients and (
