@@ -183,8 +183,8 @@ ol li {
             {% endif %}
             {% if context.type == 'pullrequest' %}
                 <p>Pull Request: <a href="https://bitbucket.org/{{ context.repository }}/pull-requests/{{ context.pr_id }}">{{ context.message }}</a></p>
-                <p>Actor: {{ context.actor.username }} ({{ context.actor.display_name }})
             {% endif %}
+            <p>Actor: {{ context.actor.username }} ({{ context.actor.display_name }})
             <p>Task ID: {{ context.task_id }}</p>
             <p>Exit code: {{ exit_code }}</p>
             <p>Elapsed time: {{ elapsed_time }} seconds</p>
