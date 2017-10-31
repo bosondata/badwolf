@@ -304,17 +304,16 @@ class Builder(object):
             logger.info('Build cancelled, will not sending notification')
             return
 
-        if exit_code == 0:
-            subject = 'Test succeed for repository {}'.format(self.context.repository)
-        else:
-            subject = 'Test failed for repository {}'.format(self.context.repository)
+        test_status = 'succeed' if exit_code == 0 else 'failed'
+        subject = 'Test {} for repository {}'.format(test_status, self.context.repository)
         notification = self.spec.notification
         email = notification.email
-        if email and email.recipients:
-            if exit_code == 0 and email.on_success == 'always':
-                send_mail(email.recipients, subject, html)
-            if exit_code != 0 and email.on_failure == 'always':
-                send_mail(email.recipients, subject, html)
+        should_send_mail = email and email.recipients and (
+            (exit_code == 0 and email.on_success == 'always') or
+            (exit_code != 0 and email.on_failure == 'always')
+        )
+        if should_send_mail:
+            send_mail(email.recipients, subject, html)
 
         slack_webhook = notification.slack_webhook
         if slack_webhook and slack_webhook.webhooks:
