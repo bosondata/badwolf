@@ -237,7 +237,7 @@ class Pipeline(object):
 
     def lint(self):
         '''Lint codes'''
-        if self.context.pr_id and self.spec.linters:
+        if not self.context.skip_lint and self.context.pr_id and self.spec.linters:
             logger.info('Running lint for repository %s', self.context.repository)
             LintProcessor(self.context, self.spec).process()
 

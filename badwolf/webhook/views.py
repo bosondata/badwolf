@@ -199,9 +199,10 @@ def handle_pull_request(payload):
         logger.info('Pull request state is not OPEN, ignore tests.')
         return
 
-    rebuild = False
-    if 'ci rebuild' in title.lower() or 'ci rebuild' in description.lower():
-        rebuild = True
+    title_lower = title.lower()
+    desc_lower = title.lower()
+    rebuild = 'ci rebuild' in title_lower or 'ci rebuild' in desc_lower
+    skip_lint = 'lint skip' in title_lower or 'lint skip' in desc_lower
 
     source = pr['source']
     target = pr['destination']
@@ -214,7 +215,8 @@ def handle_pull_request(payload):
         source,
         target,
         rebuild=rebuild,
-        pr_id=pr['id']
+        pr_id=pr['id'],
+        skip_lint=skip_lint
     )
     try:
         _cancel_outdated_pipelines(context)

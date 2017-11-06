@@ -62,3 +62,8 @@ rstlint             RestructuredText    https://github.com/twolfson/restructured
 .. code-block:: yaml
 
     linter: {name: 'pylint', python_version: 2}
+
+Tips
+-----------------------------
+
+* 在 Pull Request 的标题/描述中包含 `lint skip` 禁用代码检查功能
