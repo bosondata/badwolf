@@ -147,6 +147,7 @@ def test_pr_commit_comment_created_ci_retry(mock_start_pipeline, mock_cancel_pip
         'pullrequest': {
             'id': 1,
             'title': 'Test PR',
+            'description': '',
             'state': 'OPEN',
             'source': {},
             'destination': {},
@@ -181,6 +182,7 @@ def test_pr_commit_comment_created_ci_rebuild(mock_start_pipeline, mock_cancel_p
         'pullrequest': {
             'id': 1,
             'title': 'Test PR',
+            'description': '',
             'state': 'OPEN',
             'source': {},
             'destination': {},
@@ -215,6 +217,7 @@ def test_pr_commit_comment_created_ci_retry_state_not_open(mock_start_pipeline, 
         'pullrequest': {
             'id': 1,
             'title': 'Test PR',
+            'description': '',
             'state': 'MERGED',
             'source': {},
             'destination': {},
