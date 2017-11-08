@@ -101,7 +101,7 @@ class Builder(object):
             'elapsed_time': int(time.time() - start_time),
         })
         self.send_notifications(context)
-        return exit_code == 0
+        return exit_code
 
     def get_docker_image(self):
         docker_image_name = self.context.repository.replace('/', '-')

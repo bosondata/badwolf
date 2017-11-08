@@ -47,9 +47,12 @@ class Pipeline(object):
         try:
             self.clone()
             self.parse_spec()
-            build_success = self.build()
+            exit_code = self.build()
+            build_success = exit_code == 0
             self.save_artifacts(build_success)
-            self.lint()
+            if exit_code != 137:
+                # 137 means build cancelled
+                self.lint()
             if build_success:
                 self.deploy()
         except git.GitCommandError as git_err:
