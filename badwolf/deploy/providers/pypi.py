@@ -31,3 +31,7 @@ class PypiProvider(Provider):
         ]
         exit_code, output = run_command(command, include_errors=True, cwd=self.working_dir)
         return exit_code == 0, output
+
+    def url(self):
+        pkg_name = self.config.get('package', self.context.repo_name)
+        return '{}/pypi/{}'.format(self.config['repository'], pkg_name)

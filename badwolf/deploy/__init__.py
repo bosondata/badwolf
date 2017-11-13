@@ -44,17 +44,21 @@ class Deployer(object):
                 logger.warning('Provider %s not found', provider_name)
                 continue
 
-            provider = provider_class(self.working_dir, provider_config)
+            provider = provider_class(self.working_dir, provider_config, self.context)
             if not provider.is_usable():
                 logger.warning('Provider %s is not usable', provider_name)
                 continue
 
+            status_url = provider.url() or url_for('log.build_log',
+                                                   sha=commit_hash,
+                                                   task_id=self.context.task_id,
+                                                   _external=True)
             build_status = BuildStatus(
                 bitbucket,
                 self.context.source['repository']['full_name'],
                 commit_hash,
                 'badwolf/deploy/{}'.format(provider_name),
-                url_for('log.build_log', sha=commit_hash, task_id=self.context.task_id, _external=True)
+                status_url
             )
             self._update_build_status(build_status, 'INPROGRESS', '{} deploy in progress'.format(provider_name))
             succeed, output = provider.deploy()
