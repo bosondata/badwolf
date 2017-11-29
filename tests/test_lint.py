@@ -50,7 +50,7 @@ def test_load_changes_failed_ignore(app, caplog):
 
         assert load_changes.called
 
-    assert 'Load changes failed' in caplog.text()
+    assert 'Load changes failed' in caplog.text
 
 
 def test_no_changed_files_ignore(app, caplog):
@@ -84,10 +84,10 @@ index 1f38447..0000000
 
         assert load_changes.called
 
-    assert 'No changed files found' in caplog.text()
+    assert 'No changed files found' in caplog.text
 
 
-def test_flake8_lint_a_py(app, caplog):
+def test_flake8_lint_a_py(app):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -132,7 +132,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_eslint_lint_a_js(app, caplog):
+def test_eslint_lint_a_js(app):
     diff = """diff --git a/.eslintrc b/.eslintrc
 new file mode 100644
 index 0000000..45e5d69
@@ -183,7 +183,7 @@ index 0000000..f119a7f
     assert problem.line == 1
 
 
-def test_pycodestyle_lint_a_py(app, caplog):
+def test_pycodestyle_lint_a_py(app):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -228,7 +228,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_jsonlint_a_json(app, caplog):
+def test_jsonlint_a_json(app):
     diff = """diff --git a/a.json b/a.json
 new file mode 100644
 index 0000000..266e19f
@@ -268,7 +268,7 @@ index 0000000..266e19f
     assert problem.line == 1
 
 
-def test_jsonlint_a_json_changes_in_range(app, caplog):
+def test_jsonlint_a_json_changes_in_range(app):
     diff = """diff --git a/b.json b/b.json
 index 6ebebfe..6be8d74 100644
 --- a/b.json
@@ -310,7 +310,7 @@ index 6ebebfe..6be8d74 100644
     assert problem.line == 2
 
 
-def test_jsonlint_a_json_changes_out_of_range(app, caplog):
+def test_jsonlint_a_json_changes_out_of_range(app):
     diff = """diff --git a/c.json b/c.json
 index 9b90002..c36a2a4 100644
 --- a/c.json
@@ -350,7 +350,7 @@ index 9b90002..c36a2a4 100644
     assert len(lint.problems) == 0
 
 
-def test_shellcheck_a_sh(app, caplog):
+def test_shellcheck_a_sh(app):
     diff = """diff --git a/a.sh b/a.sh
 new file mode 100644
 index 0000000..9fb9840
@@ -391,7 +391,7 @@ index 0000000..9fb9840
     assert problem.line == 2
 
 
-def test_csslint_a_css(app, caplog):
+def test_csslint_a_css(app):
     diff = """diff --git a/a.css b/a.css
 new file mode 100644
 index 0000000..5512dae
@@ -431,7 +431,7 @@ index 0000000..5512dae
     assert problem.line == 1
 
 
-def test_flake8_lint_a_py_with_custom_glob_pattern(app, caplog):
+def test_flake8_lint_a_py_with_custom_glob_pattern(app):
     diff = """diff --git a/b.pyx b/b.pyx
 new file mode 100644
 index 0000000..fdeea15
@@ -476,7 +476,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_flake8_lint_a_py_with_custom_regex_pattern(app, caplog):
+def test_flake8_lint_a_py_with_custom_regex_pattern(app):
     diff = """diff --git a/b.pyx b/b.pyx
 new file mode 100644
 index 0000000..fdeea15
@@ -521,7 +521,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_yamllint_a_yml(app, caplog):
+def test_yamllint_a_yml(app):
     diff = """diff --git a/a.yml b/a.yml
 new file mode 100644
 index 0000000..1eccee8
@@ -563,7 +563,7 @@ index 0000000..1eccee8
     assert problem.line == 3
 
 
-def test_flake8_lint_a_py_with_multi_custom_glob_patterns(app, caplog):
+def test_flake8_lint_a_py_with_multi_custom_glob_patterns(app):
     diff = """diff --git a/b.pyx b/b.pyx
 new file mode 100644
 index 0000000..fdeea15
@@ -608,7 +608,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_bandit_lint_a_py(app, caplog):
+def test_bandit_lint_a_py(app):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..719cd56
@@ -652,7 +652,7 @@ index 0000000..719cd56
     assert not problem.is_error
 
 
-def test_rstlint_a_rst(app, caplog):
+def test_rstlint_a_rst(app):
     diff = """diff --git a/a.rst b/a.rst
 new file mode 100644
 index 0000000..4e46cf9
@@ -693,7 +693,7 @@ index 0000000..4e46cf9
     assert problem.line == 2
 
 
-def test_pylint_lint_a_py(app, caplog):
+def test_pylint_lint_a_py(app):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -737,7 +737,7 @@ index 0000000..fdeea15
     assert problem.filename == 'a.py'
 
 
-def test_sasslint_lint_a_scss(app, caplog):
+def test_sasslint_lint_a_scss(app):
     diff = """diff --git a/a.scss b/a.scss
 new file mode 100644
 index 0000000..48b3ebe
@@ -778,7 +778,7 @@ index 0000000..48b3ebe
     assert problem.filename == 'a.scss'
 
 
-def test_stylelint_lint_a_scss(app, caplog):
+def test_stylelint_lint_a_scss(app):
     diff = """diff --git a/a.scss b/a.scss
 new file mode 100644
 index 0000000..e545209
@@ -817,7 +817,7 @@ index 0000000..e545209
     assert problem.filename == 'a.scss'
 
 
-def test_mypy_lint_a_py(app, caplog):
+def test_mypy_lint_a_py(app):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..87604af
