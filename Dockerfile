@@ -47,8 +47,8 @@ RUN curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.05.0-ce.tgz
     tar --strip-components=1 -xvzf docker-17.05.0-ce.tgz -C /usr/local/bin && \
     rm docker-17.05.0-ce.tgz
 
-RUN pip2 install -U flake8 pycodestyle pep8-naming pylint flake8-import-order \
-    && python3.5 -m pip install -U flake8 pycodestyle pep8-naming pylint flake8-import-order flake8-network-timeout \
+RUN pip2 install -U flake8 pycodestyle pep8-naming pylint flake8-import-order flake8-network-timeout flake8-comprehensions \
+    && python3.5 -m pip install -U flake8 pycodestyle pep8-naming pylint flake8-import-order flake8-network-timeout flake8-comprehensions \
     && python3.6 -m pip install -U badwolf \
     && rm -rf /var/lib/apt/list/* /tmp/* /var/tmp/*
 
