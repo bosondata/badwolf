@@ -119,6 +119,13 @@ class Builder(object):
                 'decode': True,
                 'nocache': self.context.nocache
             }
+            build_args = {}
+            if self.spec.environments:
+                # TODO: Support run in multiple environments
+                build_args.update(self.spec.environments[0])
+            self._populate_more_envvars(build_args)
+            if build_args:
+                build_options['buildargs'] = build_args
             if self.spec.image:
                 from_image_name, from_image_tag = self.spec.image.split(':', 2)
                 logger.info('Pulling Docker image %s', self.spec.image)
@@ -174,7 +181,7 @@ class Builder(object):
         environment = {}
         if self.spec.environments:
             # TODO: Support run in multiple environments
-            environment = self.spec.environments[0]
+            environment.update(self.spec.environments[0])
 
         # TODO: Add more test context related env vars
         script = shlex.quote(to_text(base64.b64encode(to_binary(self.spec.shell_script))))
