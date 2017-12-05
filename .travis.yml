@@ -15,7 +15,7 @@ cache:
     - $HOME/.cache/pip
 
 before_install:
-  - sudo apt-get install -y libffi-dev libssl-dev shellcheck
+  - sudo apt-get install -y libffi-dev libssl-dev shellcheck pandoc
   - nvm install 8.1.1
   - nvm use 8.1.1
 
@@ -28,3 +28,10 @@ script: tox -e $TOX_ENV
 after_success:
   - pip install codecov
   - codecov
+  - |
+    if [[ "${TRAVIS_TAG:-}" != "" && "$TOX_ENV" == "py36" ]]; then
+      pandoc --from markdown --to rst --output=README.rst README.md;
+      python3.6 setup.py sdist bdist_wheel;
+      python3.6 -m pip install twine;
+      python3.6 -m twine upload --skip-existing dist/*;
+    fi
