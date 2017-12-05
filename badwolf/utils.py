@@ -84,9 +84,9 @@ def _sanitize_urls(s):
     return '\n'.join(ret)
 
 
-def run_command(command, split=False, include_errors=False, cwd=None, shell=False):
+def run_command(command, split=False, include_errors=False, cwd=None, shell=False, env=None):
     """Run command in subprocess and return exit code and output"""
-    env = os.environ.copy()
+    env = env or os.environ.copy()
     if include_errors:
         error_pipe = subprocess.STDOUT
     else:

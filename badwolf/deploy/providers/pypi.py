@@ -40,7 +40,12 @@ class PypiProvider(Provider):
             '--skip-existing',
             self.config['distributions']
         ])
-        exit_code, output = run_command(command, include_errors=True, cwd=self.working_dir)
+        exit_code, output = run_command(
+            command,
+            include_errors=True,
+            cwd=self.working_dir,
+            env=self.context.environment
+        )
         return exit_code == 0, output
 
     def url(self):
