@@ -152,8 +152,8 @@ class ScriptDeploySchema(DeployProviderSchema):
 
 class PypiDeploySchema(DeployProviderSchema):
     package = SecureField()
-    username = SecureField()
-    password = SecureField()
+    username = SecureField(missing='')
+    password = SecureField(missing='')
     repository = SecureField(missing='https://pypi.python.org')
     distributions = fields.String(missing='dist/*')
 
