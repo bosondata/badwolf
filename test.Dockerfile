@@ -31,7 +31,7 @@ RUN echo 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu xenial main' > /etc
     && apt-get install git-lfs \
     && pip3 install -U pip wheel tox
 
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g \
     eslint csslint sass-lint jsonlint stylelint \
