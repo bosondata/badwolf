@@ -6,7 +6,6 @@ import base64
 import logging
 import shlex
 
-import hvac
 import deansi
 import requests
 from flask import current_app, render_template, url_for
@@ -14,13 +13,11 @@ from requests.exceptions import ReadTimeout
 from docker import DockerClient
 from docker.errors import APIError, DockerException, ImageNotFound, NotFound
 from markupsafe import Markup
-from hvac.exceptions import VaultError
 
 from badwolf.utils import to_text, to_binary, sanitize_sensitive_data
 from badwolf.extensions import bitbucket, sentry
 from badwolf.bitbucket import BuildStatus, BitbucketAPIError
 from badwolf.notification import send_mail
-from badwolf.exceptions import InvalidSpecification
 
 
 logger = logging.getLogger(__name__)
@@ -47,12 +44,6 @@ class Builder(object):
             timeout=current_app.config['DOCKER_API_TIMEOUT'],
             version=docker_version,
         )
-        vault_url = spec.vault.url or current_app.config['VAULT_URL']
-        vault_token = spec.vault.token or current_app.config['VAULT_TOKEN']
-        if vault_url and vault_token:
-            self.vault = hvac.Client(url=vault_url, token=vault_token)
-        else:
-            self.vault = None
 
     def run(self):
         start_time = time.time()
@@ -119,11 +110,10 @@ class Builder(object):
                 'decode': True,
                 'nocache': self.context.nocache
             }
-            build_args = {}
+            build_args = self.context.environment.copy()
             if self.spec.environments:
                 # TODO: Support run in multiple environments
                 build_args.update(self.spec.environments[0])
-            self._populate_more_envvars(build_args)
             if build_args:
                 build_options['buildargs'] = build_args
             if self.spec.image:
@@ -178,7 +168,7 @@ class Builder(object):
         return docker_image_name, ''.join(output)
 
     def run_in_container(self, docker_image_name):
-        environment = {}
+        environment = self.context.environment.copy()
         if self.spec.environments:
             # TODO: Support run in multiple environments
             environment.update(self.spec.environments[0])
@@ -186,14 +176,8 @@ class Builder(object):
         # TODO: Add more test context related env vars
         script = shlex.quote(to_text(base64.b64encode(to_binary(self.spec.shell_script))))
         environment.update({
-            'DEBIAN_FRONTEND': 'noninteractive',
             'HOME': '/root',
             'SHELL': '/bin/sh',
-            'CI': 'true',
-            'CI_NAME': 'badwolf',
-            'BADWOLF_COMMIT': self.commit_hash,
-            'BADWOLF_BUILD_DIR': self.context.clone_path,
-            'BADWOLF_REPO_SLUG': self.context.repository,
             'BADWOLF_SCRIPT': script,
         })
         environment.setdefault('TERM', 'xterm-256color')
@@ -204,13 +188,10 @@ class Builder(object):
             'task_id': self.context.task_id,
         }
         if self.context.type == 'tag':
-            environment['BADWOLF_TAG'] = branch['name']
             labels['tag'] = branch['name']
         else:
-            environment['BADWOLF_BRANCH'] = branch['name']
             labels['branch'] = branch['name']
         if self.context.pr_id:
-            environment['BADWOLF_PULL_REQUEST'] = str(self.context.pr_id)
             labels['pull_request'] = str(self.context.pr_id)
 
         volumes = {
@@ -225,7 +206,6 @@ class Builder(object):
                 'mode': 'ro',
             }
             environment.setdefault('DOCKER_HOST', 'unix:///var/run/docker.sock')
-        self._populate_more_envvars(environment)
         logger.debug('Docker container environment: \n %r', environment)
         container = self.docker.containers.create(
             docker_image_name,
@@ -266,26 +246,6 @@ class Builder(object):
                 logger.exception('Error removing docker container')
 
         return exit_code, ''.join(output)
-
-    def _populate_more_envvars(self, environment):
-        if self.vault is None or not self.spec.vault.env:
-            return
-
-        paths = [v[0] for v in self.spec.vault.env.values()]
-        secrets = {}
-        for path in paths:
-            try:
-                res = self.vault.read(path)
-            except VaultError as exc:
-                raise InvalidSpecification('Error reading {} from Vault: {}'.format(path, str(exc)))
-            if not res:
-                raise InvalidSpecification('Error reading {} from Vault: not found'.format(path))
-            secrets[path] = res['data']
-
-        for name, (path, key) in self.spec.vault.env.items():
-            val = secrets.get(path, {}).get(key)
-            if val is not None:
-                environment.setdefault(name, val)
 
     def update_build_status(self, state, description=None):
         try:

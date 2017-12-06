@@ -35,6 +35,16 @@ def test_pr_updated_ci_skip_found(test_client):
         'pullrequest': {
             'title': 'Test PR',
             'description': 'ci skip',
+        },
+        'source': {
+            'repository': {'full_name': 'deepanalyzer/badwolf'},
+            'branch': {'name': 'develop'},
+            'commit': {'hash': 'abc'}
+        },
+        'target': {
+            'repository': {'full_name': 'deepanalyzer/badwolf'},
+            'branch': {'name': 'master'},
+            'commit': {'hash': 'abc'}
         }
     })
     res = test_client.post(
@@ -58,6 +68,16 @@ def test_pr_updated_state_not_open(test_client):
             'title': 'Test PR',
             'description': '',
             'state': 'MERGED',
+        },
+        'source': {
+            'repository': {'full_name': 'deepanalyzer/badwolf'},
+            'branch': {'name': 'develop'},
+            'commit': {'hash': 'abc'}
+        },
+        'target': {
+            'repository': {'full_name': 'deepanalyzer/badwolf'},
+            'branch': {'name': 'master'},
+            'commit': {'hash': 'abc'}
         }
     })
     res = test_client.post(
@@ -86,8 +106,16 @@ def test_pr_created_trigger_start_pipeline(mock_start_pipeline, mock_cancel_pipe
             'title': 'Test PR',
             'description': 'ci rebuild',
             'state': 'OPEN',
-            'source': {},
-            'destination': {}
+            'source': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'develop'},
+                'commit': {'hash': 'abc'}
+            },
+            'destination': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'master'},
+                'commit': {'hash': 'abc'}
+            }
         }
     })
     res = test_client.post(

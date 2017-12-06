@@ -480,6 +480,23 @@ def test_deploy_multiple_provider(app):
     assert pypi.password == 'test'
 
 
+def test_deploy_pypi_provider_no_auth(app):
+    s = """deploy:
+  - provider: pypi
+    tag: true"""
+    f = io.StringIO(s)
+    spec = Specification.parse_file(f)
+    assert len(spec.deploy) == 1
+
+    pypi = spec.deploy[0]
+    assert pypi.tag
+    assert not pypi.branch
+    assert pypi.provider == 'pypi'
+    assert not pypi.username
+    assert not pypi.password
+    assert pypi.repository
+
+
 def test_deploy_single_provider_object_should_fail(app):
     from badwolf.exceptions import InvalidSpecification
 

@@ -2,6 +2,7 @@
 import os
 import unittest.mock as mock
 
+import pytest
 from unidiff import PatchSet
 
 from badwolf.spec import Specification
@@ -14,36 +15,35 @@ CURR_PATH = os.path.abspath(os.path.dirname(__file__))
 FIXTURES_PATH = os.path.join(CURR_PATH, 'fixtures')
 
 
-def test_no_linters_ignore(app):
-    context = Context(
+@pytest.fixture(scope='function')
+def pr_context():
+    return Context(
         'deepanalyzer/badwolf',
         None,
         'pullrequest',
         'message',
-        {'commit': {'hash': '000000'}},
+        {
+            'repository': {'full_name': 'deepanalyzer/badwolf'},
+            'branch': {'name': 'master'},
+            'commit': {'hash': '000000'}
+        },
         {'commit': {'hash': '111111'}},
         pr_id=1
     )
+
+
+def test_no_linters_ignore(app, pr_context):
     spec = Specification()
-    lint = LintProcessor(context, spec, '/tmp')
+    lint = LintProcessor(pr_context, spec, '/tmp')
     with mock.patch.object(lint, 'load_changes') as load_changes:
         lint.process()
         load_changes.assert_not_called()
 
 
-def test_load_changes_failed_ignore(app, caplog):
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
+def test_load_changes_failed_ignore(app, pr_context, caplog):
     spec = Specification()
     spec.linters.append('flake8')
-    lint = LintProcessor(context, spec, '/tmp')
+    lint = LintProcessor(pr_context, spec, '/tmp')
     with mock.patch.object(lint, 'load_changes') as load_changes:
         load_changes.return_value = None
         lint.process()
@@ -53,7 +53,7 @@ def test_load_changes_failed_ignore(app, caplog):
     assert 'Load changes failed' in caplog.text
 
 
-def test_no_changed_files_ignore(app, caplog):
+def test_no_changed_files_ignore(app, pr_context, caplog):
     diff = """diff --git a/removed_file b/removed_file
 deleted file mode 100644
 index 1f38447..0000000
@@ -65,18 +65,9 @@ index 1f38447..0000000
 -This file will be removed.
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='flake8', pattern=None))
-    lint = LintProcessor(context, spec, '/tmp')
+    lint = LintProcessor(pr_context, spec, '/tmp')
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes:
         load_changes.return_value = patch
@@ -87,7 +78,7 @@ index 1f38447..0000000
     assert 'No changed files found' in caplog.text
 
 
-def test_flake8_lint_a_py(app):
+def test_flake8_lint_a_py(app, pr_context):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -102,18 +93,9 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='flake8', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -132,7 +114,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_eslint_lint_a_js(app):
+def test_eslint_lint_a_js(app, pr_context):
     diff = """diff --git a/.eslintrc b/.eslintrc
 new file mode 100644
 index 0000000..45e5d69
@@ -153,18 +135,9 @@ index 0000000..f119a7f
 +console.log("bar")
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='eslint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'eslint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'eslint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -183,7 +156,7 @@ index 0000000..f119a7f
     assert problem.line == 1
 
 
-def test_pycodestyle_lint_a_py(app):
+def test_pycodestyle_lint_a_py(app, pr_context):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -198,18 +171,9 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='pycodestyle', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'pycodestyle'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'pycodestyle'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -228,7 +192,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_jsonlint_a_json(app):
+def test_jsonlint_a_json(app, pr_context):
     diff = """diff --git a/a.json b/a.json
 new file mode 100644
 index 0000000..266e19f
@@ -238,18 +202,9 @@ index 0000000..266e19f
 +{"a": 1,}
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='jsonlint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -268,7 +223,7 @@ index 0000000..266e19f
     assert problem.line == 1
 
 
-def test_jsonlint_a_json_changes_in_range(app):
+def test_jsonlint_a_json_changes_in_range(app, pr_context):
     diff = """diff --git a/b.json b/b.json
 index 6ebebfe..6be8d74 100644
 --- a/b.json
@@ -280,18 +235,9 @@ index 6ebebfe..6be8d74 100644
  }
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='jsonlint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -310,7 +256,7 @@ index 6ebebfe..6be8d74 100644
     assert problem.line == 2
 
 
-def test_jsonlint_a_json_changes_out_of_range(app):
+def test_jsonlint_a_json_changes_out_of_range(app, pr_context):
     diff = """diff --git a/c.json b/c.json
 index 9b90002..c36a2a4 100644
 --- a/c.json
@@ -323,18 +269,9 @@ index 9b90002..c36a2a4 100644
  }
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='jsonlint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'jsonlint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -350,7 +287,7 @@ index 9b90002..c36a2a4 100644
     assert len(lint.problems) == 0
 
 
-def test_shellcheck_a_sh(app):
+def test_shellcheck_a_sh(app, pr_context):
     diff = """diff --git a/a.sh b/a.sh
 new file mode 100644
 index 0000000..9fb9840
@@ -361,18 +298,9 @@ index 0000000..9fb9840
 +$foo=42
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='shellcheck', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'shellcheck'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'shellcheck'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -391,7 +319,7 @@ index 0000000..9fb9840
     assert problem.line == 2
 
 
-def test_csslint_a_css(app):
+def test_csslint_a_css(app, pr_context):
     diff = """diff --git a/a.css b/a.css
 new file mode 100644
 index 0000000..5512dae
@@ -401,18 +329,9 @@ index 0000000..5512dae
 +.a {}
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='csslint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'csslint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'csslint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -431,7 +350,7 @@ index 0000000..5512dae
     assert problem.line == 1
 
 
-def test_flake8_lint_a_py_with_custom_glob_pattern(app):
+def test_flake8_lint_a_py_with_custom_glob_pattern(app, pr_context):
     diff = """diff --git a/b.pyx b/b.pyx
 new file mode 100644
 index 0000000..fdeea15
@@ -446,18 +365,9 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='flake8', pattern='*.pyx'))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -476,7 +386,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_flake8_lint_a_py_with_custom_regex_pattern(app):
+def test_flake8_lint_a_py_with_custom_regex_pattern(app, pr_context):
     diff = """diff --git a/b.pyx b/b.pyx
 new file mode 100644
 index 0000000..fdeea15
@@ -491,18 +401,9 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='flake8', pattern='^.*\.pyx$'))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -521,7 +422,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_yamllint_a_yml(app):
+def test_yamllint_a_yml(app, pr_context):
     diff = """diff --git a/a.yml b/a.yml
 new file mode 100644
 index 0000000..1eccee8
@@ -533,18 +434,9 @@ index 0000000..1eccee8
 +a: 2
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='yamllint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'yamllint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'yamllint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -563,7 +455,7 @@ index 0000000..1eccee8
     assert problem.line == 3
 
 
-def test_flake8_lint_a_py_with_multi_custom_glob_patterns(app):
+def test_flake8_lint_a_py_with_multi_custom_glob_patterns(app, pr_context):
     diff = """diff --git a/b.pyx b/b.pyx
 new file mode 100644
 index 0000000..fdeea15
@@ -578,18 +470,9 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='flake8', pattern='*.py *.pyx'))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'flake8'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -608,7 +491,7 @@ index 0000000..fdeea15
     assert problem.line == 6
 
 
-def test_bandit_lint_a_py(app):
+def test_bandit_lint_a_py(app, pr_context):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..719cd56
@@ -621,18 +504,9 @@ index 0000000..719cd56
 +    pass
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='bandit'))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'bandit'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'bandit'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -652,7 +526,7 @@ index 0000000..719cd56
     assert not problem.is_error
 
 
-def test_rstlint_a_rst(app):
+def test_rstlint_a_rst(app, pr_context):
     diff = """diff --git a/a.rst b/a.rst
 new file mode 100644
 index 0000000..4e46cf9
@@ -663,18 +537,9 @@ index 0000000..4e46cf9
 +====
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='rstlint'))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'rstlint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'rstlint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -693,7 +558,7 @@ index 0000000..4e46cf9
     assert problem.line == 2
 
 
-def test_pylint_lint_a_py(app):
+def test_pylint_lint_a_py(app, pr_context):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..fdeea15
@@ -708,18 +573,9 @@ index 0000000..fdeea15
 +    return a+ b
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='pylint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'pylint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'pylint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -737,7 +593,7 @@ index 0000000..fdeea15
     assert problem.filename == 'a.py'
 
 
-def test_sasslint_lint_a_scss(app):
+def test_sasslint_lint_a_scss(app, pr_context):
     diff = """diff --git a/a.scss b/a.scss
 new file mode 100644
 index 0000000..48b3ebe
@@ -749,18 +605,9 @@ index 0000000..48b3ebe
 +}
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='sasslint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'sasslint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'sasslint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -778,7 +625,7 @@ index 0000000..48b3ebe
     assert problem.filename == 'a.scss'
 
 
-def test_stylelint_lint_a_scss(app):
+def test_stylelint_lint_a_scss(app, pr_context):
     diff = """diff --git a/a.scss b/a.scss
 new file mode 100644
 index 0000000..e545209
@@ -788,18 +635,9 @@ index 0000000..e545209
 +a[id="foo"] { content: "x"; }
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='stylelint', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'stylelint'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'stylelint'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\
@@ -817,7 +655,7 @@ index 0000000..e545209
     assert problem.filename == 'a.scss'
 
 
-def test_mypy_lint_a_py(app):
+def test_mypy_lint_a_py(app, pr_context):
     diff = """diff --git a/a.py b/a.py
 new file mode 100644
 index 0000000..87604af
@@ -831,18 +669,9 @@ index 0000000..87604af
 +a = p()
 """
 
-    context = Context(
-        'deepanalyzer/badwolf',
-        None,
-        'pullrequest',
-        'message',
-        {'commit': {'hash': '000000'}},
-        {'commit': {'hash': '111111'}},
-        pr_id=1
-    )
     spec = Specification()
     spec.linters.append(ObjectDict(name='mypy', pattern=None))
-    lint = LintProcessor(context, spec, os.path.join(FIXTURES_PATH, 'mypy'))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'mypy'))
     patch = PatchSet(diff.split('\n'))
     with mock.patch.object(lint, 'load_changes') as load_changes,\
             mock.patch.object(lint, 'update_build_status') as build_status,\

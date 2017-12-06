@@ -12,24 +12,40 @@ class PypiProvider(Provider):
     name = 'pypi'
 
     def deploy(self):
-        username = self.config['username']
-        password = self.config['password']
-        repository = self.config['repository']
+        username = self.config.get('username')
+        password = self.config.get('password')
+        repository = self.config.get('repository')
         command = [
             'twine',
             'upload',
-            '--repository',
-            repository,
-            '--repository-url',
-            repository,
-            '--username',
-            username,
-            '--password',
-            password,
+        ]
+        if repository:
+            command.extend([
+                '--repository',
+                repository,
+                '--repository-url',
+                repository
+            ])
+        if username:
+            command.extend([
+                '--username',
+                username
+            ])
+        if password:
+            command.extend([
+                '--password',
+                password,
+            ])
+        command.extend([
             '--skip-existing',
             self.config['distributions']
-        ]
-        exit_code, output = run_command(command, include_errors=True, cwd=self.working_dir)
+        ])
+        exit_code, output = run_command(
+            command,
+            include_errors=True,
+            cwd=self.working_dir,
+            env=self.context.environment
+        )
         return exit_code == 0, output
 
     def url(self):

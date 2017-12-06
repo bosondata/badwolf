@@ -35,3 +35,17 @@ class Context(object):
             self.repo_name,
             self.task_id,
         )
+        self.environment = {
+            'DEBIAN_FRONTEND': 'noninteractive',
+            'CI': 'true',
+            'CI_NAME': 'badwolf',
+            'BADWOLF_BUILD_DIR': self.clone_path,
+            'BADWOLF_REPO_SLUG': repository,
+            'BADWOLF_COMMIT': source['commit']['hash'],
+        }
+        if type == 'tag':
+            self.environment['BADWOLF_TAG'] = source['branch']['name']
+        else:
+            self.environment['BADWOLF_BRANCH'] = source['branch']['name']
+        if pr_id:
+            self.environment['BADWOLF_PULL_REQUEST'] = str(pr_id)

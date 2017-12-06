@@ -6,8 +6,10 @@ import fnmatch
 import tarfile
 
 import git
+import hvac
 from flask import current_app, url_for
 from docker.errors import APIError as DockerAPIError
+from hvac.exceptions import VaultError
 
 from badwolf.spec import Specification
 from badwolf.extensions import bitbucket, sentry
@@ -40,6 +42,7 @@ class Pipeline(object):
             'badwolf/test',
             url_for('log.build_log', sha=self.commit_hash, task_id=context.task_id, _external=True)
         )
+        self.vault = None
 
     def start(self):
         '''Start Pipeline'''
@@ -140,6 +143,33 @@ class Pipeline(object):
             logger.warning('No script(s) or linter(s) to run')
             raise InvalidSpecification('No script or linter to run')
         self.spec = spec
+
+        # setup Vault
+        vault_url = spec.vault.url or current_app.config['VAULT_URL']
+        vault_token = spec.vault.token or current_app.config['VAULT_TOKEN']
+        if vault_url and vault_token:
+            self.vault = hvac.Client(url=vault_url, token=vault_token)
+            self._populate_envvars_from_vault()
+
+    def _populate_envvars_from_vault(self):
+        if self.vault is None or not self.spec.vault.env:
+            return
+
+        paths = [v[0] for v in self.spec.vault.env.values()]
+        secrets = {}
+        for path in paths:
+            try:
+                res = self.vault.read(path)
+            except VaultError as exc:
+                raise InvalidSpecification('Error reading {} from Vault: {}'.format(path, str(exc)))
+            if not res:
+                raise InvalidSpecification('Error reading {} from Vault: not found'.format(path))
+            secrets[path] = res['data']
+
+        for name, (path, key) in self.spec.vault.env.items():
+            val = secrets.get(path, {}).get(key)
+            if val is not None:
+                self.context.environment.setdefault(name, val)
 
     def build(self):
         '''Build project'''
