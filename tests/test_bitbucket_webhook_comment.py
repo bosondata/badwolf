@@ -149,8 +149,16 @@ def test_pr_commit_comment_created_ci_retry(mock_start_pipeline, mock_cancel_pip
             'title': 'Test PR',
             'description': '',
             'state': 'OPEN',
-            'source': {},
-            'destination': {},
+            'source': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'develop'},
+                'commit': {'hash': 'abc'}
+            },
+            'destination': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'master'},
+                'commit': {'hash': 'abc'}
+            }
         },
         'actor': {},
     })
@@ -184,10 +192,18 @@ def test_pr_commit_comment_created_ci_rebuild(mock_start_pipeline, mock_cancel_p
             'title': 'Test PR',
             'description': '',
             'state': 'OPEN',
-            'source': {},
-            'destination': {},
+            'source': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'develop'},
+                'commit': {'hash': 'abc'}
+            },
+            'destination': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'master'},
+                'commit': {'hash': 'abc'}
+            }
         },
-        'actor': {},
+        'actor': {}
     })
     res = test_client.post(
         url_for('webhook.webhook_push'),
@@ -219,10 +235,18 @@ def test_pr_commit_comment_created_ci_retry_state_not_open(mock_start_pipeline, 
             'title': 'Test PR',
             'description': '',
             'state': 'MERGED',
-            'source': {},
-            'destination': {},
+            'source': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'develop'},
+                'commit': {'hash': 'abc'}
+            },
+            'destination': {
+                'repository': {'full_name': 'deepanalyzer/badwolf'},
+                'branch': {'name': 'master'},
+                'commit': {'hash': 'abc'}
+            }
         },
-        'actor': {},
+        'actor': {}
     })
     res = test_client.post(
         url_for('webhook.webhook_push'),
