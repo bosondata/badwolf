@@ -54,7 +54,7 @@ class RepositoryCloner(object):
 
         gitmodules = os.path.join(clone_path, '.gitmodules')
         if os.path.exists(gitmodules):
-            output = gitcmd.submodule('update', '--init', '--recursive' '--depth', '50')
+            output = gitcmd.submodule('update', '--init', '--recursive', '--depth', '50')
             logger.info('%s', output)
 
     def _merge_pull_request(self, gitcmd):
