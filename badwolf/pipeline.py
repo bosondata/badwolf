@@ -227,6 +227,7 @@ class Pipeline(object):
         )
         os.makedirs(artifacts_commit_path, exist_ok=True)
         artifacts_file = os.path.join(artifacts_commit_path, 'artifacts.tar.gz')
+        file_added = False
         with tarfile.open(artifacts_file, 'w:gz') as tar:
             for path in paths:
                 file_path = os.path.join(self.context.clone_path, path)
@@ -234,6 +235,14 @@ class Pipeline(object):
                     tar.add(file_path, path)
                 except FileNotFoundError as exc:
                     logger.error(str(exc))
+                else:
+                    file_added = True
+        if not file_added:
+            try:
+                shutil.rmtree(artifacts_commit_path, ignore_errors=True)
+            except OSError:
+                logger.exception('Error clean empty artifacts files')
+            return
 
         run_command('shasum artifacts.tar.gz > SHASUM', cwd=artifacts_commit_path, shell=True)
         logger.info('Saved artifacts to %s', artifacts_commit_path)
