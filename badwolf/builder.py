@@ -209,8 +209,8 @@ class Builder(object):
         logger.debug('Docker container environment: \n %r', environment)
         container = self.docker.containers.create(
             docker_image_name,
-            entrypoint=['/bin/sh', '-c'],
-            command=['echo $BADWOLF_SCRIPT | base64 --decode | /bin/sh'],
+            entrypoint=['/bin/{}'.format(self.spec.shell), '-c'],
+            command=['echo $BADWOLF_SCRIPT | base64 --decode | /bin/{}'.format(self.spec.shell)],
             environment=environment,
             working_dir=self.context.clone_path,
             volumes=volumes,
