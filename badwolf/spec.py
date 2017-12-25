@@ -207,6 +207,7 @@ class SpecificationSchema(Schema):
         strict = True
 
     image = fields.String(missing=None)
+    shell = fields.String(missing='bash')
     dockerfile = fields.String(missing='Dockerfile')
     docker = fields.Boolean(missing=False)
     privileged = fields.Boolean(missing=False)
@@ -253,6 +254,7 @@ class SpecificationSchema(Schema):
 
 class Specification(object):
     def __init__(self):
+        self.shell = 'bash'
         self.image = None
         self.services = []
         self.scripts = []
@@ -347,6 +349,7 @@ class Specification(object):
 
         command_encoded = shlex.quote(to_text(base64.b64encode(to_binary('\n'.join(commands)))))
         context = {
+            'shell': self.shell,
             'command': command_encoded,
             'after_success': '    \n'.join(after_success),
             'after_failure': '    \n'.join(after_failure),

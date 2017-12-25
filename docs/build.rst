@@ -15,6 +15,7 @@
 选项名                        类型                  说明
 ============================= ===================== ===================================================================
 image                         string                用于构建的 Docker 镜像，提供此选项时可不提供 `dockerfile` 选项
+shell                         string                使用的 shell 程序，默认为 bash
 docker                        boolean               挂载外部的 Docker sock 到容器中以便使用 Docker, 默认为 false
 dockerfile                    string                用于构建 Docker 镜像的 dockerfile 文件名称, 默认为 Dockerfile
 branch                        string/list           仅在这些分支上运行构建和测试
@@ -54,7 +55,7 @@ vault.env                     string/list           从 Vault 读取的环境变
 ============================= ===================================================================
 DEBIAN_FRONTEND               noninteractive
 HOME                          /root
-SHELL                         /bin/sh
+SHELL                         设置的 shell 路径，如 /bin/bash, /bin/sh
 TERM                          xterm-256color
 CI                            true
 CI_NAME                       badwolf

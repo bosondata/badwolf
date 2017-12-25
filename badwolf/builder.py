@@ -177,7 +177,7 @@ class Builder(object):
         script = shlex.quote(to_text(base64.b64encode(to_binary(self.spec.shell_script))))
         environment.update({
             'HOME': '/root',
-            'SHELL': '/bin/sh',
+            'SHELL': '/bin/{}'.format(self.spec.shell),
             'BADWOLF_SCRIPT': script,
         })
         environment.setdefault('TERM', 'xterm-256color')

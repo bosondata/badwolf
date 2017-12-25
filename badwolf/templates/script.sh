@@ -1,5 +1,5 @@
 set +e
-echo {{ command }} | base64 --decode | /bin/sh -e
+echo {{ command }} | base64 --decode | {{ shell }} -e
 SCRIPT_EXIT_CODE=$?
 set -e
 {% if after_success -%}
