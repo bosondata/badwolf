@@ -19,6 +19,7 @@ from badwolf.lint.linters.pylint import PylintLinter
 from badwolf.lint.linters.sasslint import SassLinter
 from badwolf.lint.linters.stylelint import StyleLinter
 from badwolf.lint.linters.mypy import MypyLinter
+from badwolf.lint.linters.hadolint import HadoLinter
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ class LintProcessor(object):
         'sasslint': SassLinter,
         'stylelint': StyleLinter,
         'mypy': MypyLinter,
+        'hadolint': HadoLinter,
     }
 
     def __init__(self, context, spec, working_dir=None):
@@ -162,15 +164,15 @@ class LintProcessor(object):
         lint_comments = set()
         problem_count = 0
         for problem in self.problems:
-            if problem_count >= 50:
-                # Avoid sending too many comments
-                break
             content = ':broken_heart: **{}**: {}'.format(problem.linter, problem.message)
             comment_tuple = (problem.filename, problem.line, content)
             lint_comments.add(comment_tuple)
             if comment_tuple in existing_comments_ids:
                 continue
 
+            if problem_count >= 50:
+                # Avoid sending too many comments
+                break
             comment_kwargs = {
                 'filename': problem.filename,
                 'anchor': revision_after,
