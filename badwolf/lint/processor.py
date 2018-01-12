@@ -19,6 +19,7 @@ from badwolf.lint.linters.pylint import PylintLinter
 from badwolf.lint.linters.sasslint import SassLinter
 from badwolf.lint.linters.stylelint import StyleLinter
 from badwolf.lint.linters.mypy import MypyLinter
+from badwolf.lint.linters.hadolint import HadoLinter
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ class LintProcessor(object):
         'sasslint': SassLinter,
         'stylelint': StyleLinter,
         'mypy': MypyLinter,
+        'hadolint': HadoLinter,
     }
 
     def __init__(self, context, spec, working_dir=None):

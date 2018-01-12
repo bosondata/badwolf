@@ -688,3 +688,36 @@ index 0000000..87604af
     problem = lint.problems[0]
     assert problem.line == 5
     assert problem.filename == 'a.py'
+
+
+def test_hadolint_lint_a_dockerfile(app, pr_context):
+    diff = """diff --git a/Dockerfile b/Dockerfile
+new file mode 100644
+index 0000000..cd19857
+--- /dev/null
++++ b/Dockerfile
+@@ -0,0 +1,3 @@
++FROM ubuntu:16.04
++
++RUN apt-get update && apt-get install file
+"""
+
+    spec = Specification()
+    spec.linters.append(ObjectDict(name='hadolint', pattern=None))
+    lint = LintProcessor(pr_context, spec, os.path.join(FIXTURES_PATH, 'hadolint'))
+    patch = PatchSet(diff.split('\n'))
+    with mock.patch.object(lint, 'load_changes') as load_changes,\
+            mock.patch.object(lint, 'update_build_status') as build_status,\
+            mock.patch.object(lint, '_report') as report:
+        load_changes.return_value = patch
+        build_status.return_value = None
+        report.return_value = (1, 2)
+        lint.problems.set_changes(patch)
+        lint.process()
+
+        assert load_changes.called
+
+    assert len(lint.problems) == 4
+    problem = lint.problems[0]
+    assert problem.line == 3
+    assert problem.filename == 'Dockerfile'

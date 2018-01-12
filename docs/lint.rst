@@ -52,6 +52,7 @@ shellcheck          bash/zsh            https://github.com/koalaman/shellcheck
 yamllint            YAML                https://github.com/adrienverge/yamllint
 jsonlint            JSON                https://github.com/zaach/jsonlint
 rstlint             RestructuredText    https://github.com/twolfson/restructuredtext-lint
+hadolint            Dockerfile          https://github.com/hadolint/hadolint
 =================== =================== =======================================================
 
 指定 Python 代码检查工具使用的 Python 版本
