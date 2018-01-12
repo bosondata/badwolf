@@ -164,15 +164,15 @@ class LintProcessor(object):
         lint_comments = set()
         problem_count = 0
         for problem in self.problems:
-            if problem_count >= 50:
-                # Avoid sending too many comments
-                break
             content = ':broken_heart: **{}**: {}'.format(problem.linter, problem.message)
             comment_tuple = (problem.filename, problem.line, content)
             lint_comments.add(comment_tuple)
             if comment_tuple in existing_comments_ids:
                 continue
 
+            if problem_count >= 50:
+                # Avoid sending too many comments
+                break
             comment_kwargs = {
                 'filename': problem.filename,
                 'anchor': revision_after,
