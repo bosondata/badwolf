@@ -5,6 +5,7 @@ import time
 import base64
 import logging
 import shlex
+from html import escape as html_escape
 
 import deansi
 import requests
@@ -349,8 +350,8 @@ def trigger_slack_webhook(webhooks, context):
 
     actor = context['context'].actor
     attachment = {
-        'fallback': title,
-        'title': title,
+        'fallback': html_escape(title, quote=False),
+        'title': html_escape(title, quote=False),
         'color': color,
         'title_link': context['build_log_url'],
         'fields': fields,
