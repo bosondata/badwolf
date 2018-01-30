@@ -343,15 +343,15 @@ def trigger_slack_webhook(webhooks, context):
             'value': '<https://bitbucket.org/{repo}/pull-requests/{pr_id}|{title}>'.format(
                 repo=context['context'].repository,
                 pr_id=context['context'].pr_id,
-                title=context['context'].message,
+                title=html_escape(context['context'].message, quote=False),
             ),
             'short': False
         })
 
     actor = context['context'].actor
     attachment = {
-        'fallback': html_escape(title, quote=False),
-        'title': html_escape(title, quote=False),
+        'fallback': title,
+        'title': title,
         'color': color,
         'title_link': context['build_log_url'],
         'fields': fields,
