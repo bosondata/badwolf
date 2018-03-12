@@ -107,7 +107,6 @@ class Builder(object):
                 'tag': docker_image_name,
                 'rm': True,
                 'forcerm': True,
-                'stream': True,
                 'decode': True,
                 'nocache': self.context.nocache
             }
