@@ -5,8 +5,6 @@ dist: trusty
 
 matrix:
   include:
-    - env: TOX_ENV=py35
-      python: 3.5
     - env: TOX_ENV=py36
       python: 3.6
 
