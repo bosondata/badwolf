@@ -137,6 +137,7 @@ def handle_repo_push(payload):
         repo_name = repo['full_name']
         push_type = change['new']['type']
         rebuild = False
+        nocache = False
         if push_type == 'tag':
             commit_hash = change['new']['target']['hash']
             commit_message = change['new']['target']['message']
@@ -146,11 +147,12 @@ def handle_repo_push(payload):
                 continue
             commit_hash = change['commits'][0]['hash']
             commit_message = change['commits'][0]['message']
-            if 'ci skip' in commit_message.lower():
+            msg_lower = commit_message.lower()
+            if 'ci skip' in msg_lower:
                 logger.info('ci skip found, ignore tests.')
                 continue
-            if 'ci rebuild' in commit_message.lower():
-                rebuild = True
+            rebuild = 'ci rebuild' in msg_lower
+            nocache = 'no cache' in msg_lower
         else:
             logger.error('Unsupported push type: %s', push_type)
             continue
@@ -167,6 +169,7 @@ def handle_repo_push(payload):
             commit_message,
             source,
             rebuild=rebuild,
+            nocache=nocache
         )
         try:
             _cancel_outdated_pipelines(context)
