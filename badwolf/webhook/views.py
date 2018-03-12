@@ -279,9 +279,10 @@ def handle_pull_request_approved(payload):
         status = build_status.get()
         if status['state'] == 'SUCCESSFUL':
             pull_request.merge(pr_id, message)
-    except BitbucketAPIError:
+    except BitbucketAPIError as exc:
         logger.exception('Error calling Bitbucket API')
-        sentry.captureException()
+        if exc.code != 404:
+            sentry.captureException()
 
 
 @register_event_handler('repo:commit_comment_created')
