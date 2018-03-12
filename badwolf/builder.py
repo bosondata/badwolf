@@ -228,6 +228,8 @@ class Builder(object):
             container.start()
             self.update_build_status('INPROGRESS', 'Running tests in Docker container')
             exit_code = container.wait(timeout=current_app.config['DOCKER_RUN_TIMEOUT'])
+            if isinstance(exit_code, dict):
+                exit_code = exit_code['StatusCode']
         except (APIError, DockerException, ReadTimeout) as e:
             exit_code = -1
             output.append(str(e) + '\n')
