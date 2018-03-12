@@ -20,7 +20,7 @@ before_install:
   - nvm use 8.1.1
 
 install:
-  - sudo curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.2.6/hadolint-Linux-x86_64 && sudo chmod a+x /usr/bin/hadolint
+  - sudo curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.5.0/hadolint-Linux-x86_64 && sudo chmod a+x /usr/bin/hadolint
   - npm install -g eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native babel-eslint
   - pip install -U tox
 

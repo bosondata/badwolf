@@ -34,7 +34,7 @@ RUN echo 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu xenial main' > /etc
     && git config --global user.name "badwolf" \
     && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
     && apt-get install git-lfs \
-    && curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.2.6/hadolint-Linux-x86_64 \
+    && curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.5.0/hadolint-Linux-x86_64 \
     && chmod a+x /usr/bin/hadolint
 
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
@@ -45,9 +45,9 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
     babel-eslint
 
 # Install Docker
-RUN curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.05.0-ce.tgz && \
-    tar --strip-components=1 -xvzf docker-17.05.0-ce.tgz -C /usr/local/bin && \
-    rm docker-17.05.0-ce.tgz
+RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-17.12.1-ce.tgz && \
+    tar --strip-components=1 -xvzf docker-17.12.1-ce.tgz -C /usr/local/bin && \
+    rm docker-17.12.1-ce.tgz
 
 RUN pip2 install -U flake8 pycodestyle pep8-naming pylint flake8-import-order flake8-network-timeout flake8-comprehensions \
     && python3.5 -m pip install -U flake8 pycodestyle pep8-naming pylint flake8-import-order flake8-network-timeout flake8-comprehensions \
