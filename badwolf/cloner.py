@@ -23,11 +23,16 @@ class RepositoryCloner(object):
         clone_path = self.context.clone_path
         source_repo = self.context.source['repository']['full_name']
         if self.context.clone_depth > 0:
+            if self.context.target:
+                # Pull request
+                branch = self.context.target['branch']['name']
+            else:
+                branch = self.context.source['branch']['name']
             # Use shallow clone to speed up
-            clone_kwargs = dict(
-                depth=self.context.clone_depth,
-                branch=self.context.source['branch']['name']
-            )
+            clone_kwargs = {
+                'depth': self.context.clone_depth,
+                'branch': branch,
+            }
             if self.context.type == 'commit':
                 # ci retry on commit
                 clone_kwargs['no_single_branch'] = True
@@ -60,17 +65,16 @@ class RepositoryCloner(object):
     def _merge_pull_request(self, gitcmd):
         # Pull Request
         source_repo = self.context.source['repository']['full_name']
+        source_branch = self.context.source['branch']['name']
         target_repo = self.context.target['repository']['full_name']
-        target_branch = self.context.target['branch']['name']
         if source_repo == target_repo:
-            target_remote = 'origin'
+            source_remote = 'origin'
         else:
             # Pull Reuqest across forks
-            target_remote = target_repo.split('/', 1)[0]
-            gitcmd.remote('add', target_remote, bitbucket.get_git_url(target_repo))
-        gitcmd.fetch(target_remote, target_branch)
-        gitcmd.checkout('FETCH_HEAD')
-        gitcmd.merge('origin/{}'.format(self.context.source['branch']['name']))
+            source_remote = source_repo.split('/', 1)[0]
+            gitcmd.remote('add', source_remote, bitbucket.get_git_url(source_repo))
+        gitcmd.fetch(source_remote, source_branch)
+        gitcmd.merge('FETCH_HEAD')
 
     @staticmethod
     def is_commit_exists(gitcmd, sha):
