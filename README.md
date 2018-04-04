@@ -1,3 +1,5 @@
+<p align="center"><img src="logo/vertical.png" alt="badwolf" height="150px"></p>
+
 # badwolf
 
 [![Build Status](https://travis-ci.org/bosondata/badwolf.svg?branch=master)](https://travis-ci.org/bosondata/badwolf)
