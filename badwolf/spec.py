@@ -185,6 +185,7 @@ class VaultSchema(ObjectDictSchema):
     url = SecureField(missing=None)
     token = SecureField(missing=None)
     env = ListField(SecureField(), missing=list)
+    secretfile = fields.Boolean(missing=True)  # 是否自动从 Secretfile 加载 Vault 内容
 
     @post_load
     def _postprocess(self, data):

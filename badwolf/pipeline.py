@@ -128,7 +128,7 @@ class Pipeline(object):
             )
             raise SpecificationNotFound()
         secretfile = os.path.join(self.context.clone_path, 'Secretfile')
-        if os.path.exists(secretfile):
+        if spec.vault.secretfile and os.path.exists(secretfile):
             spec.parse_secretfile(secretfile)
 
         branch = self.context.source['branch']['name']

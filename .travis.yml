@@ -13,12 +13,12 @@ cache:
     - $HOME/.cache/pip
 
 before_install:
-  - sudo apt-get install -y libffi-dev libssl-dev shellcheck pandoc
+  - sudo apt-get install -y libffi-dev libssl-dev shellcheck
   - nvm install 8.1.1
   - nvm use 8.1.1
 
 install:
-  - sudo curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.5.0/hadolint-Linux-x86_64 && sudo chmod a+x /usr/bin/hadolint
+  - sudo curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.15.0/hadolint-Linux-x86_64 && sudo chmod a+x /usr/bin/hadolint
   - npm install -g eslint csslint sass-lint jsonlint stylelint eslint-plugin-react eslint-plugin-react-native babel-eslint
   - pip install -U tox
 
@@ -29,7 +29,6 @@ after_success:
   - codecov
   - |
     if [[ "${TRAVIS_TAG:-}" != "" && "$TOX_ENV" == "py36" ]]; then
-      pandoc --from markdown --to rst --output=README.rst README.md;
       python3.6 setup.py sdist bdist_wheel;
       python3.6 -m pip install twine;
       python3.6 -m twine upload --skip-existing dist/*;

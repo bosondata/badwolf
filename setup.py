@@ -44,6 +44,7 @@ setup(
     keywords='ci, bitbucket',
     description='Docker based continuous integration and code lint review system for BitBucket',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=requirements,
     include_package_data=True,
     tests_require=['pytest'],

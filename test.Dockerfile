@@ -29,7 +29,7 @@ RUN echo 'deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu xenial main' > /etc
     openssh-client \
     && curl -sSL https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
     && apt-get install git-lfs \
-    && curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.5.0/hadolint-Linux-x86_64 \
+    && curl -sSL -o /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.15.0/hadolint-Linux-x86_64 \
     && chmod a+x /usr/bin/hadolint \
     && pip3 install -U pip wheel tox
 
