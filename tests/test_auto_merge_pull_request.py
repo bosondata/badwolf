@@ -24,6 +24,7 @@ def test_auto_merge_not_enabled(app, test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -48,6 +49,7 @@ def test_auto_merge_failure_pr_get_error(app, test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -71,6 +73,7 @@ def test_auto_merge_skip_merge_skip_in_title(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -93,6 +96,7 @@ def test_auto_merge_skip_merge_skip_in_description(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -115,6 +119,7 @@ def test_auto_merge_skip_wip_in_title(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -137,6 +142,7 @@ def test_auto_merge_skip_wip_in_description(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -162,6 +168,7 @@ def test_auto_merge_skip_pr_not_in_open_state(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -193,6 +200,7 @@ def test_auto_merge_skip_not_enough_approval(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -234,6 +242,7 @@ def test_auto_merge_success(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )
@@ -275,6 +284,7 @@ def test_auto_merge_call_error(test_client):
             url_for('webhook.webhook_push'),
             data=payload,
             headers={
+                'User-Agent': 'Bitbucket-Webhooks/2.0',
                 'X-Event-Key': 'pullrequest:approved',
             }
         )

@@ -29,6 +29,7 @@ def test_repo_commit_comment_created_ci_retry(mock_start_pipeline, test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:commit_comment_created',
         }
     )
@@ -59,6 +60,7 @@ def test_repo_commit_comment_created_ci_rebuild(mock_start_pipeline, test_client
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:commit_comment_created',
         }
     )
@@ -89,6 +91,7 @@ def test_repo_commit_comment_created_do_nothing(mock_start_pipeline, test_client
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:commit_comment_created',
         }
     )
@@ -123,6 +126,7 @@ def test_pr_commit_comment_created_do_nothing(mock_start_pipeline, mock_cancel_p
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:comment_created',
         }
     )
@@ -166,6 +170,7 @@ def test_pr_commit_comment_created_ci_retry(mock_start_pipeline, mock_cancel_pip
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:comment_created',
         }
     )
@@ -209,6 +214,7 @@ def test_pr_commit_comment_created_ci_rebuild(mock_start_pipeline, mock_cancel_p
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:comment_created',
         }
     )
@@ -252,6 +258,7 @@ def test_pr_commit_comment_created_ci_retry_state_not_open(mock_start_pipeline, 
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:comment_created',
         }
     )

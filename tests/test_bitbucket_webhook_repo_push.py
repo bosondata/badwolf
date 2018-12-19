@@ -20,6 +20,7 @@ def test_valid_http_header(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -37,6 +38,7 @@ def test_unhandled_event(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:created',
         }
     )
@@ -55,6 +57,7 @@ def test_repo_push_no_new_changes(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -82,6 +85,7 @@ def test_repo_push_unsupported_push_type(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -109,6 +113,7 @@ def test_repo_push_unsupported_scm(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -137,6 +142,7 @@ def test_repo_push_no_commits(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -170,6 +176,7 @@ def test_repo_push_ci_skip_found(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -208,6 +215,7 @@ def test_repo_push_trigger_start_pipeline(mock_start_pipeline, mock_cancel_pipel
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )
@@ -244,6 +252,7 @@ def test_repo_push_tag_trigger_start_pipeline(mock_start_pipeline, mock_cancel_p
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'repo:push',
         }
     )

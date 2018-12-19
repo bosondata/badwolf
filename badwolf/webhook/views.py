@@ -98,19 +98,30 @@ def register_webhook(user, repo):
 
 @blueprint.route('/push', methods=['POST'])
 def webhook_push():
-    event_key = request.headers.get('X-Event-Key')
+    provider = None  # FIXME: factor to an enum instead of string
+    user_agent = request.headers.get('User-Agent', '')
+    if user_agent.startswith('Bitbucket-Webhooks/'):
+        # BitBucket webhooks
+        event_key = request.headers.get('X-Event-Key')
+        provider = 'bitbucket'
+    else:
+        # Try Gitlab
+        event_key = request.headers.get('X-Gitlab-Event')
+        provider = 'gitlab'
     if not event_key:
         return 'Bad request', 400
 
     payload = request.get_json(force=True)
     logger.debug(
-        'Incoming Bitbucket webhook request, event key: %s, payload: %s',
+        'Incoming %s webhook request, event: %s, payload: %s',
+        provider,
         event_key,
         json.dumps(payload, ensure_ascii=False)
     )
     if not payload:
         return ''
 
+    # FIXME: process Gitlab webhook
     handler = _EVENT_HANDLERS.get(event_key)
     if handler:
         return handler(payload) or ''

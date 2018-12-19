@@ -19,6 +19,7 @@ def test_pr_created_unsupported_scm(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:created',
         }
     )
@@ -51,6 +52,7 @@ def test_pr_updated_ci_skip_found(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:updated',
         }
     )
@@ -84,6 +86,7 @@ def test_pr_updated_state_not_open(test_client):
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:updated',
         }
     )
@@ -122,6 +125,7 @@ def test_pr_created_trigger_start_pipeline(mock_start_pipeline, mock_cancel_pipe
         url_for('webhook.webhook_push'),
         data=payload,
         headers={
+            'User-Agent': 'Bitbucket-Webhooks/2.0',
             'X-Event-Key': 'pullrequest:updated',
         }
     )
