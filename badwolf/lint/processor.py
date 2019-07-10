@@ -159,8 +159,6 @@ class LintProcessor(object):
         if len(self.problems) == 0:
             return 0, 0
 
-        revision_before = self.context.target['commit']['hash']
-        revision_after = self.context.source['commit']['hash']
         lint_comments = set()
         problem_count = 0
         for problem in self.problems:
@@ -175,8 +173,6 @@ class LintProcessor(object):
                 break
             comment_kwargs = {
                 'filename': problem.filename,
-                'anchor': revision_after,
-                'dest_rev': revision_before,
             }
             if problem.has_line_change:
                 comment_kwargs['line_to'] = problem.line

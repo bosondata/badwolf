@@ -287,19 +287,15 @@ class PullRequest(object):
         )
 
     def comment(self, id, content, line_from=None, line_to=None, parent_id=None,
-                filename=None, anchor=None, dest_rev=None):
-        endpoint = '1.0/repositories/{repo}/pullrequests/{id}/comments'.format(
+                filename=None):
+        endpoint = '2.0/repositories/{repo}/pullrequests/{id}/comments'.format(
             repo=self.repo,
             id=id
         )
         data = optionaldict(
-            content=content,
-            line_from=line_from,
-            line_to=line_to,
-            parent_id=parent_id,
-            filename=filename,
-            anchor=anchor,
-            dest_rev=dest_rev,
+            content={'raw': content},
+            inline={'from': line_from, 'to': line_to, 'path': filename},
+            parent={'id': parent_id},
         )
         return self.client.post(endpoint, data=data)
 
@@ -324,7 +320,7 @@ class PullRequest(object):
         return rs
 
     def delete_comment(self, id, comment_id):
-        endpoint = '1.0/repositories/{repo}/pullrequests/{id}/comments/{cid}'.format(
+        endpoint = '2.0/repositories/{repo}/pullrequests/{id}/comments/{cid}'.format(
             repo=self.repo,
             id=id,
             cid=comment_id,
@@ -353,16 +349,14 @@ class Changesets(object):
 
     def comment(self, node, content, line_from=None, line_to=None,
                 parent_id=None, filename=None):
-        endpoint = '1.0/repositories/{repo}/changesets/{node}/comments'.format(
+        endpoint = '2.0/repositories/{repo}/commit/{node}/comments'.format(
             repo=self.repo,
             node=node,
         )
         data = optionaldict(
-            content=content,
-            line_from=line_from,
-            line_to=line_to,
-            parent_id=parent_id,
-            filename=filename,
+            content={'raw': content},
+            inline={'from': line_from, 'to': line_to, 'path': filename},
+            parent={'id': parent_id},
         )
         return self.client.post(endpoint, data=data)
 
