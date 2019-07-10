@@ -395,17 +395,17 @@ def test_secure_field(app):
     # case 1: plaintext
     data = {'token': 'abc'}
     result = schema.load(data)
-    assert result.data['token'] == 'abc'
+    assert result['token'] == 'abc'
 
     # case 2: valid secure token
     data = {'token': {'secure': SecureToken.encrypt('def')}}
     result = schema.load(data)
-    assert result.data['token'] == 'def'
+    assert result['token'] == 'def'
 
     # case 3: invalid secure token
     data = {'token': {'secure': 'gAAAAABYmoldCp-EQGUKCppiqmVOu2jLrAKUz6E2e4aOMMD8Vu0VKswmJexHX6vUEoxVYKFUlSonPb91QKXZBEZdBezHzJMCHg=='}}  # NOQA
     result = schema.load(data)
-    assert result.data['token'] == ''
+    assert result['token'] == ''
 
 
 def test_list_field(app):
@@ -417,12 +417,12 @@ def test_list_field(app):
     # case 1: scalar as list
     data = {'services': 'redis-server'}
     result = schema.load(data)
-    assert result.data['services'] == ['redis-server']
+    assert result['services'] == ['redis-server']
 
     # case 2: list
     data = {'services': ['redis-server']}
     result = schema.load(data)
-    assert result.data['services'] == ['redis-server']
+    assert result['services'] == ['redis-server']
 
 
 def test_deploy_single_provider_object(app):

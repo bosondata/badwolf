@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class ListField(fields.List):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if not is_collection(value):
             value = [value]
 
@@ -31,7 +31,7 @@ class ListField(fields.List):
         errors = {}
         for idx, each in enumerate(value):
             try:
-                result.append(self.container.deserialize(each))
+                result.append(self.inner.deserialize(each, **kwargs))
             except ValidationError as e:
                 if e.data is not None:
                     result.append(e.data)
@@ -44,16 +44,16 @@ class ListField(fields.List):
 
 
 class SetField(ListField):
-    def _deserialize(self, value, attr, data):
-        return set(super(SetField, self)._deserialize(value, attr, data))
+    def _deserialize(self, value, attr, data, **kwargs):
+        return set(super(SetField, self)._deserialize(value, attr, data, **kwargs))
 
 
 class SecureField(fields.String):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if isinstance(value, dict) and 'secure' in value:
             value = self._decrypt(value['secure'])
         else:
-            value = super(SecureField, self)._deserialize(value, attr, data)
+            value = super(SecureField, self)._deserialize(value, attr, data, **kwargs)
         return value
 
     def _decrypt(self, token):
@@ -68,17 +68,17 @@ class SecureField(fields.String):
 
 class ObjectDictSchema(Schema):
     @post_load
-    def _postprocess(self, data):
+    def _postprocess(self, data, **kwargs):
         return ObjectDict(data)
 
 
 class EmailNotificationSchema(ObjectDictSchema):
-    recipients = ListField(fields.Email(), load_from='recipients', missing=list)
+    recipients = ListField(fields.Email(), data_key='recipients', missing=list)
     on_success = fields.String(missing='never', validate=validate.OneOf(('always', 'never')))
     on_failure = fields.String(missing='always', validate=validate.OneOf(('always', 'never')))
 
     @pre_load
-    def _preprocess(self, data):
+    def _preprocess(self, data, **kwargs):
         email = {}
         if isinstance(data, dict):
             email = data
@@ -90,12 +90,12 @@ class EmailNotificationSchema(ObjectDictSchema):
 
 
 class SlackWebHookSchema(ObjectDictSchema):
-    webhooks = ListField(SecureField(), load_from='webhooks', missing=list)
+    webhooks = ListField(SecureField(), data_key='webhooks', missing=list)
     on_success = fields.String(missing='always', validate=validate.OneOf(('always', 'never')))
     on_failure = fields.String(missing='always', validate=validate.OneOf(('always', 'never')))
 
     @pre_load
-    def _preprocess(self, slack):
+    def _preprocess(self, slack, **kwargs):
         webhook = {}
         if isinstance(slack, dict):
             webhook = slack
@@ -107,8 +107,8 @@ class SlackWebHookSchema(ObjectDictSchema):
 
 
 class NotificationSchema(ObjectDictSchema):
-    email = fields.Nested(EmailNotificationSchema, load_from='email')
-    slack_webhook = fields.Nested(SlackWebHookSchema, load_from='slack_webhook')
+    email = fields.Nested(EmailNotificationSchema, data_key='email')
+    slack_webhook = fields.Nested(SlackWebHookSchema, data_key='slack_webhook')
 
 
 class LinterSchema(Schema):
@@ -120,7 +120,7 @@ class LinterSchema(Schema):
         self.__additional_values = {}
 
     @pre_load
-    def _preprocess(self, linter):
+    def _preprocess(self, linter, **kwargs):
         info = {}
         if isinstance(linter, dict):
             name = linter.pop('name', None)
@@ -135,7 +135,7 @@ class LinterSchema(Schema):
         return info
 
     @post_load
-    def _postprocess(self, data):
+    def _postprocess(self, data, **kwargs):
         data.update(self.__additional_values.pop(data['name'], {}))
         return ObjectDict(data)
 
@@ -172,7 +172,7 @@ class ArtifactsSchema(ObjectDictSchema):
     excludes = ListField(SecureField(), missing=list)
 
     @pre_load
-    def _preprocess(self, data):
+    def _preprocess(self, data, **kwargs):
         if isinstance(data, bool):
             if data:
                 return {'paths': ['$(git ls-files -o | tr "\\n" ":")']}
@@ -188,7 +188,7 @@ class VaultSchema(ObjectDictSchema):
     secretfile = fields.Boolean(missing=True)  # 是否自动从 Secretfile 加载 Vault 内容
 
     @post_load
-    def _postprocess(self, data):
+    def _postprocess(self, data, **kwargs):
         # vault.envs format should be:
         # ENV_NAME secret/path:key
         env_map = ObjectDict()
@@ -200,7 +200,7 @@ class VaultSchema(ObjectDictSchema):
                 raise ValidationError('Invalid vault env {}'.format(name), 'env')
             env_map[name] = (path, key)
         data['env'] = env_map
-        return super()._postprocess(data)
+        return super()._postprocess(data, **kwargs)
 
 
 class SpecificationSchema(Schema):
@@ -212,21 +212,21 @@ class SpecificationSchema(Schema):
     dockerfile = fields.String(missing='Dockerfile')
     docker = fields.Boolean(missing=False)
     privileged = fields.Boolean(missing=False)
-    services = ListField(fields.String(), load_from='service', missing=list)
+    services = ListField(fields.String(), data_key='service', missing=list)
     branch = SetField(fields.String(), missing=set)
-    environments = ListField(SecureField(), load_from='env', missing=list)
-    scripts = ListField(SecureField(), load_from='script', missing=list)
+    environments = ListField(SecureField(), data_key='env', missing=list)
+    scripts = ListField(SecureField(), data_key='script', missing=list)
     after_success = ListField(SecureField(), missing=list)
     after_failure = ListField(SecureField(), missing=list)
     notification = fields.Nested(NotificationSchema)
-    linters = fields.Nested(LinterSchema, load_from='linter', many=True, missing=list)
+    linters = fields.Nested(LinterSchema, data_key='linter', many=True, missing=list)
     deploy = ListField(fields.Nested(AnyDeploySchema), missing=list)
     after_deploy = ListField(SecureField(), missing=list)
     artifacts = fields.Nested(ArtifactsSchema)
     vault = fields.Nested(VaultSchema)
 
     @pre_load
-    def _preprocess(self, data):
+    def _preprocess(self, data, **kwargs):
         linters = data.get('linter')
         if linters:
             if not isinstance(linters, (tuple, list)):
@@ -234,7 +234,7 @@ class SpecificationSchema(Schema):
         return data
 
     @post_load
-    def _postprocess(self, data):
+    def _postprocess(self, data, **kwargs):
         image = data['image']
         if image and ':' not in image:
             # Ensure we have tag name in image
@@ -301,11 +301,10 @@ class Specification(object):
     def parse(cls, conf):
         schema = SpecificationSchema()
         try:
-            parsed = schema.load(conf)
+            data = schema.load(conf)
         except ValidationError as e:
             logger.exception('badwolf specification validation error')
             raise InvalidSpecification(str(e))
-        data = parsed.data
         spec = cls()
         for key, value in data.items():
             setattr(spec, key, value)
