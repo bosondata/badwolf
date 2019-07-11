@@ -292,12 +292,13 @@ class PullRequest(object):
             repo=self.repo,
             id=id
         )
-        data = optionaldict(
-            content={'raw': content},
-            inline={'from': line_from, 'to': line_to, 'path': filename},
-            parent={'id': parent_id},
-        )
-        return self.client.post(endpoint, data=data)
+        data = {'content': {'raw': content}}
+        inline = optionaldict({'from': line_from, 'to': line_to, 'path': filename})
+        if inline:
+            data['inline'] = inline
+        if parent_id:
+            data['parent'] = {'id': parent_id}
+        return self.client.post(endpoint, json=data)
 
     def comments(self, id, page=1, size=100):
         endpoint = '2.0/repositories/{repo}/pullrequests/{id}/comments'.format(
@@ -353,12 +354,13 @@ class Changesets(object):
             repo=self.repo,
             node=node,
         )
-        data = optionaldict(
-            content={'raw': content},
-            inline={'from': line_from, 'to': line_to, 'path': filename},
-            parent={'id': parent_id},
-        )
-        return self.client.post(endpoint, data=data)
+        data = {'content': {'raw': content}}
+        inline = optionaldict({'from': line_from, 'to': line_to, 'path': filename})
+        if inline:
+            data['inline'] = inline
+        if parent_id:
+            data['parent'] = {'id': parent_id}
+        return self.client.post(endpoint, json=data)
 
 
 class Hooks(object):
@@ -376,7 +378,7 @@ class Hooks(object):
             events=events,
             active=True
         )
-        return self.client.post(endpoint, json=data)
+        return self.client.post(endpoint, data=data)
 
     def list(self):
         endpoint = '2.0/repositories/{repo}/hooks'.format(
